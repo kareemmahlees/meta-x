@@ -4,5 +4,7 @@ run:
 watch:
 	@air
 
-test:
+testv:
 	@go test ./... -v
+test:
+	@go test ./pkg/...

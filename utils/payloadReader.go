@@ -7,9 +7,9 @@ import (
 	"github.com/charmbracelet/log"
 )
 
-func ReadPayload(payload io.ReadCloser)map[string]any{
+func ReadBody(body io.ReadCloser)map[string]any{
 	var parsedPayload map[string]any
-	decoder := json.NewDecoder(payload)
+	decoder := json.NewDecoder(body)
     err := decoder.Decode(&parsedPayload)
     if err != nil {
         log.Error(err)

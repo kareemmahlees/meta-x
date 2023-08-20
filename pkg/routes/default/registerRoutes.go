@@ -1,4 +1,4 @@
-package routes
+package default_routes
 
 import "github.com/gofiber/fiber/v2"
 
