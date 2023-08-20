@@ -1,0 +1,15 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "A RESTFull and GraphQL API to manage your MySQL DB",
+        "title": "MySQL Meta",
+        "contact": {
+            "name": "Kareem Ebrahim",
+            "email": "kareemmahlees@gmail.com"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:4000",
+    "basePath": "/",
+    "paths": {}
+}

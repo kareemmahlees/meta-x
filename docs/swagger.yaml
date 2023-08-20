@@ -1,0 +1,11 @@
+basePath: /
+host: localhost:4000
+info:
+  contact:
+    email: kareemmahlees@gmail.com
+    name: Kareem Ebrahim
+  description: A RESTFull and GraphQL API to manage your MySQL DB
+  title: MySQL Meta
+  version: "1.0"
+paths: {}
+swagger: "2.0"
