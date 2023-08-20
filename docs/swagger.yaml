@@ -1,4 +1,21 @@
 basePath: /
+definitions:
+  default_routes.APIInfoResult:
+    properties:
+      author:
+        type: string
+      contact:
+        type: string
+      repo:
+        type: string
+      year:
+        type: integer
+    type: object
+  default_routes.HealthCheckResult:
+    properties:
+      date:
+        type: string
+    type: object
 host: localhost:4000
 info:
   contact:
@@ -7,5 +24,25 @@ info:
   description: A RESTFull and GraphQL API to manage your MySQL DB
   title: MySQL Meta
   version: "1.0"
-paths: {}
+paths:
+  /:
+    get:
+      description: get info about the api
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/default_routes.APIInfoResult'
+  /health:
+    get:
+      description: check application health by getting current date
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/default_routes.HealthCheckResult'
 swagger: "2.0"

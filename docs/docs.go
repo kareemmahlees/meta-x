@@ -18,7 +18,67 @@ const docTemplate = `{
     },
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
-    "paths": {}
+    "paths": {
+        "/": {
+            "get": {
+                "description": "get info about the api",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/default_routes.APIInfoResult"
+                        }
+                    }
+                }
+            }
+        },
+        "/health": {
+            "get": {
+                "description": "check application health by getting current date",
+                "produces": [
+                    "application/json"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/default_routes.HealthCheckResult"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "default_routes.APIInfoResult": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "string"
+                },
+                "contact": {
+                    "type": "string"
+                },
+                "repo": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "default_routes.HealthCheckResult": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                }
+            }
+        }
+    }
 }`
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
