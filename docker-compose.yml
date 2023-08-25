@@ -1,0 +1,18 @@
+version: "3.2"
+services:
+  mysql-meta:
+    container_name: mysql-meta
+    image: mysql:latest
+    restart: always
+    environment:
+      - MYSQL_ROOT_PASSWORD=kareem
+      - MYSQL_DATABASE=mysqlmeta
+      - MYSQL_USER=kareem
+      - MYSQL_PASSWORD=password123
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysqldata:/var/lib/mysql
+
+volumes:
+  mysqldata:
