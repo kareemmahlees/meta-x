@@ -16,7 +16,8 @@ var app *fiber.App
 
 func TestMain(m *testing.M) {
 	app = fiber.New()
-	default_routes.RegisterDefaultRoutes(app)
+	
+	default_routes.RegisterDefaultRoutes(app,nil)
 
 	// Run tests
     exitVal := m.Run()

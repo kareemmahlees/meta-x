@@ -23,11 +23,11 @@ func ListDatabases(db *sqlx.DB)[]string {
 	return dbs
 }
 
-func CreateDatabase(db *sqlx.DB,dbName string)(int64,error){
+func CreateDatabase(db *sqlx.DB,dbName string)(int,error){
 	res,err := db.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s",dbName))
 	if err != nil {
 		return 0,err
 	}
 	num,_ := res.RowsAffected()	
-	return num,nil
+	return int(num),nil
 }

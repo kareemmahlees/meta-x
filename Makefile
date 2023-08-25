@@ -5,6 +5,6 @@ watch:
 	@air
 
 testv:
-	@go test -v
+	@go test -v ./pkg/...
 test:
 	@go test ./pkg/...
