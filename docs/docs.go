@@ -25,6 +25,9 @@ const docTemplate = `{
                 "produces": [
                     "application/json"
                 ],
+                "tags": [
+                    "default"
+                ],
                 "responses": {
                     "200": {
                         "description": "OK",
@@ -35,11 +38,46 @@ const docTemplate = `{
                 }
             }
         },
+        "/databases": {
+            "get": {
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Databases"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/databases.HandleListDatabasesResult"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create database",
+                "tags": [
+                    "Databases"
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/databases.HandleCreateDatabaseResult"
+                        }
+                    }
+                }
+            }
+        },
         "/health": {
             "get": {
                 "description": "check application health by getting current date",
                 "produces": [
                     "application/json"
+                ],
+                "tags": [
+                    "default"
                 ],
                 "responses": {
                     "200": {
@@ -53,6 +91,25 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "databases.HandleCreateDatabaseResult": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "integer"
+                }
+            }
+        },
+        "databases.HandleListDatabasesResult": {
+            "type": "object",
+            "properties": {
+                "databases": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "default_routes.APIInfoResult": {
             "type": "object",
             "properties": {

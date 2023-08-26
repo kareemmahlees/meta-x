@@ -8,30 +8,30 @@ import (
 )
 
 type HealthCheckResult struct {
-	Date string `json:"date"`
+	Date string 
 }
 
 //	@description	check application health by getting current date
 //	@produce		json
-//	@tag			Health Check
+//	@tags			default
 //	@router			/health [get]
-//  @success 200 {object} HealthCheckResult 
+//	@success		200	{object}	HealthCheckResult	
 func healthCheck(c *fiber.Ctx)error {
 	return c.JSON(fiber.Map{"date":time.Now()})
 }
 
 type APIInfoResult struct{
-	Author string `json:"author"`
-	Year int `json:"year"`
-	Contact string `json:"contact"`
-	Repo string `json:"repo"`
+	Author string 
+	Year int 
+	Contact string 
+	Repo string 
 }
 
-// @description get info about the api
-// @produce json
-// @tag about
-// @router / [get]
-// @success 200 {object} APIInfoResult
+//	@description	get info about the api
+//	@produce		json
+//	@tags			default
+//	@router			/ [get]
+//	@success		200	{object}	APIInfoResult
 func apiInfo(c *fiber.Ctx)error {
 	return c.JSON(fiber.Map{
 		"author":"Kareem Ebrahim",

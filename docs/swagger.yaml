@@ -1,5 +1,17 @@
 basePath: /
 definitions:
+  databases.HandleCreateDatabaseResult:
+    properties:
+      created:
+        type: integer
+    type: object
+  databases.HandleListDatabasesResult:
+    properties:
+      databases:
+        items:
+          type: string
+        type: array
+    type: object
   default_routes.APIInfoResult:
     properties:
       author:
@@ -35,6 +47,28 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/default_routes.APIInfoResult'
+      tags:
+      - default
+  /databases:
+    get:
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/databases.HandleListDatabasesResult'
+      tags:
+      - Databases
+    post:
+      description: create database
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/databases.HandleCreateDatabaseResult'
+      tags:
+      - Databases
   /health:
     get:
       description: check application health by getting current date
@@ -45,4 +79,6 @@ paths:
           description: OK
           schema:
             $ref: '#/definitions/default_routes.HealthCheckResult'
+      tags:
+      - default
 swagger: "2.0"
