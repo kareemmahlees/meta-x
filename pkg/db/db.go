@@ -8,9 +8,9 @@ import (
 
 
 func InitDBConn()(*sqlx.DB,error){
-	dbUsername := utils.GetEnvVar("MYSQL_META_DB_USERNAME")
-	dbPassword := utils.GetEnvVar("MYSQL_META_DB_PASSWORD")
-	dbName := utils.GetEnvVar("MYSQL_META_DB_NAME")
+	dbUsername,_ := utils.GetEnvVar("MYSQL_META_DB_USERNAME")
+	dbPassword,_ := utils.GetEnvVar("MYSQL_META_DB_PASSWORD")
+	dbName,_ := utils.GetEnvVar("MYSQL_META_DB_NAME")
 
 	cfg := mysql.Config{
 		User:dbUsername,

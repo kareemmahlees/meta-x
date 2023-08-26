@@ -1,16 +1,14 @@
 package utils
 
 import (
-	"github.com/charmbracelet/log"
-
+	"fmt"
 	"os"
 )
 
-func GetEnvVar(key string) string {
+func GetEnvVar(key string) (string,error) {
 	envVar, exists := os.LookupEnv(key)
 	if !exists {
-		log.Errorf("%s Env Var is missing",key)
-		return ""
+		return "",fmt.Errorf("%s Env Var is missing",key)
 	}
-		return envVar
+		return envVar,nil
 }
