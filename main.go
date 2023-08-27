@@ -34,14 +34,20 @@ func init() {
 
 var RestStyle = lipgloss.NewStyle().
 	Bold(true).
-	Foreground(lipgloss.Color("#ffffff")).
-	Background(lipgloss.Color("#0EEBA1")).
+	Foreground(lipgloss.Color("#FFFFFF")).
+	Background(lipgloss.Color("#4B87FF")).
 	MarginTop(1)
 
 var GraphQLStyle = lipgloss.NewStyle().
 	Bold(true).
-	Foreground(lipgloss.Color("#ffffff")).
+	Foreground(lipgloss.Color("#FFFFFF")).
 	Background(lipgloss.Color("#FF70FD")).
+	MarginTop(1)
+
+var SwaggerDocsStyle = lipgloss.NewStyle().
+	Bold(true).
+	Foreground(lipgloss.Color("#FFFFFF")).
+	Background(lipgloss.Color("#0EEBA1")).
 	MarginTop(1)
 
 //	@title			MySQL Meta
@@ -74,10 +80,11 @@ func main() {
 		port = "4000"
 
 		fmt.Println(RestStyle.Render("REST"), fmt.Sprintf("http://localhost:%s", port))
+		fmt.Println(SwaggerDocsStyle.Render("SWAGGER"),fmt.Sprintf("http://localhost:%s/swagger", port))
 		fmt.Println(GraphQLStyle.Render("GraphQL"), fmt.Sprintf("http://localhost:%s/graph\n", port))
 		err :=app.Listen(fmt.Sprintf(":%s", port))
 		if err != nil {
-			log.Error(log.ErrorLevelStyle.GetBorder())
+			log.Error(err)
 		}
 	}
 }
