@@ -1,9 +1,9 @@
-run:
-	@go run main.go
-
+build:
+	@go build -o bin/
+run: build
+	@./bin/mysql-meta.exe
 watch:
 	@air
-
 testv:
 	@go test -v ./...
 test:
