@@ -1,8 +1,8 @@
 package main
 
 import (
+	"flag"
 	"fmt"
-	"os"
 
 	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
@@ -17,8 +17,12 @@ import (
 )
 
 var con *sqlx.DB
+var port int
 
 func init() {
+	flag.IntVar(&port, "port", 4000, "port to listen on")
+	flag.Parse()
+
 	_ = godotenv.Load()
 	con, err := db.InitDBConn()
 	if err != nil {
@@ -65,23 +69,15 @@ func main() {
 
 	routes.Setup(app, con)
 
-	var port string
-	var exists bool
-	port, exists = os.LookupEnv("PORT")
-	if exists {
-		err := app.Listen(fmt.Sprintf(":%s", port))
-		if err != nil {
-			log.Error(err)
-		}
-	} else {
-		port = "4000"
+	fmt.Println(RestStyle.Render("REST"), fmt.Sprintf("http://localhost:%d", port))
+	fmt.Println(SwaggerDocsStyle.Render("Swagger"), fmt.Sprintf("http://localhost:%d/swagger", port))
+	fmt.Println(GraphQLStyle.Render("GraphQL"), fmt.Sprintf("http://localhost:%d/graph\n", port))
 
-		fmt.Println(RestStyle.Render("REST"), fmt.Sprintf("http://localhost:%s", port))
-		fmt.Println(SwaggerDocsStyle.Render("SWAGGER"), fmt.Sprintf("http://localhost:%s/swagger", port))
-		fmt.Println(GraphQLStyle.Render("GraphQL"), fmt.Sprintf("http://localhost:%s/graph\n", port))
-		err := app.Listen(fmt.Sprintf(":%s", port))
-		if err != nil {
-			log.Error(err)
-		}
+	fmt.Println(RestStyle.Render("REST"), fmt.Sprintf("http://localhost:%d", port))
+	fmt.Println(SwaggerDocsStyle.Render("SWAGGER"), fmt.Sprintf("http://localhost:%d/swagger", port))
+	fmt.Println(GraphQLStyle.Render("GraphQL"), fmt.Sprintf("http://localhost:%d/graph\n", port))
+	err := app.Listen(fmt.Sprintf(":%d", port))
+	if err != nil {
+		log.Error(err)
 	}
 }
