@@ -54,7 +54,7 @@ func TestHandleListDatabases(t *testing.T){
 }
 
 func TestHandleCreateDatabase(t *testing.T){
-	req := httptest.NewRequest("POST", "http://localhost:4000/databases", nil)
+	req := httptest.NewRequest("POST", "http://localhost:4000/databases/mysqlmeta", nil)
 
 	resp, _ := app.Test(req)
 	payload := utils.ReadBody(resp.Body)

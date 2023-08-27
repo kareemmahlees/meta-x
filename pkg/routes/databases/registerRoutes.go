@@ -9,5 +9,5 @@ import (
 func RegisterDatabasesRoutes(app *fiber.App,db *sqlx.DB) {
 	dbGroup := app.Group("databases")
 	dbGroup.Get("",utils.RouteHandler(db,handleListDatabases))
-	dbGroup.Post("",utils.RouteHandler(db,handlerCreateDatabase))
+	dbGroup.Post("/:name",utils.RouteHandler(db,handlerCreateDatabase))
 }
