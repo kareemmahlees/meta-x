@@ -60,6 +60,15 @@ const docTemplate = `{
                 "tags": [
                     "Databases"
                 ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "database name",
+                        "name": "name",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
                 "responses": {
                     "201": {
                         "description": "Created",

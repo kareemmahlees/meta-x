@@ -62,6 +62,12 @@ paths:
       - Databases
     post:
       description: create database
+      parameters:
+      - description: database name
+        in: path
+        name: name
+        required: true
+        type: string
       responses:
         "201":
           description: Created
