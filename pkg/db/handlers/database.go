@@ -3,7 +3,7 @@ package handlers
 import (
 	"fmt"
 
-	"github.com/gofiber/fiber/v2/log"
+	"github.com/charmbracelet/log"
 	"github.com/jmoiron/sqlx"
 )
 

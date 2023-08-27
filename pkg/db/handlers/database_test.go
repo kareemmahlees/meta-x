@@ -1,10 +1,10 @@
 package handlers
 
 import (
+	"log"
 	"os"
 	"testing"
 
-	"github.com/gofiber/fiber/v2/log"
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	"github.com/kareemmahlees/mysql-meta/pkg/db"
@@ -20,7 +20,7 @@ func TestMain(m *testing.M){
 	}
 	con,err =db.InitDBConn()
 	if err != nil {
-		log.Error(err)
+		log.Fatal(err)
 	}
 	defer con.Close()
 
