@@ -70,10 +70,6 @@ func main() {
 	routes.Setup(app, con)
 
 	fmt.Println(RestStyle.Render("REST"), fmt.Sprintf("http://localhost:%d", port))
-	fmt.Println(SwaggerDocsStyle.Render("Swagger"), fmt.Sprintf("http://localhost:%d/swagger", port))
-	fmt.Println(GraphQLStyle.Render("GraphQL"), fmt.Sprintf("http://localhost:%d/graph\n", port))
-
-	fmt.Println(RestStyle.Render("REST"), fmt.Sprintf("http://localhost:%d", port))
 	fmt.Println(SwaggerDocsStyle.Render("SWAGGER"), fmt.Sprintf("http://localhost:%d/swagger", port))
 	fmt.Println(GraphQLStyle.Render("GraphQL"), fmt.Sprintf("http://localhost:%d/graph\n", port))
 	err := app.Listen(fmt.Sprintf(":%d", port))
