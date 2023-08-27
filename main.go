@@ -19,11 +19,8 @@ import (
 var con *sqlx.DB
 
 func init() {
-	err := godotenv.Load()
-	if err != nil {
-		log.Error("Error loading .env file")
-	}
-	con, err = db.InitDBConn()
+	_ = godotenv.Load()
+	con, err := db.InitDBConn()
 	if err != nil {
 		log.Error("Error connecting to DB")
 	}
@@ -50,13 +47,13 @@ var SwaggerDocsStyle = lipgloss.NewStyle().
 	Background(lipgloss.Color("#0EEBA1")).
 	MarginTop(1)
 
-//	@title			MySQL Meta
-//	@version		1.0
-//	@description	A RESTFull and GraphQL API to manage your MySQL DB
-//	@contact.name	Kareem Ebrahim
-//	@contact.email	kareemmahlees@gmail.com
-//	@host			localhost:4000
-//	@BasePath		/
+// @title			MySQL Meta
+// @version		1.0
+// @description	A RESTFull and GraphQL API to manage your MySQL DB
+// @contact.name	Kareem Ebrahim
+// @contact.email	kareemmahlees@gmail.com
+// @host			localhost:4000
+// @BasePath		/
 func main() {
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
@@ -80,9 +77,9 @@ func main() {
 		port = "4000"
 
 		fmt.Println(RestStyle.Render("REST"), fmt.Sprintf("http://localhost:%s", port))
-		fmt.Println(SwaggerDocsStyle.Render("SWAGGER"),fmt.Sprintf("http://localhost:%s/swagger", port))
+		fmt.Println(SwaggerDocsStyle.Render("SWAGGER"), fmt.Sprintf("http://localhost:%s/swagger", port))
 		fmt.Println(GraphQLStyle.Render("GraphQL"), fmt.Sprintf("http://localhost:%s/graph\n", port))
-		err :=app.Listen(fmt.Sprintf(":%s", port))
+		err := app.Listen(fmt.Sprintf(":%s", port))
 		if err != nil {
 			log.Error(err)
 		}
