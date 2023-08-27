@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"os"
 
+	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -15,41 +16,62 @@ import (
 	"github.com/kareemmahlees/mysql-meta/pkg/routes"
 )
 
-var DB *sqlx.DB
+var con *sqlx.DB
 
-func init(){
+func init() {
 	err := godotenv.Load()
 	if err != nil {
 		log.Error("Error loading .env file")
 	}
-	DB,err = db.InitDBConn()
+	con, err = db.InitDBConn()
 	if err != nil {
 		log.Error("Error connecting to DB")
 	}
-	if err := DB.Ping(); err!=nil{
+	if err := con.Ping(); err != nil {
 		log.Error("Something wrong with DB" + err.Error())
 	}
 }
 
+var RestStyle = lipgloss.NewStyle().
+	Bold(true).
+	Foreground(lipgloss.Color("#ffffff")).
+	Background(lipgloss.Color("#0EEBA1")).
+	MarginTop(1)
+
+var GraphQLStyle = lipgloss.NewStyle().
+	Bold(true).
+	Foreground(lipgloss.Color("#ffffff")).
+	Background(lipgloss.Color("#FF70FD")).
+	MarginTop(1)
+
 //	@title			MySQL Meta
 //	@version		1.0
-//	@description	A RESTFull and GraphQL API to manage your MySQL DB 
+//	@description	A RESTFull and GraphQL API to manage your MySQL DB
 //	@contact.name	Kareem Ebrahim
 //	@contact.email	kareemmahlees@gmail.com
 //	@host			localhost:4000
 //	@BasePath		/
 func main() {
-	app := fiber.New()
-	defer DB.Close()
+	app := fiber.New(fiber.Config{
+		DisableStartupMessage: true,
+	})
+	defer con.Close()
 
-	app.Get("/swagger/*", swagger.HandlerDefault) 
+	app.Get("/swagger/*", swagger.HandlerDefault)
 	app.Use(logger.New())
 
-	routes.Setup(app,DB)
+	routes.Setup(app, con)
 
-	port,exists := os.LookupEnv("PORT")
-	if (exists){
-		app.Listen(fmt.Sprintf(":%s",port))
+	var port string
+	var exists bool
+	port, exists = os.LookupEnv("PORT")
+	if exists {
+		app.Listen(fmt.Sprintf(":%s", port))
+	} else {
+		port = "4000"
+
+		fmt.Println(RestStyle.Render("REST"), fmt.Sprintf("http://localhost:%s", port))
+		fmt.Println(GraphQLStyle.Render("GraphQL"), fmt.Sprintf("http://localhost:%s/graph\n", port))
+		app.Listen(fmt.Sprintf(":%s", port))
 	}
-	app.Listen(":4000")
 }
