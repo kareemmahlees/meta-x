@@ -66,12 +66,18 @@ func main() {
 	var exists bool
 	port, exists = os.LookupEnv("PORT")
 	if exists {
-		app.Listen(fmt.Sprintf(":%s", port))
+		err := app.Listen(fmt.Sprintf(":%s", port))
+		if err != nil {
+			log.Error(err)
+		}
 	} else {
 		port = "4000"
 
 		fmt.Println(RestStyle.Render("REST"), fmt.Sprintf("http://localhost:%s", port))
 		fmt.Println(GraphQLStyle.Render("GraphQL"), fmt.Sprintf("http://localhost:%s/graph\n", port))
-		app.Listen(fmt.Sprintf(":%s", port))
+		err :=app.Listen(fmt.Sprintf(":%s", port))
+		if err != nil {
+			log.Error(log.ErrorLevelStyle.GetBorder())
+		}
 	}
 }
