@@ -4,7 +4,6 @@ import (
 	"flag"
 	"fmt"
 
-	"github.com/charmbracelet/lipgloss"
 	"github.com/charmbracelet/log"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -14,17 +13,19 @@ import (
 	_ "github.com/kareemmahlees/mysql-meta/docs"
 	"github.com/kareemmahlees/mysql-meta/pkg/db"
 	"github.com/kareemmahlees/mysql-meta/pkg/routes"
+	"github.com/kareemmahlees/mysql-meta/utils"
 )
 
 var con *sqlx.DB
 var port int
+var err error
 
 func init() {
 	flag.IntVar(&port, "port", 4000, "port to listen on")
 	flag.Parse()
 
 	_ = godotenv.Load()
-	con, err := db.InitDBConn()
+	con, err = db.InitDBConn()
 	if err != nil {
 		log.Error("Error connecting to DB")
 	}
@@ -32,24 +33,6 @@ func init() {
 		log.Error("Something wrong with DB" + err.Error())
 	}
 }
-
-var RestStyle = lipgloss.NewStyle().
-	Bold(true).
-	Foreground(lipgloss.Color("#FFFFFF")).
-	Background(lipgloss.Color("#4B87FF")).
-	MarginTop(1)
-
-var GraphQLStyle = lipgloss.NewStyle().
-	Bold(true).
-	Foreground(lipgloss.Color("#FFFFFF")).
-	Background(lipgloss.Color("#FF70FD")).
-	MarginTop(1)
-
-var SwaggerDocsStyle = lipgloss.NewStyle().
-	Bold(true).
-	Foreground(lipgloss.Color("#FFFFFF")).
-	Background(lipgloss.Color("#0EEBA1")).
-	MarginTop(1)
 
 // @title			MySQL Meta
 // @version		1.0
@@ -69,12 +52,11 @@ func main() {
 
 	routes.Setup(app, con)
 
-	fmt.Println(RestStyle.Render("REST"), fmt.Sprintf("http://localhost:%d", port))
-	fmt.Println(SwaggerDocsStyle.Render("Swagger"), fmt.Sprintf("http://localhost:%d/swagger", port))
-	fmt.Println(GraphQLStyle.Render("GraphQL"), fmt.Sprintf("http://localhost:%d/graph\n", port))
+	fmt.Println(utils.NewStyle("REST", "#4B87FF"), fmt.Sprintf("http://localhost:%d", port))
+	fmt.Println(utils.NewStyle("Swagger", "#0EEBA1"), fmt.Sprintf("http://localhost:%d/swagger", port))
+	fmt.Println(utils.NewStyle("GraphQl", "#FF70FD"), fmt.Sprintf("http://localhost:%d/graph\n", port))
 
-	err := app.Listen(fmt.Sprintf(":%d", port))
-	if err != nil {
+	if err := app.Listen(fmt.Sprintf(":%d", port)); err != nil {
 		log.Error(err)
 	}
 }
