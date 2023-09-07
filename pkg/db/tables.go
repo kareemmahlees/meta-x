@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"strings"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/kareemmahlees/mysql-meta/lib"
@@ -17,7 +18,7 @@ func ListTables(db *sqlx.DB, dbName string) (result []string, err error) {
 		return nil, err
 	}
 
-	var tables []string
+	var tables = []string{}
 	for rows.Next() {
 		var table string
 		err := rows.Scan(&table)
@@ -34,7 +35,7 @@ var dataTypesMappings = map[string]string{
 	"number": "int",
 }
 
-func CreateTable(db *sqlx.DB, dbName string, tableName string, payload map[string]lib.TablePropsValidator) (result int64, err error) {
+func CreateTable(db *sqlx.DB, dbName string, tableName string, payload map[string]lib.CreateTableProps) (result int64, err error) {
 	_, err = db.Queryx(fmt.Sprintf("USE %s", dbName))
 	if err != nil {
 		return 0, err
@@ -69,4 +70,39 @@ func CreateTable(db *sqlx.DB, dbName string, tableName string, payload map[strin
 		return 0, err
 	}
 	return res.LastInsertId()
+}
+
+func UpdateTable(db *sqlx.DB, tableName string, payload lib.UpdateTableProps) error {
+	dataString := ""
+	switch payload.Opertaion.Type {
+	case "add":
+		for col, dataType := range payload.Opertaion.Data.(map[string]interface{}) {
+			dataString += fmt.Sprintf("ADD %s %s,\n", col, dataType)
+		}
+	case "modify":
+		for col, dataType := range payload.Opertaion.Data.(map[string]interface{}) {
+			dataString += fmt.Sprintf("MODIFY COLUMN %s %s,\n", col, dataType)
+		}
+	case "delete":
+		for _, col := range payload.Opertaion.Data.([]interface{}) {
+			dataString += fmt.Sprintf("DROP COLUMN %s,\n", col)
+		}
+	}
+	dataString, _ = strings.CutSuffix(dataString, ",\n")
+	_, err := db.Exec(fmt.Sprintf(`
+	ALTER TABLE %s 
+		%s
+	`, tableName, dataString))
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteTable(db *sqlx.DB, tableName string) error {
+	_, err := db.Exec(fmt.Sprintf(`DROP TABLE %s`, tableName))
+	if err != nil {
+		return err
+	}
+	return nil
 }
