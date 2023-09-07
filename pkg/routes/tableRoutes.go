@@ -10,14 +10,14 @@ import (
 
 func RegisterTablesRoutes(app *fiber.App, db *sqlx.DB) {
 	tableGroup := app.Group("tables")
-	tableGroup.Get("/:dbName", utils.RouteHandler(db, handleListTables))
-	tableGroup.Post("/:dbName/:tableName", utils.RouteHandler(db, handleCreateTable))
+	tableGroup.Get("/", utils.RouteHandler(db, handleListTables))
+	tableGroup.Post("/:tableName", utils.RouteHandler(db, handleCreateTable))
 	tableGroup.Delete("/:tableName", utils.RouteHandler(db, handleDeleteTable))
 	tableGroup.Put("/:tableName", utils.RouteHandler(db, handleUpdateTable))
 }
 
 func handleListTables(c *fiber.Ctx, db *sqlx.DB) error {
-	tables, err := db_handlers.ListTables(db, c.Params("dbName"))
+	tables, err := db_handlers.ListTables(db)
 	if err != nil {
 		return c.JSON(lib.ResponseError500(err.Error()))
 	}
@@ -25,6 +25,9 @@ func handleListTables(c *fiber.Ctx, db *sqlx.DB) error {
 }
 
 func handleCreateTable(c *fiber.Ctx, db *sqlx.DB) error {
+	if err := lib.ValidateVar(c.Params("tableName"), "required,alpha"); err != nil {
+		return c.JSON(lib.ResponseError400(err.Error()))
+	}
 	var payload map[string]lib.CreateTableProps
 	if err := c.BodyParser(&payload); err != nil {
 		return c.JSON(lib.ResponseError500(err.Error()))
@@ -35,7 +38,7 @@ func handleCreateTable(c *fiber.Ctx, db *sqlx.DB) error {
 			return c.Status(400).JSON(lib.ResponseError400(errs))
 		}
 	}
-	_, err := db_handlers.CreateTable(db, c.Params("dbName"), c.Params("tableName"), payload)
+	err := db_handlers.CreateTable(db, c.Params("tableName"), payload)
 	if err != nil {
 		return c.JSON(lib.ResponseError500(err.Error()))
 	}

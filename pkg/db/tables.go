@@ -8,11 +8,7 @@ import (
 	"github.com/kareemmahlees/mysql-meta/lib"
 )
 
-func ListTables(db *sqlx.DB, dbName string) (result []string, err error) {
-	_, err = db.Queryx(fmt.Sprintf("use %s", dbName))
-	if err != nil {
-		return nil, err
-	}
+func ListTables(db *sqlx.DB) (result []string, err error) {
 	rows, err := db.Queryx("show tables")
 	if err != nil {
 		return nil, err
@@ -35,11 +31,7 @@ var dataTypesMappings = map[string]string{
 	"number": "int",
 }
 
-func CreateTable(db *sqlx.DB, dbName string, tableName string, payload map[string]lib.CreateTableProps) (result int64, err error) {
-	_, err = db.Queryx(fmt.Sprintf("USE %s", dbName))
-	if err != nil {
-		return 0, err
-	}
+func CreateTable(db *sqlx.DB, tableName string, payload map[string]lib.CreateTableProps) error {
 	// this long solution is made because placeholders "?" can't
 	// be used for db, table or column names
 	dataString := ""
@@ -67,9 +59,11 @@ func CreateTable(db *sqlx.DB, dbName string, tableName string, payload map[strin
 	)
 	`, tableName, dataString))
 	if err != nil {
-		return 0, err
+		return err
 	}
-	return res.LastInsertId()
+	_, err = res.LastInsertId()
+	return err
+
 }
 
 func UpdateTable(db *sqlx.DB, tableName string, payload lib.UpdateTableProps) error {

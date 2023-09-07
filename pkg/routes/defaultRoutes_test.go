@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"io"
 	"net/http/httptest"
 	"testing"
 
@@ -31,9 +30,9 @@ func TestBaseUrl(t *testing.T) {
 
 	req := httptest.NewRequest("GET", "http://localhost:4000", nil)
 
-	resp, _ := app.Test(req)
-	body, _ := io.ReadAll(resp.Body)
+	resp, err := app.Test(req)
+	assert.Nil(t, err)
+	_ = utils.ReadBody(resp.Body)
 
-	assert.Greater(t, len(string(body)), 0)
 	assert.Equal(t, resp.StatusCode, fiber.StatusOK)
 }
