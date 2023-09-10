@@ -9,7 +9,7 @@ type CreateTableProps struct {
 
 type UpdateTableProps struct {
 	Opertaion struct {
-		Type string      `json:"type" validate:"required,alpha,oneof=add modify delete"`
+		Type string      `json:"type" validate:"required,alpha,oneof=add modify delete" enums:"add,modify,delete"`
 		Data interface{} `json:"data" validate:"required,notEmpty,updateTableData"`
 	} `json:"operation" validate:"required"`
 }

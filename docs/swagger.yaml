@@ -1,18 +1,38 @@
 basePath: /
 definitions:
-  databases.HandleCreateDatabaseResult:
+  lib.CreateTableProps:
     properties:
-      created:
-        type: integer
+      default: {}
+      nullable: {}
+      type:
+        enum:
+        - text
+        - number
+        - date
+        type: string
+      unique: {}
+    required:
+    - type
     type: object
-  databases.HandleListDatabasesResult:
+  lib.UpdateTableProps:
     properties:
-      databases:
-        items:
-          type: string
-        type: array
+      operation:
+        properties:
+          data: {}
+          type:
+            enum:
+            - add
+            - modify
+            - delete
+            type: string
+        required:
+        - data
+        - type
+        type: object
+    required:
+    - operation
     type: object
-  default_routes.APIInfoResult:
+  routes.APIInfoResult:
     properties:
       author:
         type: string
@@ -23,7 +43,41 @@ definitions:
       year:
         type: integer
     type: object
-  default_routes.HealthCheckResult:
+  routes.HandleCreateDatabaseResult:
+    properties:
+      created:
+        type: integer
+    type: object
+  routes.HandleCreateTableBody:
+    properties:
+      colName:
+        $ref: '#/definitions/lib.CreateTableProps'
+    type: object
+  routes.HandleCreateTableResp:
+    properties:
+      created:
+        type: string
+    type: object
+  routes.HandleListDatabasesResult:
+    properties:
+      databases:
+        items:
+          type: string
+        type: array
+    type: object
+  routes.HandleListTablesResp:
+    properties:
+      tables:
+        items:
+          type: string
+        type: array
+    type: object
+  routes.HandleUpdateDeleteResp:
+    properties:
+      success:
+        type: boolean
+    type: object
+  routes.HealthCheckResult:
     properties:
       date:
         type: string
@@ -46,7 +100,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/default_routes.APIInfoResult'
+            $ref: '#/definitions/routes.APIInfoResult'
       tags:
       - default
   /databases:
@@ -57,7 +111,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/databases.HandleListDatabasesResult'
+            $ref: '#/definitions/routes.HandleListDatabasesResult'
       tags:
       - Databases
     post:
@@ -72,7 +126,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/databases.HandleCreateDatabaseResult'
+            $ref: '#/definitions/routes.HandleCreateDatabaseResult'
       tags:
       - Databases
   /health:
@@ -84,7 +138,89 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/default_routes.HealthCheckResult'
+            $ref: '#/definitions/routes.HealthCheckResult'
       tags:
       - default
+  /tables:
+    get:
+      description: list tables
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/routes.HandleListTablesResp'
+      tags:
+      - Tables
+  /tables/{tableName}:
+    delete:
+      consumes:
+      - application/json
+      parameters:
+      - description: table name
+        in: path
+        name: tableName
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/routes.HandleUpdateDeleteResp'
+      tags:
+      - Tables
+    post:
+      consumes:
+      - application/json
+      description: create table
+      parameters:
+      - description: table name
+        in: path
+        name: tableName
+        required: true
+        type: string
+      - description: create table data
+        in: body
+        name: tableData
+        required: true
+        schema:
+          $ref: '#/definitions/routes.HandleCreateTableBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/routes.HandleCreateTableResp'
+      tags:
+      - Tables
+    put:
+      consumes:
+      - application/json
+      - application/json
+      description: update table
+      parameters:
+      - description: table name
+        in: path
+        name: tableName
+        required: true
+        type: string
+      - description: update table data
+        in: body
+        name: tableData
+        required: true
+        schema:
+          $ref: '#/definitions/lib.UpdateTableProps'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/routes.HandleUpdateDeleteResp'
+      tags:
+      - Tables
 swagger: "2.0"
