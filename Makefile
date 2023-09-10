@@ -8,3 +8,6 @@ testv:
 	@go test -v ./...
 test:
 	@go test ./...
+swag:
+	@swag fmt
+	@swag init

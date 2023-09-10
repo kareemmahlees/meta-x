@@ -32,7 +32,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/default_routes.APIInfoResult"
+                            "$ref": "#/definitions/routes.APIInfoResult"
                         }
                     }
                 }
@@ -50,7 +50,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/databases.HandleListDatabasesResult"
+                            "$ref": "#/definitions/routes.HandleListDatabasesResult"
                         }
                     }
                 }
@@ -73,7 +73,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/databases.HandleCreateDatabaseResult"
+                            "$ref": "#/definitions/routes.HandleCreateDatabaseResult"
                         }
                     }
                 }
@@ -92,7 +92,133 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/default_routes.HealthCheckResult"
+                            "$ref": "#/definitions/routes.HealthCheckResult"
+                        }
+                    }
+                }
+            }
+        },
+        "/tables": {
+            "get": {
+                "description": "list tables",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tables"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/routes.HandleListTablesResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/tables/{tableName}": {
+            "put": {
+                "description": "update table",
+                "consumes": [
+                    "application/json",
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tables"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "table name",
+                        "name": "tableName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "update table data",
+                        "name": "tableData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/lib.UpdateTableProps"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/routes.HandleUpdateDeleteResp"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "create table",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tables"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "table name",
+                        "name": "tableName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "create table data",
+                        "name": "tableData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/routes.HandleCreateTableBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/routes.HandleCreateTableResp"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tables"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "table name",
+                        "name": "tableName",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/routes.HandleUpdateDeleteResp"
                         }
                     }
                 }
@@ -100,26 +226,52 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "databases.HandleCreateDatabaseResult": {
+        "lib.CreateTableProps": {
             "type": "object",
+            "required": [
+                "type"
+            ],
             "properties": {
-                "created": {
-                    "type": "integer"
-                }
+                "default": {},
+                "nullable": {},
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "text",
+                        "number",
+                        "date"
+                    ]
+                },
+                "unique": {}
             }
         },
-        "databases.HandleListDatabasesResult": {
+        "lib.UpdateTableProps": {
             "type": "object",
+            "required": [
+                "operation"
+            ],
             "properties": {
-                "databases": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
+                "operation": {
+                    "type": "object",
+                    "required": [
+                        "data",
+                        "type"
+                    ],
+                    "properties": {
+                        "data": {},
+                        "type": {
+                            "type": "string",
+                            "enum": [
+                                "add",
+                                "modify",
+                                "delete"
+                            ]
+                        }
                     }
                 }
             }
         },
-        "default_routes.APIInfoResult": {
+        "routes.APIInfoResult": {
             "type": "object",
             "properties": {
                 "author": {
@@ -136,7 +288,61 @@ const docTemplate = `{
                 }
             }
         },
-        "default_routes.HealthCheckResult": {
+        "routes.HandleCreateDatabaseResult": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "integer"
+                }
+            }
+        },
+        "routes.HandleCreateTableBody": {
+            "type": "object",
+            "properties": {
+                "colName": {
+                    "$ref": "#/definitions/lib.CreateTableProps"
+                }
+            }
+        },
+        "routes.HandleCreateTableResp": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "string"
+                }
+            }
+        },
+        "routes.HandleListDatabasesResult": {
+            "type": "object",
+            "properties": {
+                "databases": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "routes.HandleListTablesResp": {
+            "type": "object",
+            "properties": {
+                "tables": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "routes.HandleUpdateDeleteResp": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "routes.HealthCheckResult": {
             "type": "object",
             "properties": {
                 "date": {
