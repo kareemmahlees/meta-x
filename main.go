@@ -34,13 +34,15 @@ func init() {
 	}
 }
 
-// @title			MySQL Meta
-// @version		1.0
-// @description	A RESTFull and GraphQL API to manage your MySQL DB
-// @contact.name	Kareem Ebrahim
-// @contact.email	kareemmahlees@gmail.com
-// @host			localhost:4000
-// @BasePath		/
+// Main
+//
+//	@title			MySQL Meta
+//	@version		1.0
+//	@description	A RESTFull and GraphQL API to manage your MySQL DB
+//	@contact.name	Kareem Ebrahim
+//	@contact.email	kareemmahlees@gmail.com
+//	@host			localhost:4000
+//	@BasePath		/
 func main() {
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
