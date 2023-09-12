@@ -8,6 +8,32 @@ import (
 	"github.com/kareemmahlees/mysql-meta/lib"
 )
 
+type tableInfoStruct struct {
+	Field   string `db:"Field" json:"field"`
+	Type    string `db:"Type" json:"type"`
+	Null    string `db:"Null" json:"null"`
+	Key     string `db:"Key" json:"key"`
+	Default any    `db:"Default" json:"default"`
+	Extra   any    `db:"Extra" json:"extra"`
+}
+
+func GetTableInfo(db *sqlx.DB, tableName string) (result []tableInfoStruct, err error) {
+	rows, err := db.Queryx(fmt.Sprintf("desc %s", tableName))
+	if err != nil {
+		return nil, err
+	}
+	var tablesDescriptions = []tableInfoStruct{}
+	for rows.Next() {
+		var tableDesc tableInfoStruct
+		err := rows.StructScan(&tableDesc)
+		if err != nil {
+			return nil, err
+		}
+		tablesDescriptions = append(tablesDescriptions, tableDesc)
+	}
+	return tablesDescriptions, nil
+}
+
 func ListTables(db *sqlx.DB) (result []string, err error) {
 	rows, err := db.Queryx("show tables")
 	if err != nil {
@@ -53,9 +79,9 @@ func CreateTable(db *sqlx.DB, tableName string, payload map[string]lib.CreateTab
 	}
 	res, err := db.Exec(fmt.Sprintf(`
 	CREATE TABLE IF NOT EXISTS %s (
-		ID int NOT NULL,
+		id int NOT NULL,
 		%s
-		PRIMARY KEY (ID)
+		PRIMARY KEY (id)
 	)
 	`, tableName, dataString))
 	if err != nil {

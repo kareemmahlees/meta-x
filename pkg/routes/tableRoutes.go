@@ -12,9 +12,21 @@ import (
 func RegisterTablesRoutes(app *fiber.App, db *sqlx.DB) {
 	tableGroup := app.Group("tables")
 	tableGroup.Get("/", utils.RouteHandler(db, handleListTables))
+	tableGroup.Get("/:tableName/describe", utils.RouteHandler(db, handeGetTableInfo))
 	tableGroup.Post("/:tableName", utils.RouteHandler(db, handleCreateTable))
 	tableGroup.Delete("/:tableName", utils.RouteHandler(db, handleDeleteTable))
 	tableGroup.Put("/:tableName", utils.RouteHandler(db, handleUpdateTable))
+}
+
+func handeGetTableInfo(c *fiber.Ctx, db *sqlx.DB) error {
+	if err := lib.ValidateVar(c.Params("tableName"), "required,alpha"); err != nil {
+		return c.JSON(lib.ResponseError400(err.Error()))
+	}
+	info, err := db_handlers.GetTableInfo(db, c.Params("tableName"))
+	if err != nil {
+		return c.JSON(lib.ResponseError500(err.Error()))
+	}
+	return c.JSON(info)
 }
 
 type HandleListTablesResp struct {
