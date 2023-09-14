@@ -2,20 +2,17 @@ package db
 
 import (
 	"log"
-	"os"
 	"testing"
 
 	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )
 
-func TestMain(m *testing.M) {
-	err := godotenv.Load("../../.env")
+func init() {
+	err := godotenv.Load("../../.env.test")
 	if err != nil {
-		log.Fatal("Error loading .env file")
+		log.Fatal(err)
 	}
-
-	os.Exit(m.Run())
 }
 
 func TestInitDBConn(t *testing.T) {
