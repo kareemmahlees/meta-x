@@ -2,3 +2,4 @@ tmp
 bin
 .env
 .env.test
+coverage
