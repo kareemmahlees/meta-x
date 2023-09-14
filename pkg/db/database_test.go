@@ -21,7 +21,8 @@ func TestListDatabases(t *testing.T) {
 		log.Fatal(err)
 	}
 	defer con.Close()
-	dbs := ListDatabases(con)
+	dbs, err := ListDatabases(con)
+	assert.Nil(t, err)
 	assert.Greater(t, len(dbs), 0)
 }
 

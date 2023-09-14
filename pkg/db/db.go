@@ -2,6 +2,7 @@ package db
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/jmoiron/sqlx"
@@ -28,6 +29,10 @@ func InitDBConn() (*sqlx.DB, error) {
 	}
 
 	db, err := sqlx.Open("mysql", cfg.FormatDSN())
+
+	db.SetConnMaxLifetime(time.Minute * 3)
+	db.SetMaxIdleConns(0)
+
 	if err != nil {
 		return nil, err
 	}

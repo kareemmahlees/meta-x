@@ -22,6 +22,7 @@ func GetTableInfo(db *sqlx.DB, tableName string) (result []tableInfoStruct, err 
 	if err != nil {
 		return nil, err
 	}
+	defer rows.Close()
 	var tablesDescriptions = []tableInfoStruct{}
 	for rows.Next() {
 		var tableDesc tableInfoStruct

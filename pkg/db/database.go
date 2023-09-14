@@ -3,23 +3,26 @@ package db
 import (
 	"fmt"
 
-	"github.com/charmbracelet/log"
 	"github.com/jmoiron/sqlx"
 )
 
-func ListDatabases(db *sqlx.DB) []string {
+func ListDatabases(db *sqlx.DB) ([]string, error) {
 
 	var dbs []string
-	rows, _ := db.Queryx("SHOW DATABASES")
+	rows, err := db.Queryx("SHOW DATABASES")
+	if err != nil {
+		return nil, err
+	}
+	defer rows.Close()
 	for rows.Next() {
 		var db string
 		err := rows.Scan(&db)
 		if err != nil {
-			log.Error(err)
+			return nil, err
 		}
 		dbs = append(dbs, db)
 	}
-	return dbs
+	return dbs, nil
 }
 
 func CreateDatabase(db *sqlx.DB, dbName string) (int, error) {

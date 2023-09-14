@@ -4,6 +4,7 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
 	_ "github.com/kareemmahlees/mysql-meta/docs"
+	"github.com/kareemmahlees/mysql-meta/lib"
 	db_handlers "github.com/kareemmahlees/mysql-meta/pkg/db"
 	"github.com/kareemmahlees/mysql-meta/utils"
 )
@@ -26,7 +27,10 @@ type HandleListDatabasesResult struct {
 //	@produce	json
 //	@success	200	{object}	HandleListDatabasesResult
 func handleListDatabases(c *fiber.Ctx, db *sqlx.DB) error {
-	dbs := db_handlers.ListDatabases(db)
+	dbs, err := db_handlers.ListDatabases(db)
+	if err != nil {
+		return c.JSON(lib.ResponseError500(err.Error()))
+	}
 	return c.JSON(fiber.Map{"databases": dbs})
 }
 
