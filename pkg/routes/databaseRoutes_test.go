@@ -32,7 +32,7 @@ func TestHandleListDatabases(t *testing.T) {
 	req := httptest.NewRequest("GET", "http://localhost:4000/databases", nil)
 
 	resp, _ := app.Test(req)
-	payload := utils.ReadBody(resp.Body)
+	payload := utils.ReadBody[map[string]any](resp.Body)
 
 	assert.Equal(t, resp.StatusCode, fiber.StatusOK)
 
@@ -54,7 +54,7 @@ func TestHandleCreateDatabase(t *testing.T) {
 	req := httptest.NewRequest("POST", "http://localhost:4000/databases/mysqlmeta", nil)
 
 	resp, _ := app.Test(req)
-	payload := utils.ReadBody(resp.Body)
+	payload := utils.ReadBody[map[string]any](resp.Body)
 
 	assert.Equal(t, resp.StatusCode, fiber.StatusCreated)
 	var foo float64

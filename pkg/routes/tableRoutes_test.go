@@ -23,6 +23,46 @@ func init() {
 	}
 }
 
+func TestHandleDescribeTable(t *testing.T) {
+	app := fiber.New()
+
+	con, err := db.InitDBConn()
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer con.Close()
+
+	RegisterTablesRoutes(app, con)
+
+	req := httptest.NewRequest("POST", "http://localhost:4000/tables/testHandleDescribeTable", strings.NewReader(`
+	{
+    "name": {
+        "type": "text",
+        "nullable": true,
+        "default": "kareem",
+        "unique": true
+    	}
+	}`))
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err := app.Test(req)
+	assert.Nil(t, err)
+
+	payload := utils.ReadBody[map[string]any](resp.Body)
+	assert.Equal(t, payload["created"], "testHandleDescribeTable")
+
+	req = httptest.NewRequest("GET", "http://localhost:4000/tables/testHandleDescribeTable/describe", nil)
+	req.Header.Set("Content-Type", "application/json")
+
+	resp, err = app.Test(req)
+	assert.Nil(t, err)
+
+	tableFields := utils.ReadBody[[]map[string]any](resp.Body)
+	fmt.Println(tableFields)
+	assert.Greater(t, len(tableFields), 0)
+	assert.Equal(t, tableFields[1]["type"], "varchar(255)")
+}
+
 func TestHandleListTables(t *testing.T) {
 	app := fiber.New()
 
@@ -36,7 +76,7 @@ func TestHandleListTables(t *testing.T) {
 	req := httptest.NewRequest("GET", "http://localhost:4000/tables", nil)
 
 	resp, _ := app.Test(req)
-	payload := utils.ReadBody(resp.Body)
+	payload := utils.ReadBody[map[string]any](resp.Body)
 
 	tables, ok := payload["tables"]
 	assert.True(t, ok)
@@ -67,13 +107,13 @@ func TestHandleCreateTable(t *testing.T) {
 	resp, err := app.Test(req)
 	assert.Nil(t, err)
 
-	payload := utils.ReadBody(resp.Body)
+	payload := utils.ReadBody[map[string]any](resp.Body)
 	assert.Equal(t, payload["created"], "testHandleCreateTable")
 
 	req = httptest.NewRequest("GET", "http://localhost:4000/tables", nil)
 
 	resp, _ = app.Test(req)
-	payload = utils.ReadBody(resp.Body)
+	payload = utils.ReadBody[map[string]any](resp.Body)
 
 	assert.Contains(t, payload["tables"], "testHandleCreateTable")
 }
@@ -114,8 +154,7 @@ func TestHandleUpdateTable(t *testing.T) {
 	var resp *http.Response
 	resp, err = app.Test(req)
 	assert.Nil(t, err)
-	payload := utils.ReadBody(resp.Body)
-	fmt.Println(payload)
+	payload := utils.ReadBody[map[string]any](resp.Body)
 	assert.True(t, payload["success"].(bool), true)
 
 	req = httptest.NewRequest("PUT", "http://localhost:4000/tables/testHandleUpdateTable", strings.NewReader(`{
@@ -130,7 +169,7 @@ func TestHandleUpdateTable(t *testing.T) {
 
 	resp, err = app.Test(req)
 	assert.Nil(t, err)
-	payload = utils.ReadBody(resp.Body)
+	payload = utils.ReadBody[map[string]any](resp.Body)
 	assert.True(t, payload["success"].(bool), true)
 
 	req = httptest.NewRequest("PUT", "http://localhost:4000/tables/testHandleUpdateTable", strings.NewReader(`{
@@ -143,7 +182,7 @@ func TestHandleUpdateTable(t *testing.T) {
 
 	resp, err = app.Test(req)
 	assert.Nil(t, err)
-	payload = utils.ReadBody(resp.Body)
+	payload = utils.ReadBody[map[string]any](resp.Body)
 	assert.True(t, payload["success"].(bool), true)
 }
 
@@ -175,6 +214,6 @@ func TestHandleDeleteTalbe(t *testing.T) {
 	resp, err := app.Test(req)
 	assert.Nil(t, err)
 
-	payload := utils.ReadBody(resp.Body)
+	payload := utils.ReadBody[map[string]any](resp.Body)
 	assert.True(t, payload["success"].(bool), true)
 }
