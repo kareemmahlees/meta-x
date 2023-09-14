@@ -4,8 +4,16 @@ import (
 	"log"
 	"testing"
 
+	"github.com/joho/godotenv"
 	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	err := godotenv.Load("../../.env.test")
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 func TestListDatabases(t *testing.T) {
 	con, err := InitDBConn()

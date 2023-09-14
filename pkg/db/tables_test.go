@@ -1,12 +1,21 @@
 package db
 
 import (
+	"log"
 	"reflect"
 	"testing"
 
+	"github.com/joho/godotenv"
 	"github.com/kareemmahlees/mysql-meta/lib"
 	"github.com/stretchr/testify/assert"
 )
+
+func init() {
+	err := godotenv.Load("../../.env.test")
+	if err != nil {
+		log.Fatal(err)
+	}
+}
 
 func TestListTable(t *testing.T) {
 	con, erro := InitDBConn()

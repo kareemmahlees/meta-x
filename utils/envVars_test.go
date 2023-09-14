@@ -9,11 +9,11 @@ import (
 
 func TestGetEnvVar(t *testing.T) {
 	os.Setenv("TEST_VAR", "test_val")
-	val,err := GetEnvVar("TEST_VAR")
-	assert.Nil(t,err)
-	assert.Equal(t,val,"test_val")
+	val, err := GetEnvVar("TEST_VAR", false)
+	assert.Nil(t, err)
+	assert.Equal(t, val, "test_val")
 
-	val,err = GetEnvVar("DOESN'T_EXIST")
-	assert.NotNil(t,err)
-	assert.Equal(t,val,"")
+	val, err = GetEnvVar("DOESN'T_EXIST", false)
+	assert.NotNil(t, err)
+	assert.Equal(t, val, "")
 }

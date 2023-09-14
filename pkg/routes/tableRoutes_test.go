@@ -1,6 +1,7 @@
 package routes
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -16,7 +17,7 @@ import (
 )
 
 func init() {
-	err := godotenv.Load("../../.env")
+	err := godotenv.Load("../../.env.test")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -114,6 +115,7 @@ func TestHandleUpdateTable(t *testing.T) {
 	resp, err = app.Test(req)
 	assert.Nil(t, err)
 	payload := utils.ReadBody(resp.Body)
+	fmt.Println(payload)
 	assert.True(t, payload["success"].(bool), true)
 
 	req = httptest.NewRequest("PUT", "http://localhost:4000/tables/testHandleUpdateTable", strings.NewReader(`{
