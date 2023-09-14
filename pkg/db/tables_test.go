@@ -17,12 +17,38 @@ func init() {
 	}
 }
 
+func TestDescribeTable(t *testing.T) {
+	con, erro := InitDBConn()
+	if erro != nil {
+		t.Fatal(erro)
+	}
+	defer con.Close()
+
+	err := CreateTable(con, "testDescribeTable", map[string]lib.CreateTableProps{"name": {
+		Type:     "varchar(255)",
+		Default:  "defaultText",
+		Unique:   true,
+		Nullable: false,
+	}})
+	assert.Nil(t, err)
+
+	result, _ := ListTables(con)
+	assert.Greater(t, len(result), 0)
+	assert.Contains(t, result, "testDescribeTable")
+
+	tableInfo, err := GetTableInfo(con, "testDescribeTable")
+	assert.Nil(t, err)
+	assert.Greater(t, len(tableInfo), 0)
+	assert.Equal(t, tableInfo[1].Type, "varchar(255)")
+}
+
 func TestListTable(t *testing.T) {
 	con, erro := InitDBConn()
 	if erro != nil {
 		t.Fatal(erro)
 	}
 	defer con.Close()
+
 	result, err := ListTables(con)
 	assert.Nil(t, err)
 	assert.IsType(t, reflect.Slice, reflect.TypeOf(result).Kind())

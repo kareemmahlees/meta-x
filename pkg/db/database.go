@@ -12,14 +12,12 @@ func ListDatabases(db *sqlx.DB) []string {
 	var dbs []string
 	rows, _ := db.Queryx("SHOW DATABASES")
 	for rows.Next() {
-		db := struct {
-			Database string `db:"Database"`
-		}{}
-		err := rows.StructScan(&db)
+		var db string
+		err := rows.Scan(&db)
 		if err != nil {
 			log.Error(err)
 		}
-		dbs = append(dbs, db.Database)
+		dbs = append(dbs, db)
 	}
 	return dbs
 }
