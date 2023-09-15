@@ -20,6 +20,7 @@ func InitDBConn() (*sqlx.DB, error) {
 		Passwd:               dbPassword,
 		DBName:               dbName,
 		Net:                  "tcp",
+		
 		AllowNativePasswords: true,
 	}
 
@@ -30,8 +31,9 @@ func InitDBConn() (*sqlx.DB, error) {
 
 	db, err := sqlx.Open("mysql", cfg.FormatDSN())
 
-	db.SetConnMaxLifetime(time.Minute * 3)
-	db.SetMaxIdleConns(0)
+	db.SetMaxIdleConns(100)
+	db.SetMaxOpenConns(100)
+	db.SetConnMaxLifetime(time.Minute * 2)
 
 	if err != nil {
 		return nil, err

@@ -40,7 +40,7 @@ func ListTables(db *sqlx.DB) (result []string, err error) {
 	if err != nil {
 		return nil, err
 	}
-
+	defer rows.Close()
 	var tables = []string{}
 	for rows.Next() {
 		var table string

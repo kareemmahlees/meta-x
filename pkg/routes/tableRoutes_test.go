@@ -1,7 +1,6 @@
 package routes
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"net/http/httptest"
@@ -58,7 +57,6 @@ func TestHandleDescribeTable(t *testing.T) {
 	assert.Nil(t, err)
 
 	tableFields := utils.ReadBody[[]map[string]any](resp.Body)
-	fmt.Println(tableFields)
 	assert.Greater(t, len(tableFields), 0)
 	assert.Equal(t, tableFields[1]["type"], "varchar(255)")
 }
@@ -161,7 +159,7 @@ func TestHandleUpdateTable(t *testing.T) {
 		"operation":{
 			"type":"modify",
 			"data":{
-				"name":"varchar(255)"
+				"name":"varchar(55)"
 			}
 		}
 	}`))
