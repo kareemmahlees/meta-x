@@ -24,6 +24,7 @@ func TestDescribeTable(t *testing.T) {
 	}
 	defer con.Close()
 
+	// create testing table
 	err := CreateTable(con, "testDescribeTable", map[string]lib.CreateTableProps{"name": {
 		Type:     "varchar(255)",
 		Default:  "defaultText",
@@ -64,6 +65,8 @@ func TestCreateTable(t *testing.T) {
 		err := DeleteTable(con, "testCreateTable")
 		assert.Nil(t, err)
 	}()
+
+	// create testing table
 	err := CreateTable(con, "testCreateTable", map[string]lib.CreateTableProps{"name": {
 		Type:     "text",
 		Default:  "defaultText",
@@ -88,6 +91,7 @@ func TestUpdateTable(t *testing.T) {
 		assert.Nil(t, err)
 	}()
 
+	// create testing table
 	err := CreateTable(con, "testUpdateTable", map[string]lib.CreateTableProps{"name": {
 		Type:     "text",
 		Default:  "defaultText",
@@ -124,6 +128,7 @@ func TestDeleteTable(t *testing.T) {
 	}
 	defer con.Close()
 
+	// create testing table
 	err := CreateTable(con, "testDeleteTable", map[string]lib.CreateTableProps{"name": {
 		Type:     "text",
 		Default:  "defaultText",

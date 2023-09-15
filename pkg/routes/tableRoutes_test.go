@@ -127,6 +127,7 @@ func TestHandleUpdateTable(t *testing.T) {
 
 	RegisterTablesRoutes(app, con)
 
+	// create testing table
 	req := httptest.NewRequest("POST", "http://localhost:4000/tables/testHandleUpdateTable", strings.NewReader(`{
 		"name":{
 			"type":"text",
@@ -152,6 +153,7 @@ func TestHandleUpdateTable(t *testing.T) {
 	var resp *http.Response
 	resp, err = app.Test(req)
 	assert.Nil(t, err)
+
 	payload := utils.ReadBody[map[string]any](resp.Body)
 	assert.True(t, payload["success"].(bool), true)
 
@@ -180,6 +182,7 @@ func TestHandleUpdateTable(t *testing.T) {
 
 	resp, err = app.Test(req)
 	assert.Nil(t, err)
+
 	payload = utils.ReadBody[map[string]any](resp.Body)
 	assert.True(t, payload["success"].(bool), true)
 }
@@ -195,6 +198,7 @@ func TestHandleDeleteTalbe(t *testing.T) {
 
 	RegisterTablesRoutes(app, con)
 
+	// create testing table
 	req := httptest.NewRequest("POST", "http://localhost:4000/tables/testHandleDeleteTable", strings.NewReader(`{
 		"name":{
 			"type":"text",
