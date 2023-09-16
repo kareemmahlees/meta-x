@@ -16,4 +16,8 @@ func TestGetEnvVar(t *testing.T) {
 	val, err = GetEnvVar("DOESN'T_EXIST", false)
 	assert.NotNil(t, err)
 	assert.Equal(t, val, "")
+
+	val ,err = GetEnvVar("SHOULDN'T_ERROR",true)
+	assert.Nil(t,err)
+	assert.Equal(t,val,"")
 }
