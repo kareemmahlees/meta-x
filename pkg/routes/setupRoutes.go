@@ -6,7 +6,7 @@ import (
 )
 
 func Setup(app *fiber.App, db *sqlx.DB) {
-	RegisterDefaultRoutes(app, db)
+	RegisterDefaultRoutes(app)
 	RegisterDatabasesRoutes(app, db)
 	RegisterTablesRoutes(app, db)
 }

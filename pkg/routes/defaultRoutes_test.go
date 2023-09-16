@@ -11,7 +11,7 @@ import (
 
 func TestHealthCheck(t *testing.T) {
 	app := fiber.New()
-	RegisterDefaultRoutes(app, nil)
+	RegisterDefaultRoutes(app)
 
 	req := httptest.NewRequest("GET", "http://localhost:4000/health", nil)
 
@@ -26,7 +26,7 @@ func TestHealthCheck(t *testing.T) {
 
 func TestBaseUrl(t *testing.T) {
 	app := fiber.New()
-	RegisterDefaultRoutes(app, nil)
+	RegisterDefaultRoutes(app)
 
 	req := httptest.NewRequest("GET", "http://localhost:4000", nil)
 

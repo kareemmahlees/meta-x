@@ -4,11 +4,10 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
-	"github.com/jmoiron/sqlx"
 	_ "github.com/kareemmahlees/mysql-meta/docs"
 )
 
-func RegisterDefaultRoutes(app *fiber.App, db *sqlx.DB) {
+func RegisterDefaultRoutes(app *fiber.App) {
 	app.Get("/health", healthCheck)
 	app.Get("/", apiInfo)
 }
