@@ -7,10 +7,12 @@ watch:
 	@air
 testv:
 	@go test -v ./...
-test:
+setup_test:
 	@docker compose up -d test
+test:
 	-@go test ./...
-	docker compose down
+cleanup_test:
+	@docker compose down
 swag:
 	@swag fmt
 	@swag init
