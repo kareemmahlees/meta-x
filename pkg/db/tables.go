@@ -95,17 +95,17 @@ func CreateTable(db *sqlx.DB, tableName string, payload map[string]lib.CreateTab
 
 func UpdateTable(db *sqlx.DB, tableName string, payload lib.UpdateTableProps) error {
 	dataString := ""
-	switch payload.Opertaion.Type {
+	switch payload.Operation.Type {
 	case "add":
-		for col, dataType := range payload.Opertaion.Data.(map[string]interface{}) {
+		for col, dataType := range payload.Operation.Data.(map[string]interface{}) {
 			dataString += fmt.Sprintf("ADD %s %s,\n", col, dataType)
 		}
 	case "modify":
-		for col, dataType := range payload.Opertaion.Data.(map[string]interface{}) {
+		for col, dataType := range payload.Operation.Data.(map[string]interface{}) {
 			dataString += fmt.Sprintf("MODIFY COLUMN %s %s,\n", col, dataType)
 		}
 	case "delete":
-		for _, col := range payload.Opertaion.Data.([]interface{}) {
+		for _, col := range payload.Operation.Data.([]interface{}) {
 			dataString += fmt.Sprintf("DROP COLUMN %s,\n", col)
 		}
 	}
