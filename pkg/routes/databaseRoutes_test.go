@@ -19,6 +19,41 @@ func init() {
 	}
 }
 
+func TestRegisterDatabaseRoutes(t *testing.T) {
+	app := fiber.New()
+
+	RegisterDatabasesRoutes(app, nil)
+
+	var routes []struct {
+		method string
+		params []string
+		path   string
+	}
+
+	for _, route := range app.GetRoutes() {
+		routes = append(routes, struct {
+			method string
+			params []string
+			path   string
+		}{
+			method: route.Method,
+			params: route.Params,
+			path:   route.Path,
+		})
+	}
+
+	assert.Contains(t, routes, struct {
+		method string
+		params []string
+		path   string
+	}{
+		method: "GET",
+		params: []string(nil),
+		path:   "/databases",
+	})
+
+}
+
 func TestHandleListDatabases(t *testing.T) {
 	app := fiber.New()
 
