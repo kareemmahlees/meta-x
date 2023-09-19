@@ -15,13 +15,35 @@ func TestReadBody(t *testing.T) {
 		"age": 123
 	}`))
 
-	result := ReadBody[map[string]any](testBody)
+	singleJsonBodyRes := ReadBody[map[string]any](testBody)
 
-	val, ok := result["name"]
+	val, ok := singleJsonBodyRes["name"]
 	assert.True(t, ok)
 	assert.Equal(t, val, "foo")
 
-	val, ok = result["age"]
+	val, ok = singleJsonBodyRes["age"]
+	assert.True(t, ok)
+	assert.Equal(t, int(val.(float64)), 123)
+
+	testBody = io.NopCloser(bytes.NewBufferString(`
+	[ 
+		{
+			"name":"foo",
+			"age" : 123
+		},
+		{
+			"name":"bar",
+			"age" : 123
+		}
+	 ]`))
+
+	listOfJsonRes := ReadBody[[]map[string]any](testBody)
+
+	val, ok = listOfJsonRes[1]["name"]
+	assert.True(t, ok)
+	assert.Equal(t, val, "bar")
+
+	val, ok = singleJsonBodyRes["age"]
 	assert.True(t, ok)
 	assert.Equal(t, int(val.(float64)), 123)
 }
