@@ -9,6 +9,42 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
+func TestRegisterDefaultRoutes(t *testing.T) {
+
+	app := fiber.New()
+
+	RegisterDefaultRoutes(app)
+
+	var routes []struct {
+		method string
+		params []string
+		path   string
+	}
+
+	for _, route := range app.GetRoutes() {
+		routes = append(routes, struct {
+			method string
+			params []string
+			path   string
+		}{
+			method: route.Method,
+			params: route.Params,
+			path:   route.Path,
+		})
+	}
+
+	assert.Contains(t, routes, struct {
+		method string
+		params []string
+		path   string
+	}{
+		method: "GET",
+		params: []string(nil),
+		path:   "/health",
+	})
+
+}
+
 func TestHealthCheck(t *testing.T) {
 	app := fiber.New()
 	RegisterDefaultRoutes(app)

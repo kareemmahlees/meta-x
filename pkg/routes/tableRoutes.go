@@ -11,7 +11,7 @@ import (
 
 func RegisterTablesRoutes(app *fiber.App, db *sqlx.DB) {
 	tableGroup := app.Group("tables")
-	tableGroup.Get("/", utils.RouteHandler(db, handleListTables))
+	tableGroup.Get("", utils.RouteHandler(db, handleListTables))
 	tableGroup.Get("/:tableName/describe", utils.RouteHandler(db, handeGetTableInfo))
 	tableGroup.Post("/:tableName", utils.RouteHandler(db, handleCreateTable))
 	tableGroup.Delete("/:tableName", utils.RouteHandler(db, handleDeleteTable))
