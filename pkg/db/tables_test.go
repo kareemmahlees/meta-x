@@ -101,22 +101,22 @@ func TestUpdateTable(t *testing.T) {
 	assert.Nil(t, err)
 
 	updateTableProps := lib.UpdateTableProps{}
-	updateTableProps.Opertaion.Type = "add"
-	updateTableProps.Opertaion.Data = map[string]any{
+	updateTableProps.Operation.Type = "add"
+	updateTableProps.Operation.Data = map[string]any{
 		"age": "int",
 	}
 	err = UpdateTable(con, "testUpdateTable", updateTableProps)
 	assert.Nil(t, err)
 
-	updateTableProps.Opertaion.Type = "modify"
-	updateTableProps.Opertaion.Data = map[string]any{
+	updateTableProps.Operation.Type = "modify"
+	updateTableProps.Operation.Data = map[string]any{
 		"name": "varchar(55)",
 	}
 	err = UpdateTable(con, "testUpdateTable", updateTableProps)
 	assert.Nil(t, err)
 
-	updateTableProps.Opertaion.Type = "delete"
-	updateTableProps.Opertaion.Data = []interface{}{"name", "age"}
+	updateTableProps.Operation.Type = "delete"
+	updateTableProps.Operation.Data = []interface{}{"name", "age"}
 	err = UpdateTable(con, "testUpdateTable", updateTableProps)
 	assert.Nil(t, err)
 }
