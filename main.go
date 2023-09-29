@@ -4,6 +4,10 @@ import (
 	"flag"
 	"fmt"
 
+	"github.com/kareemmahlees/mysql-meta/internal/graph"
+
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/charmbracelet/log"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
@@ -11,8 +15,8 @@ import (
 	"github.com/jmoiron/sqlx"
 	"github.com/joho/godotenv"
 	_ "github.com/kareemmahlees/mysql-meta/docs"
-	"github.com/kareemmahlees/mysql-meta/pkg/db"
-	"github.com/kareemmahlees/mysql-meta/pkg/routes"
+	"github.com/kareemmahlees/mysql-meta/internal/db"
+	routes "github.com/kareemmahlees/mysql-meta/internal/rest"
 	"github.com/kareemmahlees/mysql-meta/utils"
 )
 
@@ -49,6 +53,20 @@ func main() {
 	})
 	defer con.Close()
 
+	// see https://github.com/99designs/gqlgen/issues/1664#issuecomment-1616620967
+	// Create a gqlgen handler
+	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+
+	app.All("/graphql", func(c *fiber.Ctx) error {
+		utils.GraphQLHandler(h.ServeHTTP)(c)
+		return nil
+	})
+
+	app.All("/playground", func(c *fiber.Ctx) error {
+		utils.GraphQLHandler(playground.Handler("GraphQL", "/graphql"))(c)
+		return nil
+	})
+
 	app.Get("/swagger/*", swagger.HandlerDefault)
 	app.Use(logger.New())
 
@@ -56,7 +74,7 @@ func main() {
 
 	fmt.Println(utils.NewStyle("REST", "#4B87FF"), fmt.Sprintf("http://localhost:%d", port))
 	fmt.Println(utils.NewStyle("Swagger", "#0EEBA1"), fmt.Sprintf("http://localhost:%d/swagger", port))
-	fmt.Println(utils.NewStyle("GraphQl", "#FF70FD"), fmt.Sprintf("http://localhost:%d/graph\n", port))
+	fmt.Println(utils.NewStyle("GraphQl", "#FF70FD"), fmt.Sprintf("http://localhost:%d/graphql\n", port))
 
 	if err := app.Listen(fmt.Sprintf(":%d", port)); err != nil {
 		log.Error(err)
