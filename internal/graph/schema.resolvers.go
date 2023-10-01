@@ -6,19 +6,35 @@ package graph
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/kareemmahlees/mysql-meta/internal/db"
 	"github.com/kareemmahlees/mysql-meta/internal/graph/model"
 )
 
-// CreateTodo is the resolver for the createTodo field.
-func (r *mutationResolver) CreateTodo(ctx context.Context, input model.NewTodo) (*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: CreateTodo - createTodo"))
+// CreateDatabase is the resolver for the createDatabase field.
+func (r *mutationResolver) CreateDatabase(ctx context.Context, name *string) (*model.CreateDatabaseResponse, error) {
+	num,err := db.CreateDatabase(r.DB,*name)
+	if err != nil {
+		return nil, err
+	}
+	return &model.CreateDatabaseResponse{
+		Created: &num,
+	},nil
 }
 
-// Todos is the resolver for the todos field.
-func (r *queryResolver) Todos(ctx context.Context) ([]*model.Todo, error) {
-	panic(fmt.Errorf("not implemented: Todos - todos"))
+// Databases is the resolver for the databases field.
+func (r *queryResolver) Databases(ctx context.Context) ([]*string, error) {
+	dbs, err := db.ListDatabases(r.DB)
+	if err != nil {
+		return nil, err
+	}
+	var ps []*string
+	for _, v := range dbs {
+		db := v
+		ps = append(ps, &db)
+	}
+
+	return ps, nil
 }
 
 // Mutation returns MutationResolver implementation.

@@ -55,7 +55,7 @@ func main() {
 
 	// see https://github.com/99designs/gqlgen/issues/1664#issuecomment-1616620967
 	// Create a gqlgen handler
-	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{}}))
+	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{DB: con}}))
 
 	app.All("/graphql", func(c *fiber.Ctx) error {
 		utils.GraphQLHandler(h.ServeHTTP)(c)
