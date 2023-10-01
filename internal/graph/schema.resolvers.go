@@ -13,13 +13,13 @@ import (
 
 // CreateDatabase is the resolver for the createDatabase field.
 func (r *mutationResolver) CreateDatabase(ctx context.Context, name *string) (*model.CreateDatabaseResponse, error) {
-	num,err := db.CreateDatabase(r.DB,*name)
+	num, err := db.CreateDatabase(r.DB, *name)
 	if err != nil {
 		return nil, err
 	}
 	return &model.CreateDatabaseResponse{
 		Created: &num,
-	},nil
+	}, nil
 }
 
 // Databases is the resolver for the databases field.
@@ -35,6 +35,46 @@ func (r *queryResolver) Databases(ctx context.Context) ([]*string, error) {
 	}
 
 	return ps, nil
+}
+
+// Tables is the resolver for the tables field.
+func (r *queryResolver) Tables(ctx context.Context) ([]*string, error) {
+	tables, err := db.ListTables(r.DB)
+	if err != nil {
+		return nil, err
+	}
+	var ps []*string
+	for _, v := range tables {
+		table := v
+		ps = append(ps, &table)
+	}
+
+	return ps, nil
+}
+
+// Table is the resolver for the table field.
+func (r *queryResolver) Table(ctx context.Context, name *string) ([]*model.TableInfo, error) {
+	result, err := db.GetTableInfo(r.DB, *name)
+	if err != nil {
+		return nil, err
+	}
+	var tableInfo []*model.TableInfo
+	for _, info := range result {
+		field := info.Field
+		typ := info.Type
+		null := info.Null
+		key := info.Key
+		mod := &model.TableInfo{
+			Field:   &field,
+			Type:    &typ,
+			Null:    &null,
+			Key:     &key,
+			Default: info.Default,
+			Extra:   info.Extra,
+		}
+		tableInfo = append(tableInfo, mod)
+	}
+	return tableInfo, nil
 }
 
 // Mutation returns MutationResolver implementation.

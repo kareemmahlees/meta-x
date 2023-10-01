@@ -5,3 +5,12 @@ package model
 type CreateDatabaseResponse struct {
 	Created *int `json:"created,omitempty"`
 }
+
+type TableInfo struct {
+	Field   *string     `json:"field,omitempty"`
+	Type    *string     `json:"type,omitempty"`
+	Null    *string     `json:"null,omitempty"`
+	Key     *string     `json:"key,omitempty"`
+	Default interface{} `json:"default,omitempty"`
+	Extra   interface{} `json:"extra,omitempty"`
+}
