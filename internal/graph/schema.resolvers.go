@@ -9,6 +9,7 @@ import (
 
 	"github.com/kareemmahlees/mysql-meta/internal/db"
 	"github.com/kareemmahlees/mysql-meta/internal/graph/model"
+	"github.com/kareemmahlees/mysql-meta/lib"
 )
 
 // CreateDatabase is the resolver for the createDatabase field.
@@ -19,6 +20,26 @@ func (r *mutationResolver) CreateDatabase(ctx context.Context, name *string) (*m
 	}
 	return &model.CreateDatabaseResponse{
 		Created: &num,
+	}, nil
+}
+
+// CreateTable is the resolver for the createTable field.
+func (r *mutationResolver) CreateTable(ctx context.Context, name *string, props []*model.CreateTableData) (*model.CreateTableResponse, error) {
+	data := make(map[string]lib.CreateTableProps)
+	for _, col := range props {
+		data[*col.ColName] = lib.CreateTableProps{
+			Type:     *col.Props.Type,
+			Nullable: col.Props.Nullable,
+			Default:  col.Props.Default,
+			Unique:   col.Props.Unique,
+		}
+	}
+	err := db.CreateTable(r.DB, *name, data)
+	if err != nil {
+		return nil, err
+	}
+	return &model.CreateTableResponse{
+		Created: name,
 	}, nil
 }
 

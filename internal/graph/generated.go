@@ -49,8 +49,13 @@ type ComplexityRoot struct {
 		Created func(childComplexity int) int
 	}
 
+	CreateTableResponse struct {
+		Created func(childComplexity int) int
+	}
+
 	Mutation struct {
 		CreateDatabase func(childComplexity int, name *string) int
+		CreateTable    func(childComplexity int, name *string, props []*model.CreateTableData) int
 	}
 
 	Query struct {
@@ -71,6 +76,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateDatabase(ctx context.Context, name *string) (*model.CreateDatabaseResponse, error)
+	CreateTable(ctx context.Context, name *string, props []*model.CreateTableData) (*model.CreateTableResponse, error)
 }
 type QueryResolver interface {
 	Databases(ctx context.Context) ([]*string, error)
@@ -100,6 +106,13 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.CreateDatabaseResponse.Created(childComplexity), true
 
+	case "CreateTableResponse.created":
+		if e.complexity.CreateTableResponse.Created == nil {
+			break
+		}
+
+		return e.complexity.CreateTableResponse.Created(childComplexity), true
+
 	case "Mutation.createDatabase":
 		if e.complexity.Mutation.CreateDatabase == nil {
 			break
@@ -111,6 +124,18 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 		}
 
 		return e.complexity.Mutation.CreateDatabase(childComplexity, args["name"].(*string)), true
+
+	case "Mutation.createTable":
+		if e.complexity.Mutation.CreateTable == nil {
+			break
+		}
+
+		args, err := ec.field_Mutation_createTable_args(context.TODO(), rawArgs)
+		if err != nil {
+			return 0, false
+		}
+
+		return e.complexity.Mutation.CreateTable(childComplexity, args["name"].(*string), args["props"].([]*model.CreateTableData)), true
 
 	case "Query.databases":
 		if e.complexity.Query.Databases == nil {
@@ -187,7 +212,10 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	rc := graphql.GetOperationContext(ctx)
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
-	inputUnmarshalMap := graphql.BuildUnmarshalerMap()
+	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
+		ec.unmarshalInputCreateTableData,
+		ec.unmarshalInputCreateTableProps,
+	)
 	first := true
 
 	switch rc.Operation.Operation {
@@ -318,6 +346,30 @@ func (ec *executionContext) field_Mutation_createDatabase_args(ctx context.Conte
 	return args, nil
 }
 
+func (ec *executionContext) field_Mutation_createTable_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
+	var err error
+	args := map[string]interface{}{}
+	var arg0 *string
+	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+		arg0, err = ec.unmarshalOString2ᚖstring(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["name"] = arg0
+	var arg1 []*model.CreateTableData
+	if tmp, ok := rawArgs["props"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("props"))
+		arg1, err = ec.unmarshalNCreateTableData2ᚕᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateTableDataᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["props"] = arg1
+	return args, nil
+}
+
 func (ec *executionContext) field_Query___type_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
@@ -427,6 +479,47 @@ func (ec *executionContext) fieldContext_CreateDatabaseResponse_created(ctx cont
 	return fc, nil
 }
 
+func (ec *executionContext) _CreateTableResponse_created(ctx context.Context, field graphql.CollectedField, obj *model.CreateTableResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateTableResponse_created(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return obj.Created, nil
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*string)
+	fc.Result = res
+	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_CreateTableResponse_created(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "CreateTableResponse",
+		Field:      field,
+		IsMethod:   false,
+		IsResolver: false,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			return nil, errors.New("field of type String does not have child fields")
+		},
+	}
+	return fc, nil
+}
+
 func (ec *executionContext) _Mutation_createDatabase(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
 	fc, err := ec.fieldContext_Mutation_createDatabase(ctx, field)
 	if err != nil {
@@ -477,6 +570,62 @@ func (ec *executionContext) fieldContext_Mutation_createDatabase(ctx context.Con
 	}()
 	ctx = graphql.WithFieldContext(ctx, fc)
 	if fc.Args, err = ec.field_Mutation_createDatabase_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
+		ec.Error(ctx, err)
+		return fc, err
+	}
+	return fc, nil
+}
+
+func (ec *executionContext) _Mutation_createTable(ctx context.Context, field graphql.CollectedField) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_Mutation_createTable(ctx, field)
+	if err != nil {
+		return graphql.Null
+	}
+	ctx = graphql.WithFieldContext(ctx, fc)
+	defer func() {
+		if r := recover(); r != nil {
+			ec.Error(ctx, ec.Recover(ctx, r))
+			ret = graphql.Null
+		}
+	}()
+	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
+		ctx = rctx // use context from middleware stack in children
+		return ec.resolvers.Mutation().CreateTable(rctx, fc.Args["name"].(*string), fc.Args["props"].([]*model.CreateTableData))
+	})
+	if err != nil {
+		ec.Error(ctx, err)
+		return graphql.Null
+	}
+	if resTmp == nil {
+		return graphql.Null
+	}
+	res := resTmp.(*model.CreateTableResponse)
+	fc.Result = res
+	return ec.marshalOCreateTableResponse2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateTableResponse(ctx, field.Selections, res)
+}
+
+func (ec *executionContext) fieldContext_Mutation_createTable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+	fc = &graphql.FieldContext{
+		Object:     "Mutation",
+		Field:      field,
+		IsMethod:   true,
+		IsResolver: true,
+		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
+			switch field.Name {
+			case "created":
+				return ec.fieldContext_CreateTableResponse_created(ctx, field)
+			}
+			return nil, fmt.Errorf("no field named %q was found under type CreateTableResponse", field.Name)
+		},
+	}
+	defer func() {
+		if r := recover(); r != nil {
+			err = ec.Recover(ctx, r)
+			ec.Error(ctx, err)
+		}
+	}()
+	ctx = graphql.WithFieldContext(ctx, fc)
+	if fc.Args, err = ec.field_Mutation_createTable_args(ctx, field.ArgumentMap(ec.Variables)); err != nil {
 		ec.Error(ctx, err)
 		return fc, err
 	}
@@ -2779,6 +2928,100 @@ func (ec *executionContext) fieldContext___Type_specifiedByURL(ctx context.Conte
 
 // region    **************************** input.gotpl *****************************
 
+func (ec *executionContext) unmarshalInputCreateTableData(ctx context.Context, obj interface{}) (model.CreateTableData, error) {
+	var it model.CreateTableData
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"colName", "props"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "colName":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("colName"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.ColName = data
+		case "props":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("props"))
+			data, err := ec.unmarshalOCreateTableProps2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateTableProps(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Props = data
+		}
+	}
+
+	return it, nil
+}
+
+func (ec *executionContext) unmarshalInputCreateTableProps(ctx context.Context, obj interface{}) (model.CreateTableProps, error) {
+	var it model.CreateTableProps
+	asMap := map[string]interface{}{}
+	for k, v := range obj.(map[string]interface{}) {
+		asMap[k] = v
+	}
+
+	fieldsInOrder := [...]string{"type", "nullable", "default", "unique"}
+	for _, k := range fieldsInOrder {
+		v, ok := asMap[k]
+		if !ok {
+			continue
+		}
+		switch k {
+		case "type":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
+			data, err := ec.unmarshalOString2ᚖstring(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Type = data
+		case "nullable":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("nullable"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Nullable = data
+		case "default":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("default"))
+			data, err := ec.unmarshalOAny2interface(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Default = data
+		case "unique":
+			var err error
+
+			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("unique"))
+			data, err := ec.unmarshalOBoolean2ᚖbool(ctx, v)
+			if err != nil {
+				return it, err
+			}
+			it.Unique = data
+		}
+	}
+
+	return it, nil
+}
+
 // endregion **************************** input.gotpl *****************************
 
 // region    ************************** interface.gotpl ***************************
@@ -2800,6 +3043,42 @@ func (ec *executionContext) _CreateDatabaseResponse(ctx context.Context, sel ast
 			out.Values[i] = graphql.MarshalString("CreateDatabaseResponse")
 		case "created":
 			out.Values[i] = ec._CreateDatabaseResponse_created(ctx, field, obj)
+		default:
+			panic("unknown field " + strconv.Quote(field.Name))
+		}
+	}
+	out.Dispatch(ctx)
+	if out.Invalids > 0 {
+		return graphql.Null
+	}
+
+	atomic.AddInt32(&ec.deferred, int32(len(deferred)))
+
+	for label, dfs := range deferred {
+		ec.processDeferredGroup(graphql.DeferredGroup{
+			Label:    label,
+			Path:     graphql.GetPath(ctx),
+			FieldSet: dfs,
+			Context:  ctx,
+		})
+	}
+
+	return out
+}
+
+var createTableResponseImplementors = []string{"CreateTableResponse"}
+
+func (ec *executionContext) _CreateTableResponse(ctx context.Context, sel ast.SelectionSet, obj *model.CreateTableResponse) graphql.Marshaler {
+	fields := graphql.CollectFields(ec.OperationContext, sel, createTableResponseImplementors)
+
+	out := graphql.NewFieldSet(fields)
+	deferred := make(map[string]*graphql.FieldSet)
+	for i, field := range fields {
+		switch field.Name {
+		case "__typename":
+			out.Values[i] = graphql.MarshalString("CreateTableResponse")
+		case "created":
+			out.Values[i] = ec._CreateTableResponse_created(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -2845,6 +3124,10 @@ func (ec *executionContext) _Mutation(ctx context.Context, sel ast.SelectionSet)
 		case "createDatabase":
 			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
 				return ec._Mutation_createDatabase(ctx, field)
+			})
+		case "createTable":
+			out.Values[i] = ec.OperationContext.RootResolverMiddleware(innerCtx, func(ctx context.Context) (res graphql.Marshaler) {
+				return ec._Mutation_createTable(ctx, field)
 			})
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
@@ -3363,6 +3646,28 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
+func (ec *executionContext) unmarshalNCreateTableData2ᚕᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateTableDataᚄ(ctx context.Context, v interface{}) ([]*model.CreateTableData, error) {
+	var vSlice []interface{}
+	if v != nil {
+		vSlice = graphql.CoerceList(v)
+	}
+	var err error
+	res := make([]*model.CreateTableData, len(vSlice))
+	for i := range vSlice {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
+		res[i], err = ec.unmarshalNCreateTableData2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateTableData(ctx, vSlice[i])
+		if err != nil {
+			return nil, err
+		}
+	}
+	return res, nil
+}
+
+func (ec *executionContext) unmarshalNCreateTableData2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateTableData(ctx context.Context, v interface{}) (*model.CreateTableData, error) {
+	res, err := ec.unmarshalInputCreateTableData(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {
 	res, err := graphql.UnmarshalString(v)
 	return res, graphql.ErrorOnPath(ctx, err)
@@ -3678,6 +3983,21 @@ func (ec *executionContext) marshalOCreateDatabaseResponse2ᚖgithubᚗcomᚋkar
 		return graphql.Null
 	}
 	return ec._CreateDatabaseResponse(ctx, sel, v)
+}
+
+func (ec *executionContext) unmarshalOCreateTableProps2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateTableProps(ctx context.Context, v interface{}) (*model.CreateTableProps, error) {
+	if v == nil {
+		return nil, nil
+	}
+	res, err := ec.unmarshalInputCreateTableProps(ctx, v)
+	return &res, graphql.ErrorOnPath(ctx, err)
+}
+
+func (ec *executionContext) marshalOCreateTableResponse2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateTableResponse(ctx context.Context, sel ast.SelectionSet, v *model.CreateTableResponse) graphql.Marshaler {
+	if v == nil {
+		return graphql.Null
+	}
+	return ec._CreateTableResponse(ctx, sel, v)
 }
 
 func (ec *executionContext) unmarshalOInt2ᚖint(ctx context.Context, v interface{}) (*int, error) {

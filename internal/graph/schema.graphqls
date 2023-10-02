@@ -19,10 +19,27 @@ type TableInfo {
 
 type Mutation {
   createDatabase(name: String): CreateDatabaseResponse
+  createTable(name: String, props: [CreateTableData!]!): CreateTableResponse
+}
+
+input CreateTableData {
+  colName: String
+  props: CreateTableProps
+}
+
+input CreateTableProps {
+  type: String
+  nullable: Boolean
+  default: Any
+  unique: Boolean
 }
 
 type CreateDatabaseResponse {
   created: Int
+}
+
+type CreateTableResponse {
+  created: String
 }
 
 scalar Any

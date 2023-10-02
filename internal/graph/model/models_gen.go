@@ -6,6 +6,22 @@ type CreateDatabaseResponse struct {
 	Created *int `json:"created,omitempty"`
 }
 
+type CreateTableData struct {
+	ColName *string           `json:"colName,omitempty"`
+	Props   *CreateTableProps `json:"props,omitempty"`
+}
+
+type CreateTableProps struct {
+	Type     *string     `json:"type,omitempty"`
+	Nullable *bool       `json:"nullable,omitempty"`
+	Default  interface{} `json:"default,omitempty"`
+	Unique   *bool       `json:"unique,omitempty"`
+}
+
+type CreateTableResponse struct {
+	Created *string `json:"created,omitempty"`
+}
+
 type TableInfo struct {
 	Field   *string     `json:"field,omitempty"`
 	Type    *string     `json:"type,omitempty"`
