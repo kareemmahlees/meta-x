@@ -43,6 +43,19 @@ func (r *mutationResolver) CreateTable(ctx context.Context, name *string, props 
 	}, nil
 }
 
+// DeleteTable is the resolver for the deleteTable field.
+func (r *mutationResolver) DeleteTable(ctx context.Context, name *string) (*model.SuccessResponse, error) {
+	err := db.DeleteTable(r.DB, *name)
+	if err != nil {
+		return nil, err
+	}
+	var pb *bool = new(bool)
+	*pb = true
+	return &model.SuccessResponse{
+		Success: pb,
+	}, nil
+}
+
 // Databases is the resolver for the databases field.
 func (r *queryResolver) Databases(ctx context.Context) ([]*string, error) {
 	dbs, err := db.ListDatabases(r.DB)

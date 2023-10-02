@@ -22,6 +22,10 @@ type CreateTableResponse struct {
 	Created *string `json:"created,omitempty"`
 }
 
+type SuccessResponse struct {
+	Success *bool `json:"success,omitempty"`
+}
+
 type TableInfo struct {
 	Field   *string     `json:"field,omitempty"`
 	Type    *string     `json:"type,omitempty"`

@@ -20,6 +20,7 @@ type TableInfo {
 type Mutation {
   createDatabase(name: String): CreateDatabaseResponse
   createTable(name: String, props: [CreateTableData!]!): CreateTableResponse
+  deleteTable(name: String): SuccessResponse
 }
 
 input CreateTableData {
@@ -40,6 +41,10 @@ type CreateDatabaseResponse {
 
 type CreateTableResponse {
   created: String
+}
+
+type SuccessResponse {
+  success: Boolean
 }
 
 scalar Any
