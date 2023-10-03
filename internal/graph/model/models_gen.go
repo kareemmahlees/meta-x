@@ -9,6 +9,7 @@ import (
 )
 
 type CreateDatabaseResponse struct {
+	// number of created records
 	Created int `json:"created"`
 }
 
@@ -25,6 +26,7 @@ type CreateTableProps struct {
 }
 
 type CreateTableResponse struct {
+	// name of created table
 	Created string `json:"created"`
 }
 
@@ -32,6 +34,7 @@ type SuccessResponse struct {
 	Success bool `json:"success"`
 }
 
+// Table info like field name returned from table query
 type TableInfo struct {
 	Field   *string     `json:"field,omitempty"`
 	Type    *string     `json:"type,omitempty"`
@@ -46,10 +49,13 @@ type UpdateTableData struct {
 }
 
 type UpdateTableProps struct {
-	Type            UpdateTableOperationTypes `json:"type"`
-	ColumnsToDelete []*string                 `json:"columnsToDelete,omitempty"`
-	ColumnsToAdd    map[string]interface{}    `json:"columnsToAdd,omitempty"`
-	ColumnsToModify map[string]interface{}    `json:"columnsToModify,omitempty"`
+	Type UpdateTableOperationTypes `json:"type"`
+	// an array of string that must be specified if operation type is delete
+	ColumnsToDelete []*string `json:"columnsToDelete,omitempty"`
+	// a map of column name and type that must be specified if operation type is add
+	ColumnsToAdd map[string]interface{} `json:"columnsToAdd,omitempty"`
+	// a map of column name and type that must be specified if operation type is modify
+	ColumnsToModify map[string]interface{} `json:"columnsToModify,omitempty"`
 }
 
 type UpdateTableOperationTypes string
