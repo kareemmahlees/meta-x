@@ -10,21 +10,22 @@ import (
 	"github.com/kareemmahlees/mysql-meta/internal/db"
 	"github.com/kareemmahlees/mysql-meta/internal/graph/model"
 	"github.com/kareemmahlees/mysql-meta/lib"
+	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // CreateDatabase is the resolver for the createDatabase field.
-func (r *mutationResolver) CreateDatabase(ctx context.Context, name *string) (*model.CreateDatabaseResponse, error) {
-	num, err := db.CreateDatabase(r.DB, *name)
+func (r *mutationResolver) CreateDatabase(ctx context.Context, name string) (*model.CreateDatabaseResponse, error) {
+	num, err := db.CreateDatabase(r.DB, name)
 	if err != nil {
 		return nil, err
 	}
 	return &model.CreateDatabaseResponse{
-		Created: &num,
+		Created: num,
 	}, nil
 }
 
 // CreateTable is the resolver for the createTable field.
-func (r *mutationResolver) CreateTable(ctx context.Context, name *string, props []*model.CreateTableData) (*model.CreateTableResponse, error) {
+func (r *mutationResolver) CreateTable(ctx context.Context, name string, props []*model.CreateTableData) (*model.CreateTableResponse, error) {
 	data := make(map[string]lib.CreateTableProps)
 	for _, col := range props {
 		data[*col.ColName] = lib.CreateTableProps{
@@ -34,7 +35,7 @@ func (r *mutationResolver) CreateTable(ctx context.Context, name *string, props 
 			Unique:   col.Props.Unique,
 		}
 	}
-	err := db.CreateTable(r.DB, *name, data)
+	err := db.CreateTable(r.DB, name, data)
 	if err != nil {
 		return nil, err
 	}
@@ -44,15 +45,47 @@ func (r *mutationResolver) CreateTable(ctx context.Context, name *string, props 
 }
 
 // DeleteTable is the resolver for the deleteTable field.
-func (r *mutationResolver) DeleteTable(ctx context.Context, name *string) (*model.SuccessResponse, error) {
-	err := db.DeleteTable(r.DB, *name)
+func (r *mutationResolver) DeleteTable(ctx context.Context, name string) (*model.SuccessResponse, error) {
+	err := db.DeleteTable(r.DB, name)
 	if err != nil {
 		return nil, err
 	}
-	var pb *bool = new(bool)
-	*pb = true
 	return &model.SuccessResponse{
-		Success: pb,
+		Success: true,
+	}, nil
+}
+
+// UpdateTable is the resolver for the updateTable field.
+func (r *mutationResolver) UpdateTable(ctx context.Context, name string, prop *model.UpdateTableData) (*model.SuccessResponse, error) {
+	data := lib.UpdateTableProps{}
+	data.Operation.Type = string(prop.Operation.Type)
+	switch data.Operation.Type {
+	case "add":
+		if prop.Operation.ColumnsToAdd == nil {
+			return nil, gqlerror.Errorf("Operation type 'add' must specifiy 'ColumnsToAdd' field")
+		}
+		data.Operation.Data = prop.Operation.ColumnsToAdd
+	case "modify":
+		if prop.Operation.ColumnsToModify == nil {
+			return nil, gqlerror.Errorf("Operation type 'modify' must specifiy 'ColumnsToModify' field")
+		}
+		data.Operation.Data = prop.Operation.ColumnsToModify
+	case "delete":
+		if prop.Operation.ColumnsToDelete == nil {
+			return nil, gqlerror.Errorf("Operation type 'delete' must specifiy 'ColumnsToDelete' field")
+		}
+		columnstoDetel := []interface{}{}
+		for _, col := range prop.Operation.ColumnsToDelete {
+			columnstoDetel = append(columnstoDetel, *col)
+		}
+		data.Operation.Data = columnstoDetel
+	}
+	err := db.UpdateTable(r.DB, name, data)
+	if err != nil {
+		return nil, err
+	}
+	return &model.SuccessResponse{
+		Success: true,
 	}, nil
 }
 

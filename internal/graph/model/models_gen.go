@@ -2,8 +2,14 @@
 
 package model
 
+import (
+	"fmt"
+	"io"
+	"strconv"
+)
+
 type CreateDatabaseResponse struct {
-	Created *int `json:"created,omitempty"`
+	Created int `json:"created"`
 }
 
 type CreateTableData struct {
@@ -19,11 +25,11 @@ type CreateTableProps struct {
 }
 
 type CreateTableResponse struct {
-	Created *string `json:"created,omitempty"`
+	Created string `json:"created"`
 }
 
 type SuccessResponse struct {
-	Success *bool `json:"success,omitempty"`
+	Success bool `json:"success"`
 }
 
 type TableInfo struct {
@@ -33,4 +39,58 @@ type TableInfo struct {
 	Key     *string     `json:"key,omitempty"`
 	Default interface{} `json:"default,omitempty"`
 	Extra   interface{} `json:"extra,omitempty"`
+}
+
+type UpdateTableData struct {
+	Operation *UpdateTableProps `json:"operation"`
+}
+
+type UpdateTableProps struct {
+	Type            UpdateTableOperationTypes `json:"type"`
+	ColumnsToDelete []*string                 `json:"columnsToDelete,omitempty"`
+	ColumnsToAdd    map[string]interface{}    `json:"columnsToAdd,omitempty"`
+	ColumnsToModify map[string]interface{}    `json:"columnsToModify,omitempty"`
+}
+
+type UpdateTableOperationTypes string
+
+const (
+	UpdateTableOperationTypesAdd    UpdateTableOperationTypes = "add"
+	UpdateTableOperationTypesModify UpdateTableOperationTypes = "modify"
+	UpdateTableOperationTypesDelete UpdateTableOperationTypes = "delete"
+)
+
+var AllUpdateTableOperationTypes = []UpdateTableOperationTypes{
+	UpdateTableOperationTypesAdd,
+	UpdateTableOperationTypesModify,
+	UpdateTableOperationTypesDelete,
+}
+
+func (e UpdateTableOperationTypes) IsValid() bool {
+	switch e {
+	case UpdateTableOperationTypesAdd, UpdateTableOperationTypesModify, UpdateTableOperationTypesDelete:
+		return true
+	}
+	return false
+}
+
+func (e UpdateTableOperationTypes) String() string {
+	return string(e)
+}
+
+func (e *UpdateTableOperationTypes) UnmarshalGQL(v interface{}) error {
+	str, ok := v.(string)
+	if !ok {
+		return fmt.Errorf("enums must be strings")
+	}
+
+	*e = UpdateTableOperationTypes(str)
+	if !e.IsValid() {
+		return fmt.Errorf("%s is not a valid UpdateTableOperationTypes", str)
+	}
+	return nil
+}
+
+func (e UpdateTableOperationTypes) MarshalGQL(w io.Writer) {
+	fmt.Fprint(w, strconv.Quote(e.String()))
 }

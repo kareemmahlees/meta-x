@@ -1,0 +1,69 @@
+# GraphQL schema example
+#
+# https://gqlgen.com/getting-started/
+
+type Query {
+  databases: [String]
+  tables: [String]
+  table(name: String): [TableInfo]
+}
+
+type TableInfo {
+  field: String
+  type: String
+  null: String
+  key: String
+  default: Any
+  extra: Any
+}
+
+type Mutation {
+  createDatabase(name: String!): CreateDatabaseResponse
+  createTable(name: String!, props: [CreateTableData!]!): CreateTableResponse
+  deleteTable(name: String!): SuccessResponse
+  updateTable(name: String!, prop: UpdateTableData): SuccessResponse
+}
+
+input CreateTableData {
+  colName: String
+  props: CreateTableProps
+}
+
+input CreateTableProps {
+  type: String
+  nullable: Boolean
+  default: Any
+  unique: Boolean
+}
+
+input UpdateTableData {
+  operation: UpdateTableProps!
+}
+
+input UpdateTableProps {
+  type: UpdateTableOperationTypes!
+  columnsToDelete: [String]
+  columnsToAdd: Map
+  columnsToModify: Map
+}
+
+type CreateDatabaseResponse {
+  created: Int!
+}
+
+type CreateTableResponse {
+  created: String!
+}
+
+type SuccessResponse {
+  success: Boolean!
+}
+
+enum UpdateTableOperationTypes {
+  add
+  modify
+  delete
+}
+
+scalar Any
+scalar Map
