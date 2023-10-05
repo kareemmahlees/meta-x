@@ -1,7 +1,7 @@
 version: "3.2"
 services:
-  mysql-meta:
-    container_name: mysql-meta
+  mysql-meta-db:
+    container_name: mysql-meta-db
     image: mysql:latest
     restart: always
     environment:
