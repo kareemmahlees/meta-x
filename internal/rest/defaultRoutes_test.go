@@ -4,8 +4,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"meta-x/utils"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/kareemmahlees/mysql-meta/utils"
 	"github.com/stretchr/testify/assert"
 )
 

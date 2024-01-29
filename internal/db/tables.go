@@ -4,8 +4,9 @@ import (
 	"fmt"
 	"strings"
 
+	"meta-x/lib"
+
 	"github.com/jmoiron/sqlx"
-	"github.com/kareemmahlees/mysql-meta/lib"
 )
 
 type tableInfoStruct struct {

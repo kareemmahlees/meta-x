@@ -8,13 +8,13 @@ import (
 	"embed"
 	"errors"
 	"fmt"
+	"meta-x/internal/graph/model"
 	"strconv"
 	"sync"
 	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
-	"github.com/kareemmahlees/mysql-meta/internal/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -402,7 +402,7 @@ func (ec *executionContext) field_Mutation_createTable_args(ctx context.Context,
 	var arg1 []*model.CreateTableData
 	if tmp, ok := rawArgs["props"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("props"))
-		arg1, err = ec.unmarshalNCreateTableData2ᚕᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateTableDataᚄ(ctx, tmp)
+		arg1, err = ec.unmarshalNCreateTableData2ᚕᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableDataᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -441,7 +441,7 @@ func (ec *executionContext) field_Mutation_updateTable_args(ctx context.Context,
 	var arg1 *model.UpdateTableData
 	if tmp, ok := rawArgs["prop"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("prop"))
-		arg1, err = ec.unmarshalOUpdateTableData2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐUpdateTableData(ctx, tmp)
+		arg1, err = ec.unmarshalOUpdateTableData2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐUpdateTableData(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -631,7 +631,7 @@ func (ec *executionContext) _Mutation_createDatabase(ctx context.Context, field 
 	}
 	res := resTmp.(*model.CreateDatabaseResponse)
 	fc.Result = res
-	return ec.marshalOCreateDatabaseResponse2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateDatabaseResponse(ctx, field.Selections, res)
+	return ec.marshalOCreateDatabaseResponse2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateDatabaseResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createDatabase(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -687,7 +687,7 @@ func (ec *executionContext) _Mutation_createTable(ctx context.Context, field gra
 	}
 	res := resTmp.(*model.CreateTableResponse)
 	fc.Result = res
-	return ec.marshalOCreateTableResponse2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateTableResponse(ctx, field.Selections, res)
+	return ec.marshalOCreateTableResponse2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createTable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -743,7 +743,7 @@ func (ec *executionContext) _Mutation_deleteTable(ctx context.Context, field gra
 	}
 	res := resTmp.(*model.SuccessResponse)
 	fc.Result = res
-	return ec.marshalOSuccessResponse2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx, field.Selections, res)
+	return ec.marshalOSuccessResponse2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteTable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -799,7 +799,7 @@ func (ec *executionContext) _Mutation_updateTable(ctx context.Context, field gra
 	}
 	res := resTmp.(*model.SuccessResponse)
 	fc.Result = res
-	return ec.marshalOSuccessResponse2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx, field.Selections, res)
+	return ec.marshalOSuccessResponse2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_updateTable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -937,7 +937,7 @@ func (ec *executionContext) _Query_table(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.([]*model.TableInfo)
 	fc.Result = res
-	return ec.marshalOTableInfo2ᚕᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐTableInfo(ctx, field.Selections, res)
+	return ec.marshalOTableInfo2ᚕᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐTableInfo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_table(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -3197,7 +3197,7 @@ func (ec *executionContext) unmarshalInputCreateTableData(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("props"))
-			data, err := ec.unmarshalOCreateTableProps2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateTableProps(ctx, v)
+			data, err := ec.unmarshalOCreateTableProps2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableProps(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3282,7 +3282,7 @@ func (ec *executionContext) unmarshalInputUpdateTableData(ctx context.Context, o
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("operation"))
-			data, err := ec.unmarshalNUpdateTableProps2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐUpdateTableProps(ctx, v)
+			data, err := ec.unmarshalNUpdateTableProps2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐUpdateTableProps(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -3311,7 +3311,7 @@ func (ec *executionContext) unmarshalInputUpdateTableProps(ctx context.Context, 
 			var err error
 
 			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("type"))
-			data, err := ec.unmarshalNUpdateTableOperationTypes2githubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐUpdateTableOperationTypes(ctx, v)
+			data, err := ec.unmarshalNUpdateTableOperationTypes2metaᚑxᚋinternalᚋgraphᚋmodelᚐUpdateTableOperationTypes(ctx, v)
 			if err != nil {
 				return it, err
 			}
@@ -4026,7 +4026,7 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNCreateTableData2ᚕᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateTableDataᚄ(ctx context.Context, v interface{}) ([]*model.CreateTableData, error) {
+func (ec *executionContext) unmarshalNCreateTableData2ᚕᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableDataᚄ(ctx context.Context, v interface{}) ([]*model.CreateTableData, error) {
 	var vSlice []interface{}
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
@@ -4035,7 +4035,7 @@ func (ec *executionContext) unmarshalNCreateTableData2ᚕᚖgithubᚗcomᚋkaree
 	res := make([]*model.CreateTableData, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNCreateTableData2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateTableData(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNCreateTableData2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableData(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -4043,7 +4043,7 @@ func (ec *executionContext) unmarshalNCreateTableData2ᚕᚖgithubᚗcomᚋkaree
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalNCreateTableData2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateTableData(ctx context.Context, v interface{}) (*model.CreateTableData, error) {
+func (ec *executionContext) unmarshalNCreateTableData2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableData(ctx context.Context, v interface{}) (*model.CreateTableData, error) {
 	res, err := ec.unmarshalInputCreateTableData(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
@@ -4078,17 +4078,17 @@ func (ec *executionContext) marshalNString2string(ctx context.Context, sel ast.S
 	return res
 }
 
-func (ec *executionContext) unmarshalNUpdateTableOperationTypes2githubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐUpdateTableOperationTypes(ctx context.Context, v interface{}) (model.UpdateTableOperationTypes, error) {
+func (ec *executionContext) unmarshalNUpdateTableOperationTypes2metaᚑxᚋinternalᚋgraphᚋmodelᚐUpdateTableOperationTypes(ctx context.Context, v interface{}) (model.UpdateTableOperationTypes, error) {
 	var res model.UpdateTableOperationTypes
 	err := res.UnmarshalGQL(v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalNUpdateTableOperationTypes2githubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐUpdateTableOperationTypes(ctx context.Context, sel ast.SelectionSet, v model.UpdateTableOperationTypes) graphql.Marshaler {
+func (ec *executionContext) marshalNUpdateTableOperationTypes2metaᚑxᚋinternalᚋgraphᚋmodelᚐUpdateTableOperationTypes(ctx context.Context, sel ast.SelectionSet, v model.UpdateTableOperationTypes) graphql.Marshaler {
 	return v
 }
 
-func (ec *executionContext) unmarshalNUpdateTableProps2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐUpdateTableProps(ctx context.Context, v interface{}) (*model.UpdateTableProps, error) {
+func (ec *executionContext) unmarshalNUpdateTableProps2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐUpdateTableProps(ctx context.Context, v interface{}) (*model.UpdateTableProps, error) {
 	res, err := ec.unmarshalInputUpdateTableProps(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
@@ -4388,14 +4388,14 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalOCreateDatabaseResponse2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateDatabaseResponse(ctx context.Context, sel ast.SelectionSet, v *model.CreateDatabaseResponse) graphql.Marshaler {
+func (ec *executionContext) marshalOCreateDatabaseResponse2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateDatabaseResponse(ctx context.Context, sel ast.SelectionSet, v *model.CreateDatabaseResponse) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._CreateDatabaseResponse(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOCreateTableProps2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateTableProps(ctx context.Context, v interface{}) (*model.CreateTableProps, error) {
+func (ec *executionContext) unmarshalOCreateTableProps2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableProps(ctx context.Context, v interface{}) (*model.CreateTableProps, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -4403,7 +4403,7 @@ func (ec *executionContext) unmarshalOCreateTableProps2ᚖgithubᚗcomᚋkareemm
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
-func (ec *executionContext) marshalOCreateTableResponse2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐCreateTableResponse(ctx context.Context, sel ast.SelectionSet, v *model.CreateTableResponse) graphql.Marshaler {
+func (ec *executionContext) marshalOCreateTableResponse2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableResponse(ctx context.Context, sel ast.SelectionSet, v *model.CreateTableResponse) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -4474,14 +4474,14 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalOSuccessResponse2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx context.Context, sel ast.SelectionSet, v *model.SuccessResponse) graphql.Marshaler {
+func (ec *executionContext) marshalOSuccessResponse2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx context.Context, sel ast.SelectionSet, v *model.SuccessResponse) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._SuccessResponse(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOTableInfo2ᚕᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐTableInfo(ctx context.Context, sel ast.SelectionSet, v []*model.TableInfo) graphql.Marshaler {
+func (ec *executionContext) marshalOTableInfo2ᚕᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐTableInfo(ctx context.Context, sel ast.SelectionSet, v []*model.TableInfo) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -4508,7 +4508,7 @@ func (ec *executionContext) marshalOTableInfo2ᚕᚖgithubᚗcomᚋkareemmahlees
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOTableInfo2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐTableInfo(ctx, sel, v[i])
+			ret[i] = ec.marshalOTableInfo2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐTableInfo(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4522,14 +4522,14 @@ func (ec *executionContext) marshalOTableInfo2ᚕᚖgithubᚗcomᚋkareemmahlees
 	return ret
 }
 
-func (ec *executionContext) marshalOTableInfo2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐTableInfo(ctx context.Context, sel ast.SelectionSet, v *model.TableInfo) graphql.Marshaler {
+func (ec *executionContext) marshalOTableInfo2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐTableInfo(ctx context.Context, sel ast.SelectionSet, v *model.TableInfo) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._TableInfo(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalOUpdateTableData2ᚖgithubᚗcomᚋkareemmahleesᚋmysqlᚑmetaᚋinternalᚋgraphᚋmodelᚐUpdateTableData(ctx context.Context, v interface{}) (*model.UpdateTableData, error) {
+func (ec *executionContext) unmarshalOUpdateTableData2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐUpdateTableData(ctx context.Context, v interface{}) (*model.UpdateTableData, error) {
 	if v == nil {
 		return nil, nil
 	}

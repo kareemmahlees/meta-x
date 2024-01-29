@@ -5,8 +5,9 @@ import (
 	"reflect"
 	"testing"
 
+	"meta-x/lib"
+
 	"github.com/joho/godotenv"
-	"github.com/kareemmahlees/mysql-meta/lib"
 	"github.com/stretchr/testify/assert"
 )
 

@@ -3,8 +3,9 @@ package routes
 import (
 	"time"
 
+	_ "meta-x/docs"
+
 	"github.com/gofiber/fiber/v2"
-	_ "github.com/kareemmahlees/mysql-meta/docs"
 )
 
 func RegisterDefaultRoutes(app *fiber.App) {

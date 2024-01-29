@@ -6,10 +6,10 @@ package graph
 
 import (
 	"context"
+	"meta-x/internal/db"
+	"meta-x/internal/graph/model"
+	"meta-x/lib"
 
-	"github.com/kareemmahlees/mysql-meta/internal/db"
-	"github.com/kareemmahlees/mysql-meta/internal/graph/model"
-	"github.com/kareemmahlees/mysql-meta/lib"
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 

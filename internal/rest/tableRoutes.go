@@ -1,12 +1,13 @@
 package routes
 
 import (
+	_ "meta-x/docs"
+	db_handlers "meta-x/internal/db"
+	"meta-x/lib"
+	"meta-x/utils"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/kareemmahlees/mysql-meta/docs"
-	db_handlers "github.com/kareemmahlees/mysql-meta/internal/db"
-	"github.com/kareemmahlees/mysql-meta/lib"
-	"github.com/kareemmahlees/mysql-meta/utils"
 )
 
 func RegisterTablesRoutes(app *fiber.App, db *sqlx.DB) {

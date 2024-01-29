@@ -8,10 +8,11 @@ import (
 	"strings"
 	"testing"
 
+	"meta-x/internal/db"
+	"meta-x/utils"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/joho/godotenv"
-	"github.com/kareemmahlees/mysql-meta/internal/db"
-	"github.com/kareemmahlees/mysql-meta/utils"
 	"github.com/stretchr/testify/assert"
 )
 
