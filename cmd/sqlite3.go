@@ -18,7 +18,7 @@ var sqlite3Command = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		if err = internal.InitDBAndServer("sqlite", filePath, port); err != nil {
+		if err = internal.InitDBAndServer("sqlite3", filePath, port); err != nil {
 			return err
 		}
 		return nil

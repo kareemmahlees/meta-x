@@ -37,7 +37,7 @@ var err error
 //	@description	A RESTFull and GraphQL API to manage your MySQL DB
 //	@contact.name	Kareem Ebrahim
 //	@contact.email	kareemmahlees@gmail.com
-//	@host			localhost:4000
+//	@host			localhost:5522
 //	@BasePath		/
 func main() {
 	// app := fiber.New(fiber.Config{

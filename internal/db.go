@@ -21,7 +21,7 @@ func InitDBConn(provider, cfg string) (*sqlx.DB, error) {
 	// 	cfg.Addr = fmt.Sprintf("127.0.0.1:%s", dbPort)
 	// }
 
-	db, err := sqlx.Connect("sqlite3", cfg)
+	db, err := sqlx.Connect(provider, cfg)
 
 	if err != nil {
 		return nil, err

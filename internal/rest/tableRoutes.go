@@ -100,7 +100,6 @@ type HandleUpdateDeleteResp struct {
 //	@param			tableData	body	lib.UpdateTableProps	true	"update table data"
 //	@accept			json
 //	@produce		json
-//	@accept			json
 //	@success		200	{object}	HandleUpdateDeleteResp
 func handleUpdateTable(c *fiber.Ctx, db *sqlx.DB) error {
 	if err := lib.ValidateVar(c.Params("tableName"), "required,alpha"); err != nil {

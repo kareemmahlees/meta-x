@@ -15,12 +15,20 @@ import (
 
 // CreateDatabase is the resolver for the createDatabase field.
 func (r *mutationResolver) CreateDatabase(ctx context.Context, name string) (*model.CreateDatabaseResponse, error) {
-	num, err := db.CreateDatabase(r.DB, name)
+	// var rowAffected int64
+	// var err error
+
+	// switch r.Provider {
+	// case lib.SQLITE3:
+	// 	rowAffected,err = db.AttachSqliteDatabase(r.DB,)
+	// }
+
+	rowsAffected, err := db.CreatePgMysqlDatabase(r.DB, name)
 	if err != nil {
 		return nil, err
 	}
 	return &model.CreateDatabaseResponse{
-		Created: num,
+		Created: int(rowsAffected),
 	}, nil
 }
 
@@ -91,14 +99,19 @@ func (r *mutationResolver) UpdateTable(ctx context.Context, name string, prop *m
 
 // Databases is the resolver for the databases field.
 func (r *queryResolver) Databases(ctx context.Context) ([]*string, error) {
-	dbs, err := db.ListDatabases(r.DB)
+	provider := ctx.Value("provider")
+	switch provider {
+	case lib.SQLITE3:
+
+	}
+	dbs, err := db.ListDatabasesPgMySQL(r.DB, lib.PSQL)
 	if err != nil {
 		return nil, err
 	}
 	var ps []*string
 	for _, v := range dbs {
 		db := v
-		ps = append(ps, &db)
+		ps = append(ps, db)
 	}
 
 	return ps, nil

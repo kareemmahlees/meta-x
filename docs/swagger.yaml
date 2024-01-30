@@ -32,6 +32,25 @@ definitions:
     required:
     - operation
     type: object
+  models.CreateDatabaseResult:
+    properties:
+      created:
+        type: integer
+    type: object
+  models.CreatePgMySqlDBPayload:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  models.ListDatabasesResult:
+    properties:
+      databases:
+        items:
+          type: string
+        type: array
+    type: object
   routes.APIInfoResult:
     properties:
       author:
@@ -43,11 +62,6 @@ definitions:
       year:
         type: integer
     type: object
-  routes.HandleCreateDatabaseResult:
-    properties:
-      created:
-        type: integer
-    type: object
   routes.HandleCreateTableBody:
     properties:
       colName:
@@ -57,13 +71,6 @@ definitions:
     properties:
       created:
         type: string
-    type: object
-  routes.HandleListDatabasesResult:
-    properties:
-      databases:
-        items:
-          type: string
-        type: array
     type: object
   routes.HandleListTablesResp:
     properties:
@@ -82,7 +89,7 @@ definitions:
       date:
         type: string
     type: object
-host: localhost:4000
+host: localhost:5522
 info:
   contact:
     email: kareemmahlees@gmail.com
@@ -105,28 +112,35 @@ paths:
       - default
   /databases:
     get:
+      description: list databases
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/routes.HandleListDatabasesResult'
+            $ref: '#/definitions/models.ListDatabasesResult'
       tags:
       - Databases
     post:
-      description: create database
+      consumes:
+      - application/json
+      description: create pg/mysql database
       parameters:
-      - description: database name
-        in: path
-        name: name
+      - description: only supported for pg and mysql, because attached sqlite dbs
+          are temporary
+        in: body
+        name: pgMysqlDatabaseData
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/models.CreatePgMySqlDBPayload'
+      produces:
+      - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/routes.HandleCreateDatabaseResult'
+            $ref: '#/definitions/models.CreateDatabaseResult'
       tags:
       - Databases
   /health:
@@ -199,7 +213,6 @@ paths:
       - Tables
     put:
       consumes:
-      - application/json
       - application/json
       description: update table
       parameters:

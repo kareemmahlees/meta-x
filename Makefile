@@ -15,6 +15,6 @@ cleanup_test:
 	@docker compose down
 swag:
 	@swag fmt
-	@swag init
+	@swag init 
 generate:
 	@go run github.com/99designs/gqlgen generate

@@ -40,6 +40,7 @@ const docTemplate = `{
         },
         "/databases": {
             "get": {
+                "description": "list databases",
                 "produces": [
                     "application/json"
                 ],
@@ -50,30 +51,38 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/routes.HandleListDatabasesResult"
+                            "$ref": "#/definitions/models.ListDatabasesResult"
                         }
                     }
                 }
             },
             "post": {
-                "description": "create database",
+                "description": "create pg/mysql database",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
                 "tags": [
                     "Databases"
                 ],
                 "parameters": [
                     {
-                        "type": "string",
-                        "description": "database name",
-                        "name": "name",
-                        "in": "path",
-                        "required": true
+                        "description": "only supported for pg and mysql, because attached sqlite dbs are temporary",
+                        "name": "pgMysqlDatabaseData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.CreatePgMySqlDBPayload"
+                        }
                     }
                 ],
                 "responses": {
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/routes.HandleCreateDatabaseResult"
+                            "$ref": "#/definitions/models.CreateDatabaseResult"
                         }
                     }
                 }
@@ -121,7 +130,6 @@ const docTemplate = `{
             "put": {
                 "description": "update table",
                 "consumes": [
-                    "application/json",
                     "application/json"
                 ],
                 "produces": [
@@ -271,6 +279,36 @@ const docTemplate = `{
                 }
             }
         },
+        "models.CreateDatabaseResult": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "integer"
+                }
+            }
+        },
+        "models.CreatePgMySqlDBPayload": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ListDatabasesResult": {
+            "type": "object",
+            "properties": {
+                "databases": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
         "routes.APIInfoResult": {
             "type": "object",
             "properties": {
@@ -288,14 +326,6 @@ const docTemplate = `{
                 }
             }
         },
-        "routes.HandleCreateDatabaseResult": {
-            "type": "object",
-            "properties": {
-                "created": {
-                    "type": "integer"
-                }
-            }
-        },
         "routes.HandleCreateTableBody": {
             "type": "object",
             "properties": {
@@ -309,17 +339,6 @@ const docTemplate = `{
             "properties": {
                 "created": {
                     "type": "string"
-                }
-            }
-        },
-        "routes.HandleListDatabasesResult": {
-            "type": "object",
-            "properties": {
-                "databases": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 }
             }
         },
@@ -356,7 +375,7 @@ const docTemplate = `{
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
 	Version:          "1.0",
-	Host:             "localhost:4000",
+	Host:             "localhost:5522",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "MySQL Meta",

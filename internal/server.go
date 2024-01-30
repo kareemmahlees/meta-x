@@ -11,17 +11,13 @@ import (
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/logger"
 	"github.com/gofiber/swagger"
-	"github.com/jmoiron/sqlx"
 )
-
-var con *sqlx.DB
-var err error
 
 // Initializes a database connection and starts the fiber
 // server on the supplied port
 func InitDBAndServer(provider, cfg string, port int) error {
 
-	con, err = InitDBConn(provider, cfg)
+	con, err := InitDBConn(provider, cfg)
 	if err != nil {
 		// log.Error("Error connecting to DB")
 		return err
@@ -33,7 +29,7 @@ func InitDBAndServer(provider, cfg string, port int) error {
 
 	// see https://github.com/99designs/gqlgen/issues/1664#issuecomment-1616620967
 	// Create a gqlgen handler
-	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{DB: con}}))
+	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{DB: con, Provider: provider}}))
 
 	app.All("/graphql", func(c *fiber.Ctx) error {
 		utils.GraphQLHandler(h.ServeHTTP)(c)
@@ -47,6 +43,11 @@ func InitDBAndServer(provider, cfg string, port int) error {
 
 	app.Get("/swagger/*", swagger.HandlerDefault)
 	app.Use(logger.New())
+	// set the provider to pass it to other handlers
+	app.Use(func(c *fiber.Ctx) error {
+		c.Locals("provider", provider)
+		return c.Next()
+	})
 
 	routes.Setup(app, con)
 
