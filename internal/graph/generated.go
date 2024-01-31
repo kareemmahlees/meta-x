@@ -46,7 +46,7 @@ type DirectiveRoot struct {
 
 type ComplexityRoot struct {
 	CreateDatabaseResponse struct {
-		Created func(childComplexity int) int
+		Success func(childComplexity int) int
 	}
 
 	CreateTableResponse struct {
@@ -107,12 +107,12 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 	_ = ec
 	switch typeName + "." + field {
 
-	case "CreateDatabaseResponse.created":
-		if e.complexity.CreateDatabaseResponse.Created == nil {
+	case "CreateDatabaseResponse.success":
+		if e.complexity.CreateDatabaseResponse.Success == nil {
 			break
 		}
 
-		return e.complexity.CreateDatabaseResponse.Created(childComplexity), true
+		return e.complexity.CreateDatabaseResponse.Success(childComplexity), true
 
 	case "CreateTableResponse.created":
 		if e.complexity.CreateTableResponse.Created == nil {
@@ -518,8 +518,8 @@ func (ec *executionContext) field___Type_fields_args(ctx context.Context, rawArg
 
 // region    **************************** field.gotpl *****************************
 
-func (ec *executionContext) _CreateDatabaseResponse_created(ctx context.Context, field graphql.CollectedField, obj *model.CreateDatabaseResponse) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_CreateDatabaseResponse_created(ctx, field)
+func (ec *executionContext) _CreateDatabaseResponse_success(ctx context.Context, field graphql.CollectedField, obj *model.CreateDatabaseResponse) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_CreateDatabaseResponse_success(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -532,7 +532,7 @@ func (ec *executionContext) _CreateDatabaseResponse_created(ctx context.Context,
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Created, nil
+		return obj.Success, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -544,19 +544,19 @@ func (ec *executionContext) _CreateDatabaseResponse_created(ctx context.Context,
 		}
 		return graphql.Null
 	}
-	res := resTmp.(int)
+	res := resTmp.(bool)
 	fc.Result = res
-	return ec.marshalNInt2int(ctx, field.Selections, res)
+	return ec.marshalNBoolean2bool(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_CreateDatabaseResponse_created(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_CreateDatabaseResponse_success(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "CreateDatabaseResponse",
 		Field:      field,
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Int does not have child fields")
+			return nil, errors.New("field of type Boolean does not have child fields")
 		},
 	}
 	return fc, nil
@@ -642,8 +642,8 @@ func (ec *executionContext) fieldContext_Mutation_createDatabase(ctx context.Con
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "created":
-				return ec.fieldContext_CreateDatabaseResponse_created(ctx, field)
+			case "success":
+				return ec.fieldContext_CreateDatabaseResponse_success(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type CreateDatabaseResponse", field.Name)
 		},
@@ -3368,8 +3368,8 @@ func (ec *executionContext) _CreateDatabaseResponse(ctx context.Context, sel ast
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("CreateDatabaseResponse")
-		case "created":
-			out.Values[i] = ec._CreateDatabaseResponse_created(ctx, field, obj)
+		case "success":
+			out.Values[i] = ec._CreateDatabaseResponse_success(ctx, field, obj)
 			if out.Values[i] == graphql.Null {
 				out.Invalids++
 			}
@@ -4046,21 +4046,6 @@ func (ec *executionContext) unmarshalNCreateTableData2ᚕᚖmetaᚑxᚋinternal�
 func (ec *executionContext) unmarshalNCreateTableData2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableData(ctx context.Context, v interface{}) (*model.CreateTableData, error) {
 	res, err := ec.unmarshalInputCreateTableData(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) unmarshalNInt2int(ctx context.Context, v interface{}) (int, error) {
-	res, err := graphql.UnmarshalInt(v)
-	return res, graphql.ErrorOnPath(ctx, err)
-}
-
-func (ec *executionContext) marshalNInt2int(ctx context.Context, sel ast.SelectionSet, v int) graphql.Marshaler {
-	res := graphql.MarshalInt(v)
-	if res == graphql.Null {
-		if !graphql.HasFieldError(ctx, graphql.GetFieldContext(ctx)) {
-			ec.Errorf(ctx, "the requested element is null which the schema does not allow")
-		}
-	}
-	return res
 }
 
 func (ec *executionContext) unmarshalNString2string(ctx context.Context, v interface{}) (string, error) {

@@ -60,7 +60,7 @@ input UpdateTableProps {
 
 type CreateDatabaseResponse {
   "number of created records"
-  created: Int!
+  success: Boolean!
 }
 
 type CreateTableResponse {

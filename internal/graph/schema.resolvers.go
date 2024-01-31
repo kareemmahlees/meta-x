@@ -15,20 +15,12 @@ import (
 
 // CreateDatabase is the resolver for the createDatabase field.
 func (r *mutationResolver) CreateDatabase(ctx context.Context, name string) (*model.CreateDatabaseResponse, error) {
-	// var rowAffected int64
-	// var err error
-
-	// switch r.Provider {
-	// case lib.SQLITE3:
-	// 	rowAffected,err = db.AttachSqliteDatabase(r.DB,)
-	// }
-
-	rowsAffected, err := db.CreatePgMysqlDatabase(r.DB, name)
+	err := db.CreatePgMysqlDatabase(r.DB, r.Provider, name)
 	if err != nil {
 		return nil, err
 	}
 	return &model.CreateDatabaseResponse{
-		Created: int(rowsAffected),
+		Success: true,
 	}, nil
 }
 

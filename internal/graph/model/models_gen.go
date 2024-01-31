@@ -10,7 +10,7 @@ import (
 
 type CreateDatabaseResponse struct {
 	// number of created records
-	Created int `json:"created"`
+	Success bool `json:"success"`
 }
 
 type CreateTableData struct {

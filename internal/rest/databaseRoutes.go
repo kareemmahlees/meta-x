@@ -58,14 +58,14 @@ func handleCreateDatabase(c *fiber.Ctx, db *sqlx.DB) error {
 		return c.JSON(lib.ResponseError400(err))
 	}
 
-	if err := lib.ValidateStruct(payload); err != nil {
-		return c.JSON(lib.ResponseError400(err))
+	if errs := lib.ValidateStruct(payload); len(errs) > 0 {
+		return c.JSON(lib.ResponseError400(errs))
 	}
 
-	rowsAffected, err := db_handlers.CreatePgMysqlDatabase(db, payload.Name)
+	err := db_handlers.CreatePgMysqlDatabase(db, c.Locals("provider").(string), payload.Name)
 
 	if err != nil {
 		return c.Status(500).JSON(fiber.Map{"error": err})
 	}
-	return c.Status(201).JSON(fiber.Map{"created": rowsAffected})
+	return c.Status(201).JSON(fiber.Map{"success": true})
 }

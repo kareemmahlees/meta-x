@@ -14,5 +14,5 @@ type AttachSqliteDBPayload struct {
 }
 
 type CreatePgMySqlDBPayload struct {
-	Name string `json:"name" validate:"required,alpha"`
+	Name string `json:"name" validate:"required,alphanum"`
 }

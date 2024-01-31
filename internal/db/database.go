@@ -60,11 +60,19 @@ func ListDatabasesSqlite(db *sqlx.DB) ([]*string, error) {
 	return dbs, nil
 }
 
-func CreatePgMysqlDatabase(db *sqlx.DB, dbName string) (int64, error) {
-	res, err := db.Exec(fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s", dbName))
-	if err != nil {
-		return 0, err
+func CreatePgMysqlDatabase(db *sqlx.DB, provider, dbName string) error {
+	var queryString string
+
+	switch provider {
+	case lib.PSQL:
+		queryString = fmt.Sprintf("CREATE DATABASE %s", dbName)
+	case lib.MYSQL:
+		queryString = fmt.Sprintf("CREATE DATABASE IF NOT EXISTS %s", dbName)
 	}
-	num, _ := res.RowsAffected()
-	return num, nil
+
+	_, err := db.Exec(queryString)
+	if err != nil {
+		return err
+	}
+	return nil
 }
