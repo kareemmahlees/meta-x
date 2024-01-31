@@ -1,38 +1,128 @@
-package db
+package db_test
 
 import (
+	"context"
 	"log"
+	"meta-x/internal"
+	"meta-x/internal/db"
+	"meta-x/lib"
+	"meta-x/utils"
 	"testing"
 
-	"github.com/joho/godotenv"
+	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/suite"
 )
 
-func init() {
-	err := godotenv.Load("../../.env.test")
-	if err != nil {
-		log.Fatal(err)
+type DatabaseTestSuite struct {
+	suite.Suite
+	providers        []string
+	pgContainer      *utils.PostgresContainer
+	pgConnection     *sqlx.DB
+	mysqlContainer   *utils.MySQLContainer
+	mysqlConnection  *sqlx.DB
+	sqliteConnection *sqlx.DB
+	ctx              context.Context
+}
+
+func (suite *DatabaseTestSuite) getConnection(provider string) *sqlx.DB {
+	switch provider {
+	case lib.SQLITE3:
+		return suite.sqliteConnection
+	case lib.PSQL:
+		return suite.pgConnection
+	case lib.MYSQL:
+		return suite.mysqlConnection
+	default:
+		return suite.sqliteConnection
 	}
 }
 
-func TestListDatabases(t *testing.T) {
-	con, err := InitDBConn()
+func (suite *DatabaseTestSuite) SetupSuite() {
+	suite.ctx = context.Background()
+
+	var err error
+
+	suite.sqliteConnection, err = internal.InitDBConn(lib.SQLITE3, ":memory:")
 	if err != nil {
 		log.Fatal(err)
 	}
-	defer con.Close()
-	dbs, err := ListDatabases(con)
-	assert.Nil(t, err)
-	assert.Greater(t, len(dbs), 0)
+
+	pgContainer, err := utils.CreatePostgresContainer(suite.ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	suite.pgContainer = pgContainer
+	suite.pgConnection, err = internal.InitDBConn(lib.PSQL, pgContainer.ConnectionString)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	mysqlContainer, err := utils.CreateMySQLContainer(suite.ctx)
+	if err != nil {
+		log.Fatal(err)
+	}
+	suite.mysqlContainer = mysqlContainer
+	suite.mysqlConnection, err = internal.InitDBConn(lib.MYSQL, mysqlContainer.ConnectionString)
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	suite.providers = []string{lib.SQLITE3, lib.PSQL, lib.MYSQL}
 }
 
-func TestCreateDatabase(t *testing.T) {
-	con, err := InitDBConn()
-	if err != nil {
-		log.Fatal(err)
+func (suite *DatabaseTestSuite) TearDownSuite() {
+	if err := suite.pgContainer.Terminate(suite.ctx); err != nil {
+		log.Fatalf("error terminating postgres container: %s", err)
 	}
-	defer con.Close()
-	rowsAffected, err := CreateDatabase(con, "mysqlmeta")
-	assert.Nil(t, err)
-	assert.Equal(t, rowsAffected, 1)
+
+	if err := suite.mysqlContainer.Terminate(suite.ctx); err != nil {
+		log.Fatalf("error terminating mysql container: %s", err)
+	}
+	suite.sqliteConnection.Close()
+	suite.pgConnection.Close()
+	suite.mysqlConnection.Close()
+
+}
+
+func (suite *DatabaseTestSuite) TestListDatabases() {
+	t := suite.T()
+
+	for _, provider := range suite.providers {
+		con := suite.getConnection(provider)
+
+		var dbs []*string
+		var err error
+
+		switch provider {
+		case lib.SQLITE3:
+			dbs, err = db.ListDatabasesSqlite(suite.sqliteConnection)
+		case lib.PSQL, lib.MYSQL:
+			dbs, err = db.ListDatabasesPgMySQL(con, provider)
+		}
+
+		assert.Nil(t, err)
+		assert.Greater(t, len(dbs), 0)
+	}
+}
+
+func (suite *DatabaseTestSuite) TestCreateDatabase() {
+	t := suite.T()
+
+	for _, provider := range suite.providers {
+		con := suite.getConnection(provider)
+
+		var err error
+
+		switch provider {
+		case lib.PSQL, lib.MYSQL:
+			err = db.CreatePgMysqlDatabase(con, provider, "metax")
+		}
+
+		assert.Nil(t, err)
+	}
+}
+
+func TestDatabaseTestSuite(t *testing.T) {
+	suite.Run(t, new(DatabaseTestSuite))
 }
