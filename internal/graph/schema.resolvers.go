@@ -99,22 +99,23 @@ func (r *mutationResolver) UpdateTable(ctx context.Context, name string, prop *m
 
 // Databases is the resolver for the databases field.
 func (r *queryResolver) Databases(ctx context.Context) ([]*string, error) {
-	provider := ctx.Value("provider")
+	var dbs []*string
+	var err error
+
+	provider := r.Provider
 	switch provider {
 	case lib.SQLITE3:
-
+		dbs, err = db.ListDatabasesSqlite(r.DB)
+	case lib.PSQL:
+		dbs, err = db.ListDatabasesPgMySQL(r.DB, lib.PSQL)
+	case lib.MYSQL:
+		dbs, err = db.ListDatabasesPgMySQL(r.DB, lib.MYSQL)
 	}
-	dbs, err := db.ListDatabasesPgMySQL(r.DB, lib.PSQL)
 	if err != nil {
 		return nil, err
 	}
-	var ps []*string
-	for _, v := range dbs {
-		db := v
-		ps = append(ps, db)
-	}
 
-	return ps, nil
+	return dbs, nil
 }
 
 // Tables is the resolver for the tables field.

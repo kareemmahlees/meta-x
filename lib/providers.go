@@ -2,6 +2,6 @@ package lib
 
 const (
 	SQLITE3 = "sqlite3"
-	PSQL    = "psql"
+	PSQL    = "postgres"
 	MYSQL   = "mysql"
 )

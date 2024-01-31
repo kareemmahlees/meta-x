@@ -40,10 +40,10 @@ type SqliteDatabase struct {
 	Name string `json:"name" db:"name"`
 }
 
-func ListDatabasesSqlite(db *sqlx.DB) ([]*SqliteDatabase, error) {
-	dbs := []*SqliteDatabase{}
+func ListDatabasesSqlite(db *sqlx.DB) ([]*string, error) {
+	dbs := []*string{}
 
-	rows, err := db.Queryx("SELECT name,file FROM PRAGMA_DATABASE_LIST;")
+	rows, err := db.Queryx("SELECT name,file FROM PRAGMA_DATABASE_LIST")
 	if err != nil {
 		return nil, err
 	}
@@ -54,20 +54,10 @@ func ListDatabasesSqlite(db *sqlx.DB) ([]*SqliteDatabase, error) {
 		if err != nil {
 			return nil, err
 		}
-
-		dbs = append(dbs, db)
+		record := fmt.Sprintf("%s %s", db.Name, db.File)
+		dbs = append(dbs, &record)
 	}
 	return dbs, nil
-}
-
-func AttachSqliteDatabase(db *sqlx.DB, dbName, filePath string) (int64, error) {
-	res, err := db.Exec(fmt.Sprintf("ATTACH DATABASE '%s' AS %s;", filePath, dbName))
-	if err != nil {
-		return 0, err
-	}
-	fmt.Printf("%v", res)
-	num, _ := res.RowsAffected()
-	return num, nil
 }
 
 func CreatePgMysqlDatabase(db *sqlx.DB, dbName string) (int64, error) {

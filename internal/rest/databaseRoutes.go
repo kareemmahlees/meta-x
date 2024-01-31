@@ -29,11 +29,10 @@ func handleListDatabases(c *fiber.Ctx, db *sqlx.DB) error {
 
 	provider := c.Locals("provider")
 
-	switch c.Locals("provider") {
+	switch provider {
 	case lib.SQLITE3:
 		dbs, err = db_handlers.ListDatabasesSqlite(db)
-	case lib.PSQL:
-	case lib.MYSQL:
+	case lib.PSQL, lib.MYSQL:
 		dbs, err = db_handlers.ListDatabasesPgMySQL(db, provider.(string))
 	}
 
@@ -50,7 +49,7 @@ func handleListDatabases(c *fiber.Ctx, db *sqlx.DB) error {
 //	@router			/databases [post]
 //	@produce		json
 //	@accept			json
-//	@param			pgMysqlDatabaseData	body		models.CreatePgMySqlDBPayload	true	"only supported for pg and mysql, because attached sqlite dbs are temporary"
+//	@param			pg_mysql_db_data	body		models.CreatePgMySqlDBPayload	true	"only supported for pg and mysql, because attached sqlite dbs are temporary"
 //	@success		201					{object}	models.CreateDatabaseResult
 func handleCreateDatabase(c *fiber.Ctx, db *sqlx.DB) error {
 	payload := new(models.CreatePgMySqlDBPayload)

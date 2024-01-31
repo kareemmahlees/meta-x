@@ -70,7 +70,7 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "description": "only supported for pg and mysql, because attached sqlite dbs are temporary",
-                        "name": "pgMysqlDatabaseData",
+                        "name": "pg_mysql_db_data",
                         "in": "body",
                         "required": true,
                         "schema": {

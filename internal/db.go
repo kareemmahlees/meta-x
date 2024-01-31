@@ -3,6 +3,8 @@ package internal
 import (
 	_ "github.com/mattn/go-sqlite3"
 
+	_ "github.com/lib/pq"
+
 	"github.com/jmoiron/sqlx"
 )
 

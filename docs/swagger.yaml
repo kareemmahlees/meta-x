@@ -130,7 +130,7 @@ paths:
       - description: only supported for pg and mysql, because attached sqlite dbs
           are temporary
         in: body
-        name: pgMysqlDatabaseData
+        name: pg_mysql_db_data
         required: true
         schema:
           $ref: '#/definitions/models.CreatePgMySqlDBPayload'
