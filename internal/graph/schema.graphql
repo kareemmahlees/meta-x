@@ -13,19 +13,18 @@ type Query {
 
 "Table info like field name returned from table query"
 type TableInfo {
-  field: String
+  name: String
   type: String
-  null: String
-  key: String
+  nullable: String
+  key: Any
   default: Any
-  extra: Any
 }
 
 type Mutation {
   "creates a database with the specified name"
   createDatabase(name: String!): CreateDatabaseResponse
   "creates a table with the specified name"
-  createTable(name: String!, props: [CreateTableData!]!): CreateTableResponse
+  createTable(data: [CreateTableData!]!): CreateTableResponse
   "deletes the table by name"
   deleteTable(name: String!): SuccessResponse
   "updated the table by name"
@@ -34,10 +33,6 @@ type Mutation {
 
 input CreateTableData {
   colName: String
-  props: CreateTableProps
-}
-
-input CreateTableProps {
   type: String
   nullable: Boolean
   default: Any

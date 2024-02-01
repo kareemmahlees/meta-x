@@ -6,6 +6,7 @@ require (
 	github.com/99designs/gqlgen v0.17.38
 	github.com/charmbracelet/log v0.2.3
 	github.com/go-playground/validator/v10 v10.15.3
+	github.com/go-sql-driver/mysql v1.7.1
 	github.com/gofiber/fiber/v2 v2.48.0
 	github.com/gofiber/swagger v0.1.12
 	github.com/jmoiron/sqlx v1.3.5
@@ -13,6 +14,9 @@ require (
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v1.14.20
 	github.com/swaggo/swag v1.16.1
+	github.com/testcontainers/testcontainers-go v0.27.0
+	github.com/testcontainers/testcontainers-go/modules/mysql v0.27.0
+	github.com/testcontainers/testcontainers-go/modules/postgres v0.27.0
 	github.com/vektah/gqlparser/v2 v2.5.10
 )
 
@@ -36,7 +40,6 @@ require (
 	github.com/go-ole/go-ole v1.2.6 // indirect
 	github.com/go-playground/locales v0.14.1 // indirect
 	github.com/go-playground/universal-translator v0.18.1 // indirect
-	github.com/go-sql-driver/mysql v1.7.1 // indirect
 	github.com/gogo/protobuf v1.3.2 // indirect
 	github.com/golang/protobuf v1.5.3 // indirect
 	github.com/gorilla/websocket v1.5.0 // indirect
@@ -61,9 +64,6 @@ require (
 	github.com/shoenig/go-m1cpu v0.1.6 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spf13/pflag v1.0.5 // indirect
-	github.com/testcontainers/testcontainers-go v0.27.0 // indirect
-	github.com/testcontainers/testcontainers-go/modules/mysql v0.27.0 // indirect
-	github.com/testcontainers/testcontainers-go/modules/postgres v0.27.0 // indirect
 	github.com/tklauser/go-sysconf v0.3.12 // indirect
 	github.com/tklauser/numcpus v0.6.1 // indirect
 	github.com/urfave/cli/v2 v2.25.5 // indirect

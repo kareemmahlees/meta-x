@@ -1,8 +1,9 @@
-package internal
+package internal_test
 
 import (
 	"context"
 	"log"
+	"meta-x/internal"
 	"meta-x/lib"
 	"meta-x/utils"
 	"testing"
@@ -60,7 +61,7 @@ func (suite *DBTestSuite) TestInitDBConn() {
 			cfg = ":memory:"
 		}
 
-		conn, err := InitDBConn(provider, cfg)
+		conn, err := internal.InitDBConn(provider, cfg)
 
 		conn.Close()
 

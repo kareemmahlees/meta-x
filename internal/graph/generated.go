@@ -55,7 +55,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateDatabase func(childComplexity int, name string) int
-		CreateTable    func(childComplexity int, name string, props []*model.CreateTableData) int
+		CreateTable    func(childComplexity int, data []*model.CreateTableData) int
 		DeleteTable    func(childComplexity int, name string) int
 		UpdateTable    func(childComplexity int, name string, prop *model.UpdateTableData) int
 	}
@@ -71,18 +71,17 @@ type ComplexityRoot struct {
 	}
 
 	TableInfo struct {
-		Default func(childComplexity int) int
-		Extra   func(childComplexity int) int
-		Field   func(childComplexity int) int
-		Key     func(childComplexity int) int
-		Null    func(childComplexity int) int
-		Type    func(childComplexity int) int
+		Default  func(childComplexity int) int
+		Key      func(childComplexity int) int
+		Name     func(childComplexity int) int
+		Nullable func(childComplexity int) int
+		Type     func(childComplexity int) int
 	}
 }
 
 type MutationResolver interface {
 	CreateDatabase(ctx context.Context, name string) (*model.CreateDatabaseResponse, error)
-	CreateTable(ctx context.Context, name string, props []*model.CreateTableData) (*model.CreateTableResponse, error)
+	CreateTable(ctx context.Context, data []*model.CreateTableData) (*model.CreateTableResponse, error)
 	DeleteTable(ctx context.Context, name string) (*model.SuccessResponse, error)
 	UpdateTable(ctx context.Context, name string, prop *model.UpdateTableData) (*model.SuccessResponse, error)
 }
@@ -143,7 +142,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateTable(childComplexity, args["name"].(string), args["props"].([]*model.CreateTableData)), true
+		return e.complexity.Mutation.CreateTable(childComplexity, args["data"].([]*model.CreateTableData)), true
 
 	case "Mutation.deleteTable":
 		if e.complexity.Mutation.DeleteTable == nil {
@@ -209,20 +208,6 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TableInfo.Default(childComplexity), true
 
-	case "TableInfo.extra":
-		if e.complexity.TableInfo.Extra == nil {
-			break
-		}
-
-		return e.complexity.TableInfo.Extra(childComplexity), true
-
-	case "TableInfo.field":
-		if e.complexity.TableInfo.Field == nil {
-			break
-		}
-
-		return e.complexity.TableInfo.Field(childComplexity), true
-
 	case "TableInfo.key":
 		if e.complexity.TableInfo.Key == nil {
 			break
@@ -230,12 +215,19 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 
 		return e.complexity.TableInfo.Key(childComplexity), true
 
-	case "TableInfo.null":
-		if e.complexity.TableInfo.Null == nil {
+	case "TableInfo.name":
+		if e.complexity.TableInfo.Name == nil {
 			break
 		}
 
-		return e.complexity.TableInfo.Null(childComplexity), true
+		return e.complexity.TableInfo.Name(childComplexity), true
+
+	case "TableInfo.nullable":
+		if e.complexity.TableInfo.Nullable == nil {
+			break
+		}
+
+		return e.complexity.TableInfo.Nullable(childComplexity), true
 
 	case "TableInfo.type":
 		if e.complexity.TableInfo.Type == nil {
@@ -253,7 +245,6 @@ func (e *executableSchema) Exec(ctx context.Context) graphql.ResponseHandler {
 	ec := executionContext{rc, e, 0, 0, make(chan graphql.DeferredResult)}
 	inputUnmarshalMap := graphql.BuildUnmarshalerMap(
 		ec.unmarshalInputCreateTableData,
-		ec.unmarshalInputCreateTableProps,
 		ec.unmarshalInputUpdateTableData,
 		ec.unmarshalInputUpdateTableProps,
 	)
@@ -390,24 +381,15 @@ func (ec *executionContext) field_Mutation_createDatabase_args(ctx context.Conte
 func (ec *executionContext) field_Mutation_createTable_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 string
-	if tmp, ok := rawArgs["name"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
-		arg0, err = ec.unmarshalNString2string(ctx, tmp)
+	var arg0 []*model.CreateTableData
+	if tmp, ok := rawArgs["data"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
+		arg0, err = ec.unmarshalNCreateTableData2ᚕᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableDataᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["name"] = arg0
-	var arg1 []*model.CreateTableData
-	if tmp, ok := rawArgs["props"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("props"))
-		arg1, err = ec.unmarshalNCreateTableData2ᚕᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableDataᚄ(ctx, tmp)
-		if err != nil {
-			return nil, err
-		}
-	}
-	args["props"] = arg1
+	args["data"] = arg0
 	return args, nil
 }
 
@@ -676,7 +658,7 @@ func (ec *executionContext) _Mutation_createTable(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateTable(rctx, fc.Args["name"].(string), fc.Args["props"].([]*model.CreateTableData))
+		return ec.resolvers.Mutation().CreateTable(rctx, fc.Args["data"].([]*model.CreateTableData))
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -948,18 +930,16 @@ func (ec *executionContext) fieldContext_Query_table(ctx context.Context, field 
 		IsResolver: true,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
 			switch field.Name {
-			case "field":
-				return ec.fieldContext_TableInfo_field(ctx, field)
+			case "name":
+				return ec.fieldContext_TableInfo_name(ctx, field)
 			case "type":
 				return ec.fieldContext_TableInfo_type(ctx, field)
-			case "null":
-				return ec.fieldContext_TableInfo_null(ctx, field)
+			case "nullable":
+				return ec.fieldContext_TableInfo_nullable(ctx, field)
 			case "key":
 				return ec.fieldContext_TableInfo_key(ctx, field)
 			case "default":
 				return ec.fieldContext_TableInfo_default(ctx, field)
-			case "extra":
-				return ec.fieldContext_TableInfo_extra(ctx, field)
 			}
 			return nil, fmt.Errorf("no field named %q was found under type TableInfo", field.Name)
 		},
@@ -1151,8 +1131,8 @@ func (ec *executionContext) fieldContext_SuccessResponse_success(ctx context.Con
 	return fc, nil
 }
 
-func (ec *executionContext) _TableInfo_field(ctx context.Context, field graphql.CollectedField, obj *model.TableInfo) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TableInfo_field(ctx, field)
+func (ec *executionContext) _TableInfo_name(ctx context.Context, field graphql.CollectedField, obj *model.TableInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TableInfo_name(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1165,7 +1145,7 @@ func (ec *executionContext) _TableInfo_field(ctx context.Context, field graphql.
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Field, nil
+		return obj.Name, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1179,7 +1159,7 @@ func (ec *executionContext) _TableInfo_field(ctx context.Context, field graphql.
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TableInfo_field(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TableInfo_name(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TableInfo",
 		Field:      field,
@@ -1233,8 +1213,8 @@ func (ec *executionContext) fieldContext_TableInfo_type(ctx context.Context, fie
 	return fc, nil
 }
 
-func (ec *executionContext) _TableInfo_null(ctx context.Context, field graphql.CollectedField, obj *model.TableInfo) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TableInfo_null(ctx, field)
+func (ec *executionContext) _TableInfo_nullable(ctx context.Context, field graphql.CollectedField, obj *model.TableInfo) (ret graphql.Marshaler) {
+	fc, err := ec.fieldContext_TableInfo_nullable(ctx, field)
 	if err != nil {
 		return graphql.Null
 	}
@@ -1247,7 +1227,7 @@ func (ec *executionContext) _TableInfo_null(ctx context.Context, field graphql.C
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return obj.Null, nil
+		return obj.Nullable, nil
 	})
 	if err != nil {
 		ec.Error(ctx, err)
@@ -1261,7 +1241,7 @@ func (ec *executionContext) _TableInfo_null(ctx context.Context, field graphql.C
 	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
 }
 
-func (ec *executionContext) fieldContext_TableInfo_null(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
+func (ec *executionContext) fieldContext_TableInfo_nullable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TableInfo",
 		Field:      field,
@@ -1297,9 +1277,9 @@ func (ec *executionContext) _TableInfo_key(ctx context.Context, field graphql.Co
 	if resTmp == nil {
 		return graphql.Null
 	}
-	res := resTmp.(*string)
+	res := resTmp.(interface{})
 	fc.Result = res
-	return ec.marshalOString2ᚖstring(ctx, field.Selections, res)
+	return ec.marshalOAny2interface(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_TableInfo_key(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1309,7 +1289,7 @@ func (ec *executionContext) fieldContext_TableInfo_key(ctx context.Context, fiel
 		IsMethod:   false,
 		IsResolver: false,
 		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type String does not have child fields")
+			return nil, errors.New("field of type Any does not have child fields")
 		},
 	}
 	return fc, nil
@@ -1344,47 +1324,6 @@ func (ec *executionContext) _TableInfo_default(ctx context.Context, field graphq
 }
 
 func (ec *executionContext) fieldContext_TableInfo_default(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
-	fc = &graphql.FieldContext{
-		Object:     "TableInfo",
-		Field:      field,
-		IsMethod:   false,
-		IsResolver: false,
-		Child: func(ctx context.Context, field graphql.CollectedField) (*graphql.FieldContext, error) {
-			return nil, errors.New("field of type Any does not have child fields")
-		},
-	}
-	return fc, nil
-}
-
-func (ec *executionContext) _TableInfo_extra(ctx context.Context, field graphql.CollectedField, obj *model.TableInfo) (ret graphql.Marshaler) {
-	fc, err := ec.fieldContext_TableInfo_extra(ctx, field)
-	if err != nil {
-		return graphql.Null
-	}
-	ctx = graphql.WithFieldContext(ctx, fc)
-	defer func() {
-		if r := recover(); r != nil {
-			ec.Error(ctx, ec.Recover(ctx, r))
-			ret = graphql.Null
-		}
-	}()
-	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
-		ctx = rctx // use context from middleware stack in children
-		return obj.Extra, nil
-	})
-	if err != nil {
-		ec.Error(ctx, err)
-		return graphql.Null
-	}
-	if resTmp == nil {
-		return graphql.Null
-	}
-	res := resTmp.(interface{})
-	fc.Result = res
-	return ec.marshalOAny2interface(ctx, field.Selections, res)
-}
-
-func (ec *executionContext) fieldContext_TableInfo_extra(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
 	fc = &graphql.FieldContext{
 		Object:     "TableInfo",
 		Field:      field,
@@ -3177,7 +3116,7 @@ func (ec *executionContext) unmarshalInputCreateTableData(ctx context.Context, o
 		asMap[k] = v
 	}
 
-	fieldsInOrder := [...]string{"colName", "props"}
+	fieldsInOrder := [...]string{"colName", "type", "nullable", "default", "unique"}
 	for _, k := range fieldsInOrder {
 		v, ok := asMap[k]
 		if !ok {
@@ -3193,35 +3132,6 @@ func (ec *executionContext) unmarshalInputCreateTableData(ctx context.Context, o
 				return it, err
 			}
 			it.ColName = data
-		case "props":
-			var err error
-
-			ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("props"))
-			data, err := ec.unmarshalOCreateTableProps2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableProps(ctx, v)
-			if err != nil {
-				return it, err
-			}
-			it.Props = data
-		}
-	}
-
-	return it, nil
-}
-
-func (ec *executionContext) unmarshalInputCreateTableProps(ctx context.Context, obj interface{}) (model.CreateTableProps, error) {
-	var it model.CreateTableProps
-	asMap := map[string]interface{}{}
-	for k, v := range obj.(map[string]interface{}) {
-		asMap[k] = v
-	}
-
-	fieldsInOrder := [...]string{"type", "nullable", "default", "unique"}
-	for _, k := range fieldsInOrder {
-		v, ok := asMap[k]
-		if !ok {
-			continue
-		}
-		switch k {
 		case "type":
 			var err error
 
@@ -3650,18 +3560,16 @@ func (ec *executionContext) _TableInfo(ctx context.Context, sel ast.SelectionSet
 		switch field.Name {
 		case "__typename":
 			out.Values[i] = graphql.MarshalString("TableInfo")
-		case "field":
-			out.Values[i] = ec._TableInfo_field(ctx, field, obj)
+		case "name":
+			out.Values[i] = ec._TableInfo_name(ctx, field, obj)
 		case "type":
 			out.Values[i] = ec._TableInfo_type(ctx, field, obj)
-		case "null":
-			out.Values[i] = ec._TableInfo_null(ctx, field, obj)
+		case "nullable":
+			out.Values[i] = ec._TableInfo_nullable(ctx, field, obj)
 		case "key":
 			out.Values[i] = ec._TableInfo_key(ctx, field, obj)
 		case "default":
 			out.Values[i] = ec._TableInfo_default(ctx, field, obj)
-		case "extra":
-			out.Values[i] = ec._TableInfo_extra(ctx, field, obj)
 		default:
 			panic("unknown field " + strconv.Quote(field.Name))
 		}
@@ -4378,14 +4286,6 @@ func (ec *executionContext) marshalOCreateDatabaseResponse2ᚖmetaᚑxᚋinterna
 		return graphql.Null
 	}
 	return ec._CreateDatabaseResponse(ctx, sel, v)
-}
-
-func (ec *executionContext) unmarshalOCreateTableProps2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableProps(ctx context.Context, v interface{}) (*model.CreateTableProps, error) {
-	if v == nil {
-		return nil, nil
-	}
-	res, err := ec.unmarshalInputCreateTableProps(ctx, v)
-	return &res, graphql.ErrorOnPath(ctx, err)
 }
 
 func (ec *executionContext) marshalOCreateTableResponse2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableResponse(ctx context.Context, sel ast.SelectionSet, v *model.CreateTableResponse) graphql.Marshaler {

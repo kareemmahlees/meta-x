@@ -14,11 +14,7 @@ type CreateDatabaseResponse struct {
 }
 
 type CreateTableData struct {
-	ColName *string           `json:"colName,omitempty"`
-	Props   *CreateTableProps `json:"props,omitempty"`
-}
-
-type CreateTableProps struct {
+	ColName  *string     `json:"colName,omitempty"`
 	Type     *string     `json:"type,omitempty"`
 	Nullable *bool       `json:"nullable,omitempty"`
 	Default  interface{} `json:"default,omitempty"`
@@ -36,12 +32,11 @@ type SuccessResponse struct {
 
 // Table info like field name returned from table query
 type TableInfo struct {
-	Field   *string     `json:"field,omitempty"`
-	Type    *string     `json:"type,omitempty"`
-	Null    *string     `json:"null,omitempty"`
-	Key     *string     `json:"key,omitempty"`
-	Default interface{} `json:"default,omitempty"`
-	Extra   interface{} `json:"extra,omitempty"`
+	Name     *string     `json:"name,omitempty"`
+	Type     *string     `json:"type,omitempty"`
+	Nullable *string     `json:"nullable,omitempty"`
+	Key      interface{} `json:"key,omitempty"`
+	Default  interface{} `json:"default,omitempty"`
 }
 
 type UpdateTableData struct {

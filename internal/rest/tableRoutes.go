@@ -20,18 +20,16 @@ func RegisterTablesRoutes(app *fiber.App, db *sqlx.DB) {
 }
 
 func handeGetTableInfo(c *fiber.Ctx, db *sqlx.DB) error {
-	if err := lib.ValidateVar(c.Params("tableName"), "required,alpha"); err != nil {
+	tableName := c.Params("tableName")
+
+	if err := lib.ValidateVar(tableName, "required,alpha"); err != nil {
 		return c.JSON(lib.ResponseError400(err.Error()))
 	}
-	info, err := db_handlers.GetTableInfo(db, c.Params("tableName"))
+	tableInfo, err := db_handlers.GetTableInfo(db, tableName, c.Locals("provider").(string))
 	if err != nil {
 		return c.JSON(lib.ResponseError500(err.Error()))
 	}
-	return c.JSON(info)
-}
-
-type HandleListTablesResp struct {
-	Tables []string
+	return c.JSON(tableInfo)
 }
 
 // Lists all tables in the database
@@ -40,9 +38,9 @@ type HandleListTablesResp struct {
 //	@description	list tables
 //	@router			/tables [get]
 //	@produce		json
-//	@success		200	{object}	HandleListTablesResp
+//	@success		200	{object}	models.ListTablesResp
 func handleListTables(c *fiber.Ctx, db *sqlx.DB) error {
-	tables, err := db_handlers.ListTables(db)
+	tables, err := db_handlers.ListTables(db, c.Locals("provider").(string))
 	if err != nil {
 		return c.JSON(lib.ResponseError500(err.Error()))
 	}

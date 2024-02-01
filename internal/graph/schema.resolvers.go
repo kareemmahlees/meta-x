@@ -25,22 +25,22 @@ func (r *mutationResolver) CreateDatabase(ctx context.Context, name string) (*mo
 }
 
 // CreateTable is the resolver for the createTable field.
-func (r *mutationResolver) CreateTable(ctx context.Context, name string, props []*model.CreateTableData) (*model.CreateTableResponse, error) {
-	data := make(map[string]lib.CreateTableProps)
-	for _, col := range props {
-		data[*col.ColName] = lib.CreateTableProps{
-			Type:     *col.Props.Type,
-			Nullable: col.Props.Nullable,
-			Default:  col.Props.Default,
-			Unique:   col.Props.Unique,
-		}
-	}
-	err := db.CreateTable(r.DB, name, data)
-	if err != nil {
-		return nil, err
-	}
+func (r *mutationResolver) CreateTable(ctx context.Context, data []*model.CreateTableData) (*model.CreateTableResponse, error) {
+	// data := make(map[string]lib.CreateTableProps)
+	// for _, col := range props {
+	// 	data[*col.ColName] = lib.CreateTableProps{
+	// 		Type:     *col.Props.Type,
+	// 		Nullable: col.Props.Nullable,
+	// 		Default:  col.Props.Default,
+	// 		Unique:   col.Props.Unique,
+	// 	}
+	// }
+	// err := db.CreateTable(r.DB, name, data)
+	// if err != nil {
+	// 	return nil, err
+	// }
 	return &model.CreateTableResponse{
-		Created: name,
+		Created: "any",
 	}, nil
 }
 
@@ -112,38 +112,32 @@ func (r *queryResolver) Databases(ctx context.Context) ([]*string, error) {
 
 // Tables is the resolver for the tables field.
 func (r *queryResolver) Tables(ctx context.Context) ([]*string, error) {
-	tables, err := db.ListTables(r.DB)
+	tables, err := db.ListTables(r.DB, r.Provider)
 	if err != nil {
 		return nil, err
 	}
-	var ps []*string
-	for _, v := range tables {
-		table := v
-		ps = append(ps, &table)
-	}
 
-	return ps, nil
+	return tables, nil
 }
 
 // Table is the resolver for the table field.
 func (r *queryResolver) Table(ctx context.Context, name *string) ([]*model.TableInfo, error) {
-	result, err := db.GetTableInfo(r.DB, *name)
+	result, err := db.GetTableInfo(r.DB, *name, r.Provider)
 	if err != nil {
 		return nil, err
 	}
 	var tableInfo []*model.TableInfo
 	for _, info := range result {
-		field := info.Field
-		typ := info.Type
-		null := info.Null
+		name := info.Name
+		dataType := info.Type
+		nullable := info.Nullable
 		key := info.Key
 		mod := &model.TableInfo{
-			Field:   &field,
-			Type:    &typ,
-			Null:    &null,
-			Key:     &key,
-			Default: info.Default,
-			Extra:   info.Extra,
+			Name:     &name,
+			Type:     &dataType,
+			Nullable: &nullable,
+			Key:      &key,
+			Default:  info.Default,
 		}
 		tableInfo = append(tableInfo, mod)
 	}

@@ -9,25 +9,60 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type tableInfoStruct struct {
-	Field   string `db:"Field" json:"field"`
-	Type    string `db:"Type" json:"type"`
-	Null    string `db:"Null" json:"null"`
-	Key     string `db:"Key" json:"key"`
-	Default any    `db:"Default" json:"default"`
-	Extra   any    `db:"Extra" json:"extra"`
+type tableDescriptionStruct struct {
+	Name     string `db:"name" json:"name"`
+	Type     string `db:"type" json:"type"`
+	Nullable string `db:"nullable" json:"nullable"`
+	Key      any    `db:"key" json:"key"`
+	Default  any    `db:"default" json:"default"`
 }
 
-func GetTableInfo(db *sqlx.DB, tableName string) (result []tableInfoStruct, err error) {
-	rows, err := db.Queryx(fmt.Sprintf("desc %s", tableName))
+func GetTableInfo(db *sqlx.DB, tableName, provider string) (result []*tableDescriptionStruct, err error) {
+	var queryString string
+	switch provider {
+	case lib.SQLITE3:
+		queryString = `
+		SELECT name,type,
+			CASE when 'notnull' = 1
+			THEN 'NO'
+			ELSE 'YES'
+			END AS nullable,
+
+			CASE WHEN pk = 1
+			THEN 'PRI'
+			END AS key,
+			dflt_value AS 'default'
+		FROM pragma_table_info('%s');`
+	case lib.PSQL:
+		queryString = `
+		SELECT col.column_name AS name,
+			col.data_type AS type,
+			col.is_nullable AS nullable,
+			kcu.constraint_name AS key,
+			col.column_default AS default
+		FROM information_schema.columns AS col
+		LEFT JOIN information_schema.key_column_usage AS kcu ON col.column_name = kcu.column_name
+		WHERE col.table_name = '%s';`
+	case lib.MYSQL:
+		queryString = `
+		SELECT column_name AS name,
+			column_type AS type,
+			is_nullable AS nullable,
+			column_key AS key,
+			column_default AS default
+		FROM information_schema.columns
+		WHERE table_name='%s';
+		`
+	}
+	rows, err := db.Queryx(fmt.Sprintf(queryString, tableName))
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var tablesDescriptions = []tableInfoStruct{}
+	tablesDescriptions := []*tableDescriptionStruct{}
 	for rows.Next() {
-		var tableDesc tableInfoStruct
-		err := rows.StructScan(&tableDesc)
+		tableDesc := new(tableDescriptionStruct)
+		err := rows.StructScan(tableDesc)
 		if err != nil {
 			return nil, err
 		}
@@ -36,16 +71,27 @@ func GetTableInfo(db *sqlx.DB, tableName string) (result []tableInfoStruct, err 
 	return tablesDescriptions, nil
 }
 
-func ListTables(db *sqlx.DB) (result []string, err error) {
-	rows, err := db.Queryx("show tables")
+func ListTables(db *sqlx.DB, provider string) (result []*string, err error) {
+	var queryString string
+	switch provider {
+	case lib.SQLITE3:
+		queryString = "SELECT tbl_name FROM sqlite_master where type='table'"
+	case lib.PSQL:
+		queryString = "SELECT tablename FROM pg_catalog.pg_tables where schemaname='public';"
+	case lib.MYSQL:
+		queryString = "SHOW TABLES"
+	}
+
+	rows, err := db.Queryx(queryString)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var tables = []string{}
+
+	var tables = []*string{}
 	for rows.Next() {
-		var table string
-		err := rows.Scan(&table)
+		table := new(string)
+		err := rows.Scan(table)
 		if err != nil {
 			return nil, err
 		}
