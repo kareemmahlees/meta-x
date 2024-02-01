@@ -4,6 +4,7 @@ import (
 	_ "meta-x/docs"
 	db_handlers "meta-x/internal/db"
 	"meta-x/lib"
+	"meta-x/models"
 	"meta-x/utils"
 
 	"github.com/gofiber/fiber/v2"
@@ -47,34 +48,26 @@ func handleListTables(c *fiber.Ctx, db *sqlx.DB) error {
 	return c.JSON(fiber.Map{"tables": tables})
 }
 
-type HandleCreateTableResp struct {
-	Created string
-}
-type HandleCreateTableBody struct {
-	ColName lib.CreateTableProps
-}
-
 // Creates a Table
 //
 //	@tags			Tables
 //	@description	create table
 //	@router			/tables/{tableName} [post]
 //	@param			tableName	path	string					true	"table name"
-//	@param			tableData	body	HandleCreateTableBody	true	"create table data"
+//	@param			tableData	body	models.CreateTablePayload	true	"create table data"
 //	@accept			json
 //	@produce		json
-//	@success		201	{object}	HandleCreateTableResp
+//	@success		201	{object}	models.CreateTableResp
 func handleCreateTable(c *fiber.Ctx, db *sqlx.DB) error {
-	if err := lib.ValidateVar(c.Params("tableName"), "required,alpha"); err != nil {
-		return c.JSON(lib.ResponseError400(err.Error()))
+	if err := lib.ValidateVar(c.Params("tableName"), "required,alphanum"); err != nil {
+		return c.Status(400).JSON(lib.ResponseError400(err.Error()))
 	}
-	var payload map[string]lib.CreateTableProps
+	var payload []models.CreateTablePayload
 	if err := c.BodyParser(&payload); err != nil {
-		return c.JSON(lib.ResponseError500(err.Error()))
+		return c.Status(500).JSON(lib.ResponseError500(err.Error()))
 	}
 	for _, v := range payload {
-		errs := lib.ValidateStruct(v)
-		if len(errs) > 0 {
+		if errs := lib.ValidateStruct(v); len(errs) > 0 {
 			return c.Status(400).JSON(lib.ResponseError400(errs))
 		}
 	}

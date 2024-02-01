@@ -1,19 +1,5 @@
 basePath: /
 definitions:
-  lib.CreateTableProps:
-    properties:
-      default: {}
-      nullable: {}
-      type:
-        enum:
-        - text
-        - number
-        - date
-        type: string
-      unique: {}
-    required:
-    - type
-    type: object
   lib.UpdateTableProps:
     properties:
       operation:
@@ -44,9 +30,34 @@ definitions:
     required:
     - name
     type: object
+  models.CreateTablePayload:
+    properties:
+      column_name:
+        type: string
+      default: {}
+      nullable: {}
+      type:
+        type: string
+      unique: {}
+    required:
+    - column_name
+    - type
+    type: object
+  models.CreateTableResp:
+    properties:
+      created:
+        type: string
+    type: object
   models.ListDatabasesResult:
     properties:
       databases:
+        items:
+          type: string
+        type: array
+    type: object
+  models.ListTablesResp:
+    properties:
+      tables:
         items:
           type: string
         type: array
@@ -61,23 +72,6 @@ definitions:
         type: string
       year:
         type: integer
-    type: object
-  routes.HandleCreateTableBody:
-    properties:
-      colName:
-        $ref: '#/definitions/lib.CreateTableProps'
-    type: object
-  routes.HandleCreateTableResp:
-    properties:
-      created:
-        type: string
-    type: object
-  routes.HandleListTablesResp:
-    properties:
-      tables:
-        items:
-          type: string
-        type: array
     type: object
   routes.HandleUpdateDeleteResp:
     properties:
@@ -164,7 +158,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/routes.HandleListTablesResp'
+            $ref: '#/definitions/models.ListTablesResp'
       tags:
       - Tables
   /tables/{tableName}:
@@ -201,14 +195,14 @@ paths:
         name: tableData
         required: true
         schema:
-          $ref: '#/definitions/routes.HandleCreateTableBody'
+          $ref: '#/definitions/models.CreateTablePayload'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/routes.HandleCreateTableResp'
+            $ref: '#/definitions/models.CreateTableResp'
       tags:
       - Tables
     put:

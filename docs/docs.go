@@ -120,7 +120,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/routes.HandleListTablesResp"
+                            "$ref": "#/definitions/models.ListTablesResp"
                         }
                     }
                 }
@@ -190,7 +190,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/routes.HandleCreateTableBody"
+                            "$ref": "#/definitions/models.CreateTablePayload"
                         }
                     }
                 ],
@@ -198,7 +198,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/routes.HandleCreateTableResp"
+                            "$ref": "#/definitions/models.CreateTableResp"
                         }
                     }
                 }
@@ -234,25 +234,6 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "lib.CreateTableProps": {
-            "type": "object",
-            "required": [
-                "type"
-            ],
-            "properties": {
-                "default": {},
-                "nullable": {},
-                "type": {
-                    "type": "string",
-                    "enum": [
-                        "text",
-                        "number",
-                        "date"
-                    ]
-                },
-                "unique": {}
-            }
-        },
         "lib.UpdateTableProps": {
             "type": "object",
             "required": [
@@ -298,10 +279,47 @@ const docTemplate = `{
                 }
             }
         },
+        "models.CreateTablePayload": {
+            "type": "object",
+            "required": [
+                "column_name",
+                "type"
+            ],
+            "properties": {
+                "column_name": {
+                    "type": "string"
+                },
+                "default": {},
+                "nullable": {},
+                "type": {
+                    "type": "string"
+                },
+                "unique": {}
+            }
+        },
+        "models.CreateTableResp": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "type": "string"
+                }
+            }
+        },
         "models.ListDatabasesResult": {
             "type": "object",
             "properties": {
                 "databases": {
+                    "type": "array",
+                    "items": {
+                        "type": "string"
+                    }
+                }
+            }
+        },
+        "models.ListTablesResp": {
+            "type": "object",
+            "properties": {
+                "tables": {
                     "type": "array",
                     "items": {
                         "type": "string"
@@ -323,33 +341,6 @@ const docTemplate = `{
                 },
                 "year": {
                     "type": "integer"
-                }
-            }
-        },
-        "routes.HandleCreateTableBody": {
-            "type": "object",
-            "properties": {
-                "colName": {
-                    "$ref": "#/definitions/lib.CreateTableProps"
-                }
-            }
-        },
-        "routes.HandleCreateTableResp": {
-            "type": "object",
-            "properties": {
-                "created": {
-                    "type": "string"
-                }
-            }
-        },
-        "routes.HandleListTablesResp": {
-            "type": "object",
-            "properties": {
-                "tables": {
-                    "type": "array",
-                    "items": {
-                        "type": "string"
-                    }
                 }
             }
         },

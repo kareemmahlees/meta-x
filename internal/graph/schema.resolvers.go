@@ -9,6 +9,7 @@ import (
 	"meta-x/internal/db"
 	"meta-x/internal/graph/model"
 	"meta-x/lib"
+	"meta-x/models"
 
 	"github.com/vektah/gqlparser/v2/gqlerror"
 )
@@ -25,22 +26,23 @@ func (r *mutationResolver) CreateDatabase(ctx context.Context, name string) (*mo
 }
 
 // CreateTable is the resolver for the createTable field.
-func (r *mutationResolver) CreateTable(ctx context.Context, data []*model.CreateTableData) (*model.CreateTableResponse, error) {
-	// data := make(map[string]lib.CreateTableProps)
-	// for _, col := range props {
-	// 	data[*col.ColName] = lib.CreateTableProps{
-	// 		Type:     *col.Props.Type,
-	// 		Nullable: col.Props.Nullable,
-	// 		Default:  col.Props.Default,
-	// 		Unique:   col.Props.Unique,
-	// 	}
-	// }
-	// err := db.CreateTable(r.DB, name, data)
-	// if err != nil {
-	// 	return nil, err
-	// }
+func (r *mutationResolver) CreateTable(ctx context.Context, name string, data []*model.CreateTableData) (*model.CreateTableResponse, error) {
+	convertedData := []models.CreateTablePayload{}
+	for _, props := range data {
+		convertedData = append(convertedData, models.CreateTablePayload{
+			ColName:  *props.ColName,
+			Type:     *props.Type,
+			Nullable: props.Nullable,
+			Default:  props.Default,
+			Unique:   props.Unique,
+		})
+	}
+	err := db.CreateTable(r.DB, name, convertedData)
+	if err != nil {
+		return nil, err
+	}
 	return &model.CreateTableResponse{
-		Created: "any",
+		Created: name,
 	}, nil
 }
 

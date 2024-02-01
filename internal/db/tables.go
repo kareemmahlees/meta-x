@@ -5,6 +5,7 @@ import (
 	"strings"
 
 	"meta-x/lib"
+	"meta-x/models"
 
 	"github.com/jmoiron/sqlx"
 )
@@ -100,20 +101,17 @@ func ListTables(db *sqlx.DB, provider string) (result []*string, err error) {
 	return tables, nil
 }
 
-var dataTypesMappings = map[string]string{
-	"text":   "varchar(255)",
-	"number": "int",
-}
+// var dataTypesMappings = map[string]string{
+// 	"text":   "varchar(255)",
+// 	"number": "int",
+// }
 
-func CreateTable(db *sqlx.DB, tableName string, payload map[string]lib.CreateTableProps) error {
+func CreateTable(db *sqlx.DB, tableName string, data []models.CreateTablePayload) error {
 	// this long solution is made because placeholders "?" can't
 	// be used for db, table or column names
 	dataString := ""
-	for col, props := range payload {
-		if _, ok := dataTypesMappings[props.Type]; ok {
-			props.Type = dataTypesMappings[props.Type]
-		}
-		dataString += fmt.Sprintf("%s\t%s\t", col, props.Type)
+	for _, props := range data {
+		dataString += fmt.Sprintf("%s\t%s\t", props.ColName, props.Type)
 		if props.Nullable != nil && props.Nullable == false {
 			dataString += "NOT NULL\t"
 		}
@@ -121,11 +119,11 @@ func CreateTable(db *sqlx.DB, tableName string, payload map[string]lib.CreateTab
 			dataString += "UNIQUE\t"
 		}
 		if props.Default != nil {
-			dataString += fmt.Sprintf("DEFAULT \t'%s'", props.Default)
+			dataString += fmt.Sprintf("DEFAULT\t'%s'", props.Default)
 		}
 		dataString += ",\n"
 	}
-	res, err := db.Exec(fmt.Sprintf(`
+	_, err := db.Exec(fmt.Sprintf(`
 	CREATE TABLE IF NOT EXISTS %s (
 		id int NOT NULL,
 		%s
@@ -135,8 +133,7 @@ func CreateTable(db *sqlx.DB, tableName string, payload map[string]lib.CreateTab
 	if err != nil {
 		return err
 	}
-	_, err = res.LastInsertId()
-	return err
+	return nil
 
 }
 

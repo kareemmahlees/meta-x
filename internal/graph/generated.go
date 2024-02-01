@@ -55,7 +55,7 @@ type ComplexityRoot struct {
 
 	Mutation struct {
 		CreateDatabase func(childComplexity int, name string) int
-		CreateTable    func(childComplexity int, data []*model.CreateTableData) int
+		CreateTable    func(childComplexity int, name string, data []*model.CreateTableData) int
 		DeleteTable    func(childComplexity int, name string) int
 		UpdateTable    func(childComplexity int, name string, prop *model.UpdateTableData) int
 	}
@@ -81,7 +81,7 @@ type ComplexityRoot struct {
 
 type MutationResolver interface {
 	CreateDatabase(ctx context.Context, name string) (*model.CreateDatabaseResponse, error)
-	CreateTable(ctx context.Context, data []*model.CreateTableData) (*model.CreateTableResponse, error)
+	CreateTable(ctx context.Context, name string, data []*model.CreateTableData) (*model.CreateTableResponse, error)
 	DeleteTable(ctx context.Context, name string) (*model.SuccessResponse, error)
 	UpdateTable(ctx context.Context, name string, prop *model.UpdateTableData) (*model.SuccessResponse, error)
 }
@@ -142,7 +142,7 @@ func (e *executableSchema) Complexity(typeName, field string, childComplexity in
 			return 0, false
 		}
 
-		return e.complexity.Mutation.CreateTable(childComplexity, args["data"].([]*model.CreateTableData)), true
+		return e.complexity.Mutation.CreateTable(childComplexity, args["name"].(string), args["data"].([]*model.CreateTableData)), true
 
 	case "Mutation.deleteTable":
 		if e.complexity.Mutation.DeleteTable == nil {
@@ -381,15 +381,24 @@ func (ec *executionContext) field_Mutation_createDatabase_args(ctx context.Conte
 func (ec *executionContext) field_Mutation_createTable_args(ctx context.Context, rawArgs map[string]interface{}) (map[string]interface{}, error) {
 	var err error
 	args := map[string]interface{}{}
-	var arg0 []*model.CreateTableData
-	if tmp, ok := rawArgs["data"]; ok {
-		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
-		arg0, err = ec.unmarshalNCreateTableData2ᚕᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableDataᚄ(ctx, tmp)
+	var arg0 string
+	if tmp, ok := rawArgs["name"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("name"))
+		arg0, err = ec.unmarshalNString2string(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
 	}
-	args["data"] = arg0
+	args["name"] = arg0
+	var arg1 []*model.CreateTableData
+	if tmp, ok := rawArgs["data"]; ok {
+		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
+		arg1, err = ec.unmarshalNCreateTableData2ᚕᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableDataᚄ(ctx, tmp)
+		if err != nil {
+			return nil, err
+		}
+	}
+	args["data"] = arg1
 	return args, nil
 }
 
@@ -658,7 +667,7 @@ func (ec *executionContext) _Mutation_createTable(ctx context.Context, field gra
 	}()
 	resTmp, err := ec.ResolverMiddleware(ctx, func(rctx context.Context) (interface{}, error) {
 		ctx = rctx // use context from middleware stack in children
-		return ec.resolvers.Mutation().CreateTable(rctx, fc.Args["data"].([]*model.CreateTableData))
+		return ec.resolvers.Mutation().CreateTable(rctx, fc.Args["name"].(string), fc.Args["data"].([]*model.CreateTableData))
 	})
 	if err != nil {
 		ec.Error(ctx, err)

@@ -24,7 +24,7 @@ type Mutation {
   "creates a database with the specified name"
   createDatabase(name: String!): CreateDatabaseResponse
   "creates a table with the specified name"
-  createTable(data: [CreateTableData!]!): CreateTableResponse
+  createTable(name: String!, data: [CreateTableData!]!): CreateTableResponse
   "deletes the table by name"
   deleteTable(name: String!): SuccessResponse
   "updated the table by name"
