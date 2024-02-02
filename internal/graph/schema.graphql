@@ -22,13 +22,16 @@ type TableInfo {
 
 type Mutation {
   "creates a database with the specified name"
-  createDatabase(name: String!): CreateDatabaseResponse
+  createDatabase(name: String!): SuccessResponse
   "creates a table with the specified name"
   createTable(name: String!, data: [CreateTableData!]!): CreateTableResponse
   "deletes the table by name"
   deleteTable(name: String!): SuccessResponse
   "updated the table by name"
-  updateTable(name: String!, prop: UpdateTableData): SuccessResponse
+  # updateTable(name: String!, prop: UpdateTableData): SuccessResponse
+  addColumn(tableName: String!, data: AddUpdateColumnData!): SuccessResponse
+  modifyColumn(tableName: String!, data: AddUpdateColumnData!): SuccessResponse
+  deleteColumn(tableName: String!, data: DeleteColumnData): SuccessResponse
 }
 
 input CreateTableData {
@@ -39,39 +42,22 @@ input CreateTableData {
   unique: Boolean
 }
 
-input UpdateTableData {
-  operation: UpdateTableProps!
-}
-
-input UpdateTableProps {
-  type: UpdateTableOperationTypes!
-  "an array of string that must be specified if operation type is delete"
-  columnsToDelete: [String]
-  "a map of column name and type that must be specified if operation type is add"
-  columnsToAdd: Map
-  "a map of column name and type that must be specified if operation type is modify"
-  columnsToModify: Map
-}
-
-type CreateDatabaseResponse {
-  "number of created records"
-  success: Boolean!
-}
-
 type CreateTableResponse {
   "name of created table"
   created: String!
+}
+
+input AddUpdateColumnData {
+  colName: String
+  type: String
+}
+
+input DeleteColumnData {
+  colName: String
 }
 
 type SuccessResponse {
   success: Boolean!
 }
 
-enum UpdateTableOperationTypes {
-  add
-  modify
-  delete
-}
-
 scalar Any
-scalar Map

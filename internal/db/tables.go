@@ -123,14 +123,14 @@ func CreateTable(db *sqlx.DB, tableName string, data []models.CreateTablePayload
 
 }
 
-func AddColumn(db *sqlx.DB, tableName string, payload models.AddUpdateColumnPayload) error {
+func AddColumn(db *sqlx.DB, tableName string, payload models.AddModifyColumnPayload) error {
 	dataString := ""
 	dataString += fmt.Sprintf("ADD %s %s\n", payload.ColName, payload.Type)
 
 	return alterTable(db, tableName, dataString)
 }
 
-func UpdateColumn(db *sqlx.DB, tableName string, payload models.AddUpdateColumnPayload) error {
+func UpdateColumn(db *sqlx.DB, tableName string, payload models.AddModifyColumnPayload) error {
 
 	dataString := ""
 	dataString += fmt.Sprintf("MODIFY COLUMN %s %s\n", payload.ColName, payload.Type)

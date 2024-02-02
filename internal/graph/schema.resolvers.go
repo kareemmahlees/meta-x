@@ -10,17 +10,15 @@ import (
 	"meta-x/internal/graph/model"
 	"meta-x/lib"
 	"meta-x/models"
-
-	"github.com/vektah/gqlparser/v2/gqlerror"
 )
 
 // CreateDatabase is the resolver for the createDatabase field.
-func (r *mutationResolver) CreateDatabase(ctx context.Context, name string) (*model.CreateDatabaseResponse, error) {
+func (r *mutationResolver) CreateDatabase(ctx context.Context, name string) (*model.SuccessResponse, error) {
 	err := db.CreatePgMysqlDatabase(r.DB, r.Provider, name)
 	if err != nil {
 		return nil, err
 	}
-	return &model.CreateDatabaseResponse{
+	return &model.SuccessResponse{
 		Success: true,
 	}, nil
 }
@@ -57,38 +55,42 @@ func (r *mutationResolver) DeleteTable(ctx context.Context, name string) (*model
 	}, nil
 }
 
-// UpdateTable is the resolver for the updateTable field.
-func (r *mutationResolver) UpdateTable(ctx context.Context, name string, prop *model.UpdateTableData) (*model.SuccessResponse, error) {
-	data := lib.UpdateTableProps{}
-	data.Operation.Type = string(prop.Operation.Type)
-	switch data.Operation.Type {
-	case "add":
-		if prop.Operation.ColumnsToAdd == nil {
-			return nil, gqlerror.Errorf("Operation type 'add' must specifiy 'ColumnsToAdd' field")
-		}
-		data.Operation.Data = prop.Operation.ColumnsToAdd
-	case "modify":
-		if prop.Operation.ColumnsToModify == nil {
-			return nil, gqlerror.Errorf("Operation type 'modify' must specifiy 'ColumnsToModify' field")
-		}
-		data.Operation.Data = prop.Operation.ColumnsToModify
-	case "delete":
-		if prop.Operation.ColumnsToDelete == nil {
-			return nil, gqlerror.Errorf("Operation type 'delete' must specifiy 'ColumnsToDelete' field")
-		}
-		columnstoDetel := []interface{}{}
-		for _, col := range prop.Operation.ColumnsToDelete {
-			columnstoDetel = append(columnstoDetel, *col)
-		}
-		data.Operation.Data = columnstoDetel
+// AddColumn is the resolver for the addColumn field.
+func (r *mutationResolver) AddColumn(ctx context.Context, tableName string, data model.AddUpdateColumnData) (*model.SuccessResponse, error) {
+	convertedData := models.AddModifyColumnPayload{
+		ColName: *data.ColName,
+		Type:    *data.Type,
 	}
-	// err := db.UpdateTable(r.DB, name, data)
-	// if err != nil {
-	// 	return nil, err
-	// }
-	return &model.SuccessResponse{
-		Success: true,
-	}, nil
+	err := db.AddColumn(r.DB, tableName, convertedData)
+	if err != nil {
+		return nil, err
+	}
+	return &model.SuccessResponse{Success: true}, nil
+}
+
+// ModifyColumn is the resolver for the modifyColumn field.
+func (r *mutationResolver) ModifyColumn(ctx context.Context, tableName string, data model.AddUpdateColumnData) (*model.SuccessResponse, error) {
+	convertedData := models.AddModifyColumnPayload{
+		ColName: *data.ColName,
+		Type:    *data.Type,
+	}
+	err := db.UpdateColumn(r.DB, tableName, convertedData)
+	if err != nil {
+		return nil, err
+	}
+	return &model.SuccessResponse{Success: true}, nil
+}
+
+// DeleteColumn is the resolver for the deleteColumn field.
+func (r *mutationResolver) DeleteColumn(ctx context.Context, tableName string, data *model.DeleteColumnData) (*model.SuccessResponse, error) {
+	convertedData := models.DeleteColumnPayload{
+		ColName: *data.ColName,
+	}
+	err := db.DeleteColumn(r.DB, tableName, convertedData)
+	if err != nil {
+		return nil, err
+	}
+	return &model.SuccessResponse{Success: true}, nil
 }
 
 // Databases is the resolver for the databases field.

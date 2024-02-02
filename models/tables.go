@@ -24,7 +24,7 @@ type CreateTableResp struct {
 	Created string
 }
 
-type AddUpdateColumnPayload struct {
+type AddModifyColumnPayload struct {
 	ColName string `json:"column_name" validate:"required,alphanum"`
 	Type    string `json:"type" validate:"required,ascii"`
 }

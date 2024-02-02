@@ -88,6 +88,3 @@ models:
   Any:
     model:
       - github.com/99designs/gqlgen/graphql.Any
-  Map:
-    model:
-      - github.com/99designs/gqlgen/graphql.Map

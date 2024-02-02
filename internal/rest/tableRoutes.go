@@ -18,7 +18,7 @@ func RegisterTablesRoutes(app *fiber.App, db *sqlx.DB) {
 	tableGroup.Post("/:tableName", utils.RouteHandler(db, handleCreateTable))
 	tableGroup.Delete("/:tableName", utils.RouteHandler(db, handleDeleteTable))
 	tableGroup.Post("/:tableName/column/add", utils.RouteHandler(db, handleAddColumn))
-	tableGroup.Put("/:tableName/column/modify", utils.RouteHandler(db, handleUpdateColumn))
+	tableGroup.Put("/:tableName/column/modify", utils.RouteHandler(db, handleModifyColumn))
 	tableGroup.Delete("/:tableName/column/delete", utils.RouteHandler(db, handleDeleteColumn))
 }
 
@@ -95,7 +95,7 @@ func handleCreateTable(c *fiber.Ctx, db *sqlx.DB) error {
 //	@description	Add column to table
 //	@router			/table/{tableName}/column/add [post]
 //	@param			tableName	path	string							true	"table name"
-//	@param			columnData	body	models.AddUpdateColumnPayload	true	"column data"
+//	@param			columnData	body	models.AddModifyColumnPayload	true	"column data"
 //	@accept			json
 //	@produce		json
 //	@success		201	{object}	models.SuccessResp
@@ -103,7 +103,7 @@ func handleAddColumn(c *fiber.Ctx, db *sqlx.DB) error {
 	if err := lib.ValidateVar(c.Params("tableName"), "required,alphanum"); err != nil {
 		return lib.BadRequestErr(c, err.Error())
 	}
-	var payload models.AddUpdateColumnPayload
+	var payload models.AddModifyColumnPayload
 	if err := c.BodyParser(&payload); err != nil {
 		return lib.UnprocessableEntityErr(c, err.Error())
 	}
@@ -123,11 +123,11 @@ func handleAddColumn(c *fiber.Ctx, db *sqlx.DB) error {
 //	@description	Update table column
 //	@router			/table/{tableName}/column/modify [put]
 //	@param			tableName	path	string							true	"table name"
-//	@param			columnData	body	models.AddUpdateColumnPayload	true	"column data"
+//	@param			columnData	body	models.AddModifyColumnPayload	true	"column data"
 //	@accept			json
 //	@produce		json
 //	@success		200	{object}	models.SuccessResp
-func handleUpdateColumn(c *fiber.Ctx, db *sqlx.DB) error {
+func handleModifyColumn(c *fiber.Ctx, db *sqlx.DB) error {
 	if c.Locals("provider") == lib.SQLITE3 {
 		return lib.ForbiddenErr(c, "MODIFY COLUMN not supported by sqlite")
 	}
@@ -135,7 +135,7 @@ func handleUpdateColumn(c *fiber.Ctx, db *sqlx.DB) error {
 	if err := lib.ValidateVar(c.Params("tableName"), "required,alphanum"); err != nil {
 		return lib.BadRequestErr(c, err.Error())
 	}
-	var payload models.AddUpdateColumnPayload
+	var payload models.AddModifyColumnPayload
 	if err := c.BodyParser(&payload); err != nil {
 		return lib.UnprocessableEntityErr(c, err.Error())
 	}
