@@ -22,6 +22,13 @@ func RegisterTablesRoutes(app *fiber.App, db *sqlx.DB) {
 	tableGroup.Delete("/:tableName/delete", utils.RouteHandler(db, handleDeleteColumn))
 }
 
+// Get detailed info about the specified table
+//
+// @tags Tables
+// @description Get detailed info about a specific table
+// @router /tables/{tableName}/describe
+// @produce json
+// @success 200 {object} models.TableInfoResp
 func handeGetTableInfo(c *fiber.Ctx, db *sqlx.DB) error {
 	tableName := c.Params("tableName")
 
@@ -82,21 +89,16 @@ func handleCreateTable(c *fiber.Ctx, db *sqlx.DB) error {
 	return c.Status(fiber.StatusCreated).JSON(models.CreateTableResp{Created: tableName})
 }
 
-type HandleUpdateDeleteResp struct {
-	Success bool
-}
-
-// Updates a Table either by add,modify or delete
+// Updates a table by adding a column
 //
 //	@tags			Tables
-//	@description	update table
-//	@router			/tables/{tableName} [put]
+//	@description	Add column to table
+//	@router			/tables/{tableName}/add [post]
 //	@param			tableName	path	string					true	"table name"
-//	@param			tableData	body	lib.UpdateTableProps	true	"update table data"
+//	@param			columnData	body	models.AddUpdateColumnPayload	true	"column data"
 //	@accept			json
 //	@produce		json
-//	@success		200	{object}	models.UpdateDeleteResp
-
+//	@success		201	{object}	models.SuccessResp
 func handleAddColumn(c *fiber.Ctx, db *sqlx.DB) error {
 	if err := lib.ValidateVar(c.Params("tableName"), "required,alphanum"); err != nil {
 		return lib.BadRequestErr(c, err.Error())
@@ -112,12 +114,22 @@ func handleAddColumn(c *fiber.Ctx, db *sqlx.DB) error {
 	if err != nil {
 		return lib.InternalServerErr(c, err.Error())
 	}
-	return c.JSON(models.UpdateDeleteResp{Success: true})
+	return c.Status(fiber.StatusCreated).JSON(models.SuccessResp{Success: true})
 }
 
+// Updates a table by modifying a column
+//
+//	@tags			Tables
+//	@description	Update table column
+//	@router			/tables/{tableName}/modify [put]
+//	@param			tableName	path	string					true	"table name"
+//	@param			columnData	body	models.AddUpdateColumnPayload	true	"column data"
+//	@accept			json
+//	@produce		json
+//	@success		200	{object}	models.SuccessResp
 func handleUpdateColumn(c *fiber.Ctx, db *sqlx.DB) error {
 	if c.Locals("provider") == lib.SQLITE3 {
-		return fiber.NewError(fiber.StatusForbidden, "MODIFY COLUMN not supported by sqlite")
+		return lib.ForbiddenErr(c, "MODIFY COLUMN not supported by sqlite")
 	}
 
 	if err := lib.ValidateVar(c.Params("tableName"), "required,alphanum"); err != nil {
@@ -134,9 +146,19 @@ func handleUpdateColumn(c *fiber.Ctx, db *sqlx.DB) error {
 	if err != nil {
 		return lib.InternalServerErr(c, err.Error())
 	}
-	return c.JSON(models.UpdateDeleteResp{Success: true})
+	return c.JSON(models.SuccessResp{Success: true})
 }
 
+// Updates a table by deleting/dropping a column
+//
+//	@tags			Tables
+//	@description	Delete/Drop table column
+//	@router			/tables/{tableName}/delete [delete]
+//	@param			tableName	path	string					true	"table name"
+//	@param			columnData	body	models.DeleteColumnPayload	true	"column name"
+//	@accept			json
+//	@produce		json
+//	@success		200	{object}	models.SuccessResp
 func handleDeleteColumn(c *fiber.Ctx, db *sqlx.DB) error {
 	if err := lib.ValidateVar(c.Params("tableName"), "required,alphanum"); err != nil {
 		return lib.BadRequestErr(c, err.Error())
@@ -152,7 +174,7 @@ func handleDeleteColumn(c *fiber.Ctx, db *sqlx.DB) error {
 	if err != nil {
 		return lib.InternalServerErr(c, err.Error())
 	}
-	return c.JSON(models.UpdateDeleteResp{Success: true})
+	return c.JSON(models.SuccessResp{Success: true})
 }
 
 // Deletes a table
@@ -163,7 +185,7 @@ func handleDeleteColumn(c *fiber.Ctx, db *sqlx.DB) error {
 //	@param		tableName	path	string	true	"table name"
 //	@accept		json
 //	@produce	json
-//	@success	200	{object}	HandleUpdateDeleteResp
+//	@success	200	{object}	models.SuccessResp
 func handleDeleteTable(c *fiber.Ctx, db *sqlx.DB) error {
 	if err := lib.ValidateVar(c.Params("tableName"), "required,alpha"); err != nil {
 		return lib.BadRequestErr(c, err.Error())
@@ -172,5 +194,5 @@ func handleDeleteTable(c *fiber.Ctx, db *sqlx.DB) error {
 	if err != nil {
 		return lib.InternalServerErr(c, err.Error())
 	}
-	return c.JSON(fiber.Map{"success": true})
+	return c.JSON(models.SuccessResp{Success: true})
 }

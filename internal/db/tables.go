@@ -9,15 +9,7 @@ import (
 	"github.com/jmoiron/sqlx"
 )
 
-type tableDescriptionStruct struct {
-	Name     string `db:"name" json:"name"`
-	Type     string `db:"type" json:"type"`
-	Nullable string `db:"nullable" json:"nullable"`
-	Key      any    `db:"key" json:"key"`
-	Default  any    `db:"default" json:"default"`
-}
-
-func GetTableInfo(db *sqlx.DB, tableName, provider string) (result []*tableDescriptionStruct, err error) {
+func GetTableInfo(db *sqlx.DB, tableName, provider string) (result []*models.TableInfoResp, err error) {
 	var queryString string
 	switch provider {
 	case lib.SQLITE3:
@@ -59,9 +51,9 @@ func GetTableInfo(db *sqlx.DB, tableName, provider string) (result []*tableDescr
 		return nil, err
 	}
 	defer rows.Close()
-	tablesDescriptions := []*tableDescriptionStruct{}
+	tablesDescriptions := []*models.TableInfoResp{}
 	for rows.Next() {
-		tableDesc := new(tableDescriptionStruct)
+		tableDesc := new(models.TableInfoResp)
 		err := rows.StructScan(tableDesc)
 		if err != nil {
 			return nil, err
