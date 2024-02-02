@@ -100,11 +100,6 @@ func ListTables(db *sqlx.DB, provider string) (result []*string, err error) {
 	return tables, nil
 }
 
-// var dataTypesMappings = map[string]string{
-// 	"text":   "varchar(255)",
-// 	"number": "int",
-// }
-
 func CreateTable(db *sqlx.DB, tableName string, data []models.CreateTablePayload) error {
 	// this long solution is made because placeholders "?" can't
 	// be used for db, table or column names

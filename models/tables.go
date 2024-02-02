@@ -1,7 +1,7 @@
 package models
 
 type ListTablesResp struct {
-	Tables []string
+	Tables []*string `json:"tables"`
 }
 
 type CreateTablePayload struct {

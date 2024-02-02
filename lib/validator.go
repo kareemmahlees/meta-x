@@ -1,8 +1,6 @@
 package lib
 
 import (
-	"reflect"
-
 	"github.com/go-playground/validator/v10"
 )
 
@@ -17,7 +15,6 @@ var validate *validator.Validate
 
 func init() {
 	validate = validator.New(validator.WithRequiredStructEnabled())
-	_ = validate.RegisterValidation("updateTableData", updateTableDataValidator)
 	_ = validate.RegisterValidation("notEmpty", notEmtpy)
 }
 
@@ -52,26 +49,4 @@ func ValidateVar(value interface{}, tags string) error {
 
 func notEmtpy(fl validator.FieldLevel) bool {
 	return fl.Field().Len() != 0
-}
-
-func updateTableDataValidator(fl validator.FieldLevel) bool {
-	typeParam := fl.Parent().FieldByName("Type")
-	switch typeParam.String() {
-	case "add":
-		if fl.Field().Kind() != reflect.Map {
-			return false
-		}
-		return true
-	case "modify":
-		if fl.Field().Kind() != reflect.Map {
-			return false
-		}
-		return true
-	case "delete":
-		if fl.Field().Kind() != reflect.Slice {
-			return false
-		}
-		return true
-	}
-	return true
 }
