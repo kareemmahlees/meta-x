@@ -1,6 +1,7 @@
 package internal
 
 import (
+	"errors"
 	"fmt"
 	"meta-x/internal/graph"
 	routes "meta-x/internal/rest"
@@ -24,6 +25,21 @@ func InitDBAndServer(provider, cfg string, port int) error {
 	}
 	app := fiber.New(fiber.Config{
 		DisableStartupMessage: true,
+		ErrorHandler: func(ctx *fiber.Ctx, err error) error {
+			code := fiber.StatusInternalServerError
+
+			var e *fiber.Error
+			if errors.As(err, &e) {
+				code = e.Code
+			}
+			err = ctx.Status(code).JSON(fiber.Map{"error": err})
+			if err != nil {
+				return ctx.Status(fiber.StatusInternalServerError).SendString("Internal Server Error")
+			}
+
+			return nil
+
+		},
 	})
 	defer con.Close()
 

@@ -15,3 +15,16 @@ type CreateTablePayload struct {
 type CreateTableResp struct {
 	Created string
 }
+
+type AddUpdateColumnPayload struct {
+	ColName string `json:"column_name" validate:"required,alphanum"`
+	Type    string `json:"type" validate:"required,ascii"`
+}
+
+type DeleteColumnPayload struct {
+	ColName string `json:"column_name" validate:"required,alphanum"`
+}
+
+type UpdateDeleteResp struct {
+	Success bool `json:"success"`
+}

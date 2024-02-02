@@ -2,7 +2,6 @@ package db
 
 import (
 	"fmt"
-	"strings"
 
 	"meta-x/lib"
 	"meta-x/models"
@@ -137,23 +136,29 @@ func CreateTable(db *sqlx.DB, tableName string, data []models.CreateTablePayload
 
 }
 
-func UpdateTable(db *sqlx.DB, tableName string, payload lib.UpdateTableProps) error {
+func AddColumn(db *sqlx.DB, tableName string, payload models.AddUpdateColumnPayload) error {
 	dataString := ""
-	switch payload.Operation.Type {
-	case "add":
-		for col, dataType := range payload.Operation.Data.(map[string]interface{}) {
-			dataString += fmt.Sprintf("ADD %s %s,\n", col, dataType)
-		}
-	case "modify":
-		for col, dataType := range payload.Operation.Data.(map[string]interface{}) {
-			dataString += fmt.Sprintf("MODIFY COLUMN %s %s,\n", col, dataType)
-		}
-	case "delete":
-		for _, col := range payload.Operation.Data.([]interface{}) {
-			dataString += fmt.Sprintf("DROP COLUMN %s,\n", col)
-		}
-	}
-	dataString, _ = strings.CutSuffix(dataString, ",\n")
+	dataString += fmt.Sprintf("ADD %s %s\n", payload.ColName, payload.Type)
+
+	return alterTable(db, tableName, dataString)
+}
+
+func UpdateColumn(db *sqlx.DB, tableName string, payload models.AddUpdateColumnPayload) error {
+
+	dataString := ""
+	dataString += fmt.Sprintf("MODIFY COLUMN %s %s\n", payload.ColName, payload.Type)
+
+	return alterTable(db, tableName, dataString)
+}
+
+func DeleteColumn(db *sqlx.DB, tableName string, payload models.DeleteColumnPayload) error {
+	dataString := ""
+	dataString += fmt.Sprintf("DROP COLUMN %s\n", payload.ColName)
+
+	return alterTable(db, tableName, dataString)
+}
+
+func alterTable(db *sqlx.DB, tableName string, dataString string) error {
 	_, err := db.Exec(fmt.Sprintf(`
 	ALTER TABLE %s 
 		%s

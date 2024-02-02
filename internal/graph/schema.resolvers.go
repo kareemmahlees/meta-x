@@ -82,10 +82,10 @@ func (r *mutationResolver) UpdateTable(ctx context.Context, name string, prop *m
 		}
 		data.Operation.Data = columnstoDetel
 	}
-	err := db.UpdateTable(r.DB, name, data)
-	if err != nil {
-		return nil, err
-	}
+	// err := db.UpdateTable(r.DB, name, data)
+	// if err != nil {
+	// 	return nil, err
+	// }
 	return &model.SuccessResponse{
 		Success: true,
 	}, nil
