@@ -1,7 +1,7 @@
 package models
 
-type ListDatabasesResult struct {
-	Databases []string
+type ListDatabasesResp struct {
+	Databases []*string
 }
 
 type CreateDatabaseResult struct {

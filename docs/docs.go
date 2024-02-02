@@ -38,7 +38,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/databases": {
+        "/database": {
             "get": {
                 "description": "list databases",
                 "produces": [
@@ -51,7 +51,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.ListDatabasesResult"
+                            "$ref": "#/definitions/models.ListDatabasesResp"
                         }
                     }
                 }
@@ -82,7 +82,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/models.CreateDatabaseResult"
+                            "$ref": "#/definitions/models.SuccessResp"
                         }
                     }
                 }
@@ -107,7 +107,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tables": {
+        "/table": {
             "get": {
                 "description": "list tables",
                 "produces": [
@@ -126,45 +126,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tables/{tableName}": {
-            "put": {
-                "description": "update table",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Tables"
-                ],
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "table name",
-                        "name": "tableName",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "update table data",
-                        "name": "tableData",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/lib.UpdateTableProps"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/routes.HandleUpdateDeleteResp"
-                        }
-                    }
-                }
-            },
+        "/table/{tableName}": {
             "post": {
                 "description": "create table",
                 "consumes": [
@@ -226,7 +188,146 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/routes.HandleUpdateDeleteResp"
+                            "$ref": "#/definitions/models.SuccessResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/table/{tableName}/column/add": {
+            "post": {
+                "description": "Add column to table",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tables"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "table name",
+                        "name": "tableName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "column data",
+                        "name": "columnData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AddUpdateColumnPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/models.SuccessResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/table/{tableName}/column/delete": {
+            "delete": {
+                "description": "Delete/Drop table column",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tables"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "table name",
+                        "name": "tableName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "column name",
+                        "name": "columnData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.DeleteColumnPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SuccessResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/table/{tableName}/column/modify": {
+            "put": {
+                "description": "Update table column",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tables"
+                ],
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "table name",
+                        "name": "tableName",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "column data",
+                        "name": "columnData",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/models.AddUpdateColumnPayload"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.SuccessResp"
+                        }
+                    }
+                }
+            }
+        },
+        "/table/{tableName}/describe": {
+            "get": {
+                "description": "Get detailed info about a specific table",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tables"
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/models.TableInfoResp"
                         }
                     }
                 }
@@ -234,37 +335,18 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "lib.UpdateTableProps": {
+        "models.AddUpdateColumnPayload": {
             "type": "object",
             "required": [
-                "operation"
+                "column_name",
+                "type"
             ],
             "properties": {
-                "operation": {
-                    "type": "object",
-                    "required": [
-                        "data",
-                        "type"
-                    ],
-                    "properties": {
-                        "data": {},
-                        "type": {
-                            "type": "string",
-                            "enum": [
-                                "add",
-                                "modify",
-                                "delete"
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "models.CreateDatabaseResult": {
-            "type": "object",
-            "properties": {
-                "created": {
-                    "type": "integer"
+                "column_name": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
                 }
             }
         },
@@ -305,7 +387,18 @@ const docTemplate = `{
                 }
             }
         },
-        "models.ListDatabasesResult": {
+        "models.DeleteColumnPayload": {
+            "type": "object",
+            "required": [
+                "column_name"
+            ],
+            "properties": {
+                "column_name": {
+                    "type": "string"
+                }
+            }
+        },
+        "models.ListDatabasesResp": {
             "type": "object",
             "properties": {
                 "databases": {
@@ -327,6 +420,30 @@ const docTemplate = `{
                 }
             }
         },
+        "models.SuccessResp": {
+            "type": "object",
+            "properties": {
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "models.TableInfoResp": {
+            "type": "object",
+            "properties": {
+                "default": {},
+                "key": {},
+                "name": {
+                    "type": "string"
+                },
+                "nullable": {
+                    "type": "string"
+                },
+                "type": {
+                    "type": "string"
+                }
+            }
+        },
         "routes.APIInfoResult": {
             "type": "object",
             "properties": {
@@ -341,14 +458,6 @@ const docTemplate = `{
                 },
                 "year": {
                     "type": "integer"
-                }
-            }
-        },
-        "routes.HandleUpdateDeleteResp": {
-            "type": "object",
-            "properties": {
-                "success": {
-                    "type": "boolean"
                 }
             }
         },

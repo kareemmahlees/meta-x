@@ -32,7 +32,3 @@ type AddUpdateColumnPayload struct {
 type DeleteColumnPayload struct {
 	ColName string `json:"column_name" validate:"required,alphanum"`
 }
-
-type SuccessResp struct {
-	Success bool `json:"success"`
-}

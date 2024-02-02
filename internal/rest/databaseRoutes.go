@@ -11,20 +11,20 @@ import (
 )
 
 func RegisterDatabasesRoutes(app *fiber.App, db *sqlx.DB) {
-	dbGroup := app.Group("databases")
+	dbGroup := app.Group("database")
 	dbGroup.Get("", utils.RouteHandler(db, handleListDatabases))
-	dbGroup.Post("/", utils.RouteHandler(db, handleCreateDatabase))
+	dbGroup.Post("", utils.RouteHandler(db, handleCreateDatabase))
 }
 
 // Lists databases
 //
 //	@tags			Databases
 //	@description	list databases
-//	@router			/databases [get]
+//	@router			/database [get]
 //	@produce		json
-//	@success		200	{object}	models.ListDatabasesResult
+//	@success		200	{object}	models.ListDatabasesResp
 func handleListDatabases(c *fiber.Ctx, db *sqlx.DB) error {
-	var dbs any
+	var dbs []*string
 	var err error
 
 	provider := c.Locals("provider")
@@ -37,35 +37,35 @@ func handleListDatabases(c *fiber.Ctx, db *sqlx.DB) error {
 	}
 
 	if err != nil {
-		return c.JSON(lib.ResponseError500(err.Error()))
+		return lib.InternalServerErr(c, err.Error())
 	}
-	return c.JSON(fiber.Map{"databases": dbs})
+	return c.JSON(models.ListDatabasesResp{Databases: dbs})
 }
 
 // Creates new pg/mysql database
 //
 //	@tags			Databases
 //	@description	create pg/mysql database
-//	@router			/databases [post]
+//	@router			/database [post]
 //	@produce		json
 //	@accept			json
 //	@param			pg_mysql_db_data	body		models.CreatePgMySqlDBPayload	true	"only supported for pg and mysql, because attached sqlite dbs are temporary"
-//	@success		201					{object}	models.CreateDatabaseResult
+//	@success		201					{object}	models.SuccessResp
 func handleCreateDatabase(c *fiber.Ctx, db *sqlx.DB) error {
 	payload := new(models.CreatePgMySqlDBPayload)
 
 	if err := c.BodyParser(payload); err != nil {
-		return c.JSON(lib.ResponseError400(err))
+		return lib.UnprocessableEntityErr(c, err.Error())
 	}
 
 	if errs := lib.ValidateStruct(payload); len(errs) > 0 {
-		return c.JSON(lib.ResponseError400(errs))
+		return lib.BadRequestErr(c, errs)
 	}
 
 	err := db_handlers.CreatePgMysqlDatabase(db, c.Locals("provider").(string), payload.Name)
 
 	if err != nil {
-		return c.Status(500).JSON(fiber.Map{"error": err})
+		return lib.InternalServerErr(c, err.Error())
 	}
-	return c.Status(201).JSON(fiber.Map{"success": true})
+	return c.Status(201).JSON(models.SuccessResp{Success: true})
 }

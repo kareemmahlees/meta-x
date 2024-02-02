@@ -12,24 +12,24 @@ import (
 )
 
 func RegisterTablesRoutes(app *fiber.App, db *sqlx.DB) {
-	tableGroup := app.Group("tables")
+	tableGroup := app.Group("table")
 	tableGroup.Get("", utils.RouteHandler(db, handleListTables))
-	tableGroup.Get("/:tableName/describe", utils.RouteHandler(db, handeGetTableInfo))
+	tableGroup.Get("/:tableName/describe", utils.RouteHandler(db, handleGetTableInfo))
 	tableGroup.Post("/:tableName", utils.RouteHandler(db, handleCreateTable))
 	tableGroup.Delete("/:tableName", utils.RouteHandler(db, handleDeleteTable))
-	tableGroup.Post("/:tableName/add", utils.RouteHandler(db, handleAddColumn))
-	tableGroup.Put("/:tableName/modify", utils.RouteHandler(db, handleUpdateColumn))
-	tableGroup.Delete("/:tableName/delete", utils.RouteHandler(db, handleDeleteColumn))
+	tableGroup.Post("/:tableName/column/add", utils.RouteHandler(db, handleAddColumn))
+	tableGroup.Put("/:tableName/column/modify", utils.RouteHandler(db, handleUpdateColumn))
+	tableGroup.Delete("/:tableName/column/delete", utils.RouteHandler(db, handleDeleteColumn))
 }
 
 // Get detailed info about the specified table
 //
-// @tags Tables
-// @description Get detailed info about a specific table
-// @router /tables/{tableName}/describe
-// @produce json
-// @success 200 {object} models.TableInfoResp
-func handeGetTableInfo(c *fiber.Ctx, db *sqlx.DB) error {
+//	@tags			Tables
+//	@description	Get detailed info about a specific table
+//	@router			/table/{tableName}/describe [get]
+//	@produce		json
+//	@success		200	{object}	models.TableInfoResp
+func handleGetTableInfo(c *fiber.Ctx, db *sqlx.DB) error {
 	tableName := c.Params("tableName")
 
 	if err := lib.ValidateVar(tableName, "required,alpha"); err != nil {
@@ -46,7 +46,7 @@ func handeGetTableInfo(c *fiber.Ctx, db *sqlx.DB) error {
 //
 //	@tags			Tables
 //	@description	list tables
-//	@router			/tables [get]
+//	@router			/table [get]
 //	@produce		json
 //	@success		200	{object}	models.ListTablesResp
 func handleListTables(c *fiber.Ctx, db *sqlx.DB) error {
@@ -61,8 +61,8 @@ func handleListTables(c *fiber.Ctx, db *sqlx.DB) error {
 //
 //	@tags			Tables
 //	@description	create table
-//	@router			/tables/{tableName} [post]
-//	@param			tableName	path	string					true	"table name"
+//	@router			/table/{tableName} [post]
+//	@param			tableName	path	string						true	"table name"
 //	@param			tableData	body	models.CreateTablePayload	true	"create table data"
 //	@accept			json
 //	@produce		json
@@ -93,8 +93,8 @@ func handleCreateTable(c *fiber.Ctx, db *sqlx.DB) error {
 //
 //	@tags			Tables
 //	@description	Add column to table
-//	@router			/tables/{tableName}/add [post]
-//	@param			tableName	path	string					true	"table name"
+//	@router			/table/{tableName}/column/add [post]
+//	@param			tableName	path	string							true	"table name"
 //	@param			columnData	body	models.AddUpdateColumnPayload	true	"column data"
 //	@accept			json
 //	@produce		json
@@ -121,8 +121,8 @@ func handleAddColumn(c *fiber.Ctx, db *sqlx.DB) error {
 //
 //	@tags			Tables
 //	@description	Update table column
-//	@router			/tables/{tableName}/modify [put]
-//	@param			tableName	path	string					true	"table name"
+//	@router			/table/{tableName}/column/modify [put]
+//	@param			tableName	path	string							true	"table name"
 //	@param			columnData	body	models.AddUpdateColumnPayload	true	"column data"
 //	@accept			json
 //	@produce		json
@@ -153,8 +153,8 @@ func handleUpdateColumn(c *fiber.Ctx, db *sqlx.DB) error {
 //
 //	@tags			Tables
 //	@description	Delete/Drop table column
-//	@router			/tables/{tableName}/delete [delete]
-//	@param			tableName	path	string					true	"table name"
+//	@router			/table/{tableName}/column/delete [delete]
+//	@param			tableName	path	string						true	"table name"
 //	@param			columnData	body	models.DeleteColumnPayload	true	"column name"
 //	@accept			json
 //	@produce		json
@@ -181,7 +181,7 @@ func handleDeleteColumn(c *fiber.Ctx, db *sqlx.DB) error {
 //
 //	@tags		Tables
 //	@decription	delete table
-//	@router		/tables/{tableName} [delete]
+//	@router		/table/{tableName} [delete]
 //	@param		tableName	path	string	true	"table name"
 //	@accept		json
 //	@produce	json
