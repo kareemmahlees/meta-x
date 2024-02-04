@@ -29,7 +29,7 @@ var sqlite3Command = &cobra.Command{
 func init() {
 
 	sqlite3Command.Flags().StringP("file", "f", "", "database file path")
-	sqlite3Command.MarkFlagRequired("file")
+	_ = sqlite3Command.MarkFlagRequired("file")
 
 	rootCmd.AddCommand(sqlite3Command)
 }
