@@ -83,16 +83,16 @@ func (suite *TableRoutesTestSuite) TearDownSuite() {
 
 func (suite *TableRoutesTestSuite) BeforeTest(suiteName, testName string) {
 	queryString := "CREATE TABLE test ( name varchar(255) );"
-	suite.sqliteConnection.Exec(queryString)
-	suite.pgConnection.Exec(queryString)
-	suite.mysqlConnection.Exec(queryString)
+	_, _ = suite.sqliteConnection.Exec(queryString)
+	_, _ = suite.pgConnection.Exec(queryString)
+	_, _ = suite.mysqlConnection.Exec(queryString)
 }
 
 func (suite *TableRoutesTestSuite) AfterTest(suiteName, testName string) {
 	queryString := "DROP TABLE test;"
-	suite.sqliteConnection.Exec(queryString)
-	suite.pgConnection.Exec(queryString)
-	suite.mysqlConnection.Exec(queryString)
+	_, _ = suite.sqliteConnection.Exec(queryString)
+	_, _ = suite.pgConnection.Exec(queryString)
+	_, _ = suite.mysqlConnection.Exec(queryString)
 }
 
 func (suite *TableRoutesTestSuite) TestRegisterTablesRoutes() {

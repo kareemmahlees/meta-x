@@ -80,16 +80,16 @@ func (suite *TablesTestSuite) TearDownSuite() {
 
 func (suite *TablesTestSuite) BeforeTest(suiteName, testName string) {
 	queryString := "CREATE TABLE test ( name varchar(255) );"
-	suite.sqliteConnection.Exec(queryString)
-	suite.pgConnection.Exec(queryString)
-	suite.mysqlConnection.Exec(queryString)
+	_, _ = suite.sqliteConnection.Exec(queryString)
+	_, _ = suite.pgConnection.Exec(queryString)
+	_, _ = suite.mysqlConnection.Exec(queryString)
 }
 
 func (suite *TablesTestSuite) AfterTest(suiteName, testName string) {
 	queryString := "DROP TABLE test;"
-	suite.sqliteConnection.Exec(queryString)
-	suite.pgConnection.Exec(queryString)
-	suite.mysqlConnection.Exec(queryString)
+	_, _ = suite.sqliteConnection.Exec(queryString)
+	_, _ = suite.pgConnection.Exec(queryString)
+	_, _ = suite.mysqlConnection.Exec(queryString)
 }
 
 func (suite *TablesTestSuite) TestDescribeTable() {

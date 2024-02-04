@@ -18,7 +18,9 @@ import (
 func TestCreatePostgresContainer(t *testing.T) {
 	ctx := context.Background()
 	pgContainer, err := utils.CreatePostgresContainer(ctx)
-	defer pgContainer.Terminate(ctx)
+	defer func() {
+		_ = pgContainer.Terminate(ctx)
+	}()
 
 	assert.Nil(t, err)
 
@@ -34,7 +36,9 @@ func TestCreatePostgresContainer(t *testing.T) {
 func TestCreateMySQLContainer(t *testing.T) {
 	ctx := context.Background()
 	mysqlContainer, err := utils.CreateMySQLContainer(ctx)
-	defer mysqlContainer.Terminate(ctx)
+	defer func() {
+		_ = mysqlContainer.Terminate(ctx)
+	}()
 
 	assert.Nil(t, err)
 
