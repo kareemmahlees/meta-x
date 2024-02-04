@@ -8,7 +8,9 @@ import (
 	"github.com/valyala/fasthttp/fasthttpadaptor"
 )
 
-func RouteHandler(db *sqlx.DB, routeHandlerFunc func(*fiber.Ctx, *sqlx.DB) error) fiber.Handler {
+type RouteHandlerFunc func(*fiber.Ctx, *sqlx.DB) error
+
+func RouteHandler(db *sqlx.DB, routeHandlerFunc RouteHandlerFunc) fiber.Handler {
 	fn := func(c *fiber.Ctx) error {
 		return routeHandlerFunc(c, db)
 	}

@@ -57,7 +57,6 @@ func InitDBAndServer(provider, cfg string, port int) error {
 	fmt.Println(utils.NewStyle("Playground", "#B6B5B5"), fmt.Sprintf("http://localhost:%d/playground\n", port))
 
 	if err := app.Listen(fmt.Sprintf(":%d", port)); err != nil {
-		// log.Error(err)
 		return err
 	}
 	return nil

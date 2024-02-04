@@ -106,3 +106,8 @@ func SliceOfPointersToSliceOfValues[T any](s []*T) []T {
 	}
 	return v
 }
+
+type FiberRoute struct {
+	Method string
+	Path   string
+}

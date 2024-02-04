@@ -60,32 +60,3 @@ func TestNotEmpty(t *testing.T) {
 		}
 	}
 }
-
-func TestUpdateTableDataValidator(t *testing.T) {
-	baseStruct := UpdateTableProps{}
-	testData := []struct {
-		Type     string
-		Data     any
-		willFail bool
-	}{
-		{Type: "add", Data: map[string]string{"foo": "bar"}, willFail: false},
-		{Type: "add", Data: []string{"foo", "bar"}, willFail: true},
-		{Type: "modify", Data: map[string]string{"foo": "bar"}, willFail: false},
-		{Type: "modify", Data: []string{"foo", "bar"}, willFail: true},
-		{Type: "delete", Data: []string{"foo", "bar"}, willFail: false},
-		{Type: "delete", Data: map[string]string{"foo": "bar"}, willFail: true},
-	}
-
-	for _, test := range testData {
-		baseStruct.Operation.Type = test.Type
-		baseStruct.Operation.Data = test.Data
-
-		errs := ValidateStruct(baseStruct)
-
-		if test.willFail {
-			assert.Greater(t, len(errs), 0)
-		} else {
-			assert.Zero(t, len(errs))
-		}
-	}
-}

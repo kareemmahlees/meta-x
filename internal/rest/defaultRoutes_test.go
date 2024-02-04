@@ -16,32 +16,17 @@ func TestRegisterDefaultRoutes(t *testing.T) {
 
 	RegisterDefaultRoutes(app)
 
-	var routes []struct {
-		method string
-		params []string
-		path   string
-	}
-
+	var routes []utils.FiberRoute
 	for _, route := range app.GetRoutes() {
-		routes = append(routes, struct {
-			method string
-			params []string
-			path   string
-		}{
-			method: route.Method,
-			params: route.Params,
-			path:   route.Path,
+		routes = append(routes, utils.FiberRoute{
+			Method: route.Method,
+			Path:   route.Path,
 		})
 	}
 
-	assert.Contains(t, routes, struct {
-		method string
-		params []string
-		path   string
-	}{
-		method: "GET",
-		params: []string(nil),
-		path:   "/health",
+	assert.Contains(t, routes, utils.FiberRoute{
+		Method: "GET",
+		Path:   "/health",
 	})
 
 }
