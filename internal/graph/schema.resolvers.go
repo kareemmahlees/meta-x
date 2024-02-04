@@ -74,7 +74,7 @@ func (r *mutationResolver) ModifyColumn(ctx context.Context, tableName string, d
 		ColName: *data.ColName,
 		Type:    *data.Type,
 	}
-	err := db.UpdateColumn(r.DB, tableName, convertedData)
+	err := db.UpdateColumn(r.DB, r.Provider, tableName, convertedData)
 	if err != nil {
 		return nil, err
 	}

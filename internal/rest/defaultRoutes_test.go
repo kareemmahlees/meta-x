@@ -53,7 +53,7 @@ func TestHealthCheck(t *testing.T) {
 	req := httptest.NewRequest("GET", "http://localhost:4000/health", nil)
 
 	resp, _ := app.Test(req)
-	payload := utils.ReadBody[map[string]any](resp.Body)
+	payload := utils.DecodeBody[map[string]any](resp.Body)
 
 	assert.Equal(t, resp.StatusCode, fiber.StatusOK)
 
@@ -69,7 +69,7 @@ func TestBaseUrl(t *testing.T) {
 
 	resp, err := app.Test(req)
 	assert.Nil(t, err)
-	_ = utils.ReadBody[map[string]any](resp.Body)
+	_ = utils.DecodeBody[map[string]any](resp.Body)
 
 	assert.Equal(t, resp.StatusCode, fiber.StatusOK)
 }

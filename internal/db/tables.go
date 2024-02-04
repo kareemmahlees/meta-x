@@ -40,8 +40,8 @@ func GetTableInfo(db *sqlx.DB, tableName, provider string) (result []*models.Tab
 		SELECT column_name AS name,
 			column_type AS type,
 			is_nullable AS nullable,
-			column_key AS key,
-			column_default AS default
+			column_key AS 'key',
+			column_default AS 'default'
 		FROM information_schema.columns
 		WHERE table_name='%s';
 		`
@@ -83,7 +83,7 @@ func ListTables(db *sqlx.DB, provider string) (result []*string, err error) {
 	var tables = []*string{}
 	for rows.Next() {
 		table := new(string)
-		err := rows.Scan(table)
+		err := rows.Scan(&table)
 		if err != nil {
 			return nil, err
 		}
@@ -130,10 +130,14 @@ func AddColumn(db *sqlx.DB, tableName string, payload models.AddModifyColumnPayl
 	return alterTable(db, tableName, dataString)
 }
 
-func UpdateColumn(db *sqlx.DB, tableName string, payload models.AddModifyColumnPayload) error {
-
+func UpdateColumn(db *sqlx.DB, provider, tableName string, payload models.AddModifyColumnPayload) error {
 	dataString := ""
-	dataString += fmt.Sprintf("MODIFY COLUMN %s %s\n", payload.ColName, payload.Type)
+	switch provider {
+	case lib.PSQL:
+		dataString += fmt.Sprintf("ALTER COLUMN %s TYPE %s\n", payload.ColName, payload.Type)
+	default:
+		dataString += fmt.Sprintf("MODIFY COLUMN %s %s\n", payload.ColName, payload.Type)
+	}
 
 	return alterTable(db, tableName, dataString)
 }

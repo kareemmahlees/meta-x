@@ -15,7 +15,7 @@ func TestReadBody(t *testing.T) {
 		"age": 123
 	}`))
 
-	singleJsonBodyRes := ReadBody[map[string]any](testBody)
+	singleJsonBodyRes := DecodeBody[map[string]any](testBody)
 
 	val, ok := singleJsonBodyRes["name"]
 	assert.True(t, ok)
@@ -37,7 +37,7 @@ func TestReadBody(t *testing.T) {
 		}
 	 ]`))
 
-	listOfJsonRes := ReadBody[[]map[string]any](testBody)
+	listOfJsonRes := DecodeBody[[]map[string]any](testBody)
 
 	val, ok = listOfJsonRes[1]["name"]
 	assert.True(t, ok)

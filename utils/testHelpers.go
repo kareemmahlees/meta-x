@@ -1,9 +1,14 @@
 package utils
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
+	"io"
+	"log"
 	"time"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/mysql"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -64,4 +69,40 @@ func CreateMySQLContainer(ctx context.Context) (*MySQLContainer, error) {
 		MySQLContainer:   mysqlContainer,
 		ConnectionString: connStr,
 	}, nil
+}
+
+func NewTestingFiberApp(provider string) *fiber.App {
+	app := fiber.New()
+	app.Use(func(c *fiber.Ctx) error {
+		c.Locals("provider", provider)
+		return c.Next()
+	})
+	return app
+}
+
+func EncodeBody[T any](body T) *bytes.Buffer {
+	var buf bytes.Buffer
+	err := json.NewEncoder(&buf).Encode(body)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return &buf
+}
+
+func DecodeBody[K any](body io.ReadCloser) K {
+	var parsedPayload K
+	decoder := json.NewDecoder(body)
+	err := decoder.Decode(&parsedPayload)
+	if err != nil {
+		log.Fatal(err)
+	}
+	return parsedPayload
+}
+
+func SliceOfPointersToSliceOfValues[T any](s []*T) []T {
+	v := make([]T, len(s))
+	for i, p := range s {
+		v[i] = *p
+	}
+	return v
 }

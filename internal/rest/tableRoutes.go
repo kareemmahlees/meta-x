@@ -28,7 +28,7 @@ func RegisterTablesRoutes(app *fiber.App, db *sqlx.DB) {
 //	@description	Get detailed info about a specific table
 //	@router			/table/{tableName}/describe [get]
 //	@produce		json
-//	@success		200	{object}	models.TableInfoResp
+//	@success		200	{object}	[]models.TableInfoResp
 func handleGetTableInfo(c *fiber.Ctx, db *sqlx.DB) error {
 	tableName := c.Params("tableName")
 
@@ -142,7 +142,7 @@ func handleModifyColumn(c *fiber.Ctx, db *sqlx.DB) error {
 	if errs := lib.ValidateStruct(payload); len(errs) > 0 {
 		return lib.BadRequestErr(c, errs)
 	}
-	err := db_handlers.UpdateColumn(db, c.Params("tableName"), payload)
+	err := db_handlers.UpdateColumn(db, c.Locals("provider").(string), c.Params("tableName"), payload)
 	if err != nil {
 		return lib.InternalServerErr(c, err.Error())
 	}
