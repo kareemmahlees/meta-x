@@ -1,9 +1,8 @@
 <h1 align='center'>
-    MySQL Meta
+    MetaX
 </h1>
 <p align='center'>
-    RESTfull & GraphQL API to manage your MySQL Database
-</p>
+    RESTfull & GraphQL API for your database</p>
 
 <div align='center'>
 
@@ -15,7 +14,7 @@
 
 ## What does it introduce
 
-MySQL Meta introduces a RESTFull and GraphQL API that allows you to control your MySQL database through http requests, i.e creating tables and databases, adding columns and deleting columns.
+**MetaX** introduces a _RESTFull_ and _GraphQL_ API that allows you to control your database through http requests programmatically, i.e creating tables and databases, adding columns and deleting columns, etc .
 
 ![Screen shot of running application](./docs/screenshot.png)
 
@@ -37,33 +36,27 @@ MySQL Meta introduces a RESTFull and GraphQL API that allows you to control your
 
 ## Running
 
-#### Environment Variables Setup
+Once you [installed](#installation) the binary, _MetaX_ comes with subocommands to each you can supply your database connection parameters as command line flags.
 
-Before starting the application, MySQL Meta expects some env vars to be set, you can find them also in the [.env.example](.env.example) file
-
-Once you [installed](#installation) the application you can run it like so:
+You can find all about the commands by running with the `--help` flag:
 
 ```shell
-mysql-meta
+meta-x --help
 ```
 
-MySQL Meta by default serves on port 4000, you can configure the port by passing the `--port` flag:
+_MetaX_ by default serves on port `5522`, you can configure the port by passing the `--port` flag:
 
 ```shell
-mysql-meta --port 4444
+meta-x --port 4444
 ```
 
 ## Documentation
 
-The API is fully documented, the REST version is documented using **Swagger Docs** and is served on `http://localhost:4000/swagger`
+The API is fully documented, the REST version is documented using **Swagger Docs** and is served on `http://localhost:5522/swagger`
 
-Regarding the GraphQL version, you can run the application and then use the GraphQL endpoint `http://localhost:4000/graphql` to introspect the schema with your favorite tool, e.g postman, insomnia, hoppscotch.
+Regarding the GraphQL version, you can run the application and then use the GraphQL endpoint `http://localhost:5522/graphql` to introspect the schema with your favorite tool, e.g postman, insomnia, hoppscotch.
 
-Additionally, you can playaround with the GraphQL version by jumping into the playground at `http://localhost:4000/playground`
-
-## With Postman
-
-MySQL Meta is well integrated with postman, you can import the collection along side it's documentation from the REST specification in the [postman collection folder](postman/collections/)
+Additionally, you can playaround with the GraphQL version by jumping into the playground at `http://localhost:5522/playground`
 
 ## Progress Track
 
