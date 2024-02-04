@@ -31,7 +31,7 @@ func CreatePostgresContainer(ctx context.Context) (*PostgresContainer, error) {
 		testcontainers.WithImage("postgres:15"),
 		postgres.WithDatabase("test-db"),
 		postgres.WithUsername("postgres"),
-		postgres.WithPassword("postgres"),
+		postgres.WithPassword("postgres"), // pragma: allowlist secret
 		testcontainers.WithWaitStrategy(
 			wait.ForLog("database system is ready to accept connections").
 				WithOccurrence(2).WithStartupTimeout(5*time.Second)),
@@ -55,7 +55,7 @@ func CreateMySQLContainer(ctx context.Context) (*MySQLContainer, error) {
 		testcontainers.WithImage("mysql:latest"),
 		mysql.WithDatabase("test-db"),
 		mysql.WithUsername("root"),
-		mysql.WithPassword("root"),
+		mysql.WithPassword("root"), // pragma: allowlist secret
 	)
 	if err != nil {
 		return nil, err
