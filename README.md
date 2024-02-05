@@ -7,7 +7,6 @@
 <div align='center'>
 
 ![GitHub go.mod Go version (subdirectory of monorepo)](https://img.shields.io/github/go-mod/go-version/kareemmahlees/mysql-meta)
-![Codecov](https://img.shields.io/codecov/c/github/kareemmahlees/mysql-meta)
 ![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/kareemmahlees/mysql-meta/lint.yml)
 
 </div>
