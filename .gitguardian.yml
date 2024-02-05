@@ -1,0 +1,8 @@
+version: 2
+
+secret:
+  ignored-paths:
+    - "**/README.md"
+    - "docs/*"
+    - "LICENSE"
+    - "./utils/testHelpers.go"

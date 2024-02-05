@@ -7,5 +7,6 @@ import "github.com/jmoiron/sqlx"
 // It serves as dependency injection for your app, add any dependencies you require here.
 
 type Resolver struct {
-	DB *sqlx.DB
+	DB       *sqlx.DB
+	Provider string
 }

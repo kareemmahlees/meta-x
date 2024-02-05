@@ -1,4 +1,6 @@
 tmp
 bin
 .env
+.env.*
 coverage
+*.db

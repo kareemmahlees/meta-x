@@ -1,6 +1,8 @@
-package routes
+package routes_test
 
 import (
+	routes "meta-x/internal/rest"
+	"meta-x/utils"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
@@ -9,34 +11,21 @@ import (
 
 func TestSetup(t *testing.T) {
 	app := fiber.New()
-	Setup(app, nil)
+	routes.Setup(app, nil)
 
-	var routes []struct {
-		method string
-		params []string
-		path   string
-	}
+	var routes []utils.FiberRoute
 
 	for _, route := range app.GetRoutes() {
-		routes = append(routes, struct {
-			method string
-			params []string
-			path   string
-		}{
-			method: route.Method,
-			params: route.Params,
-			path:   route.Path,
+		routes = append(routes, utils.FiberRoute{
+			Method: route.Method,
+			Path:   route.Path,
 		})
 	}
 
-	testData := []struct {
-		method string
-		params []string
-		path   string
-	}{
-		{method: "GET", params: []string(nil), path: "/health"},
-		{method: "GET", params: []string(nil), path: "/databases"},
-		{method: "GET", params: []string(nil), path: "/tables"},
+	testData := []utils.FiberRoute{
+		{Method: "GET", Path: "/health"},
+		{Method: "GET", Path: "/database"},
+		{Method: "GET", Path: "/table"},
 	}
 	for _, test := range testData {
 		assert.Contains(t, routes, test)

@@ -1,36 +1,76 @@
 basePath: /
 definitions:
-  lib.CreateTableProps:
+  models.AddUpdateColumnPayload:
     properties:
+      column_name:
+        type: string
+      type:
+        type: string
+    required:
+    - column_name
+    - type
+    type: object
+  models.CreatePgMySqlDBPayload:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  models.CreateTablePayload:
+    properties:
+      column_name:
+        type: string
       default: {}
       nullable: {}
       type:
-        enum:
-        - text
-        - number
-        - date
         type: string
       unique: {}
     required:
+    - column_name
     - type
     type: object
-  lib.UpdateTableProps:
+  models.CreateTableResp:
     properties:
-      operation:
-        properties:
-          data: {}
-          type:
-            enum:
-            - add
-            - modify
-            - delete
-            type: string
-        required:
-        - data
-        - type
-        type: object
+      created:
+        type: string
+    type: object
+  models.DeleteColumnPayload:
+    properties:
+      column_name:
+        type: string
     required:
-    - operation
+    - column_name
+    type: object
+  models.ListDatabasesResp:
+    properties:
+      databases:
+        items:
+          type: string
+        type: array
+    type: object
+  models.ListTablesResp:
+    properties:
+      tables:
+        items:
+          type: string
+        type: array
+    type: object
+  models.SuccessResp:
+    properties:
+      success:
+        type: boolean
+    type: object
+  models.TableInfoResp:
+    properties:
+      default: {}
+      key: {}
+      name:
+        type: string
+      nullable:
+        type: string
+      type:
+        type: string
     type: object
   routes.APIInfoResult:
     properties:
@@ -43,46 +83,12 @@ definitions:
       year:
         type: integer
     type: object
-  routes.HandleCreateDatabaseResult:
-    properties:
-      created:
-        type: integer
-    type: object
-  routes.HandleCreateTableBody:
-    properties:
-      colName:
-        $ref: '#/definitions/lib.CreateTableProps'
-    type: object
-  routes.HandleCreateTableResp:
-    properties:
-      created:
-        type: string
-    type: object
-  routes.HandleListDatabasesResult:
-    properties:
-      databases:
-        items:
-          type: string
-        type: array
-    type: object
-  routes.HandleListTablesResp:
-    properties:
-      tables:
-        items:
-          type: string
-        type: array
-    type: object
-  routes.HandleUpdateDeleteResp:
-    properties:
-      success:
-        type: boolean
-    type: object
   routes.HealthCheckResult:
     properties:
       date:
         type: string
     type: object
-host: localhost:4000
+host: localhost:5522
 info:
   contact:
     email: kareemmahlees@gmail.com
@@ -103,30 +109,37 @@ paths:
             $ref: '#/definitions/routes.APIInfoResult'
       tags:
       - default
-  /databases:
+  /database:
     get:
+      description: list databases
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/routes.HandleListDatabasesResult'
+            $ref: '#/definitions/models.ListDatabasesResp'
       tags:
       - Databases
     post:
-      description: create database
+      consumes:
+      - application/json
+      description: create pg/mysql database
       parameters:
-      - description: database name
-        in: path
-        name: name
+      - description: only supported for pg and mysql, because attached sqlite dbs
+          are temporary
+        in: body
+        name: pg_mysql_db_data
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/models.CreatePgMySqlDBPayload'
+      produces:
+      - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/routes.HandleCreateDatabaseResult'
+            $ref: '#/definitions/models.SuccessResp'
       tags:
       - Databases
   /health:
@@ -141,7 +154,7 @@ paths:
             $ref: '#/definitions/routes.HealthCheckResult'
       tags:
       - default
-  /tables:
+  /table:
     get:
       description: list tables
       produces:
@@ -150,10 +163,10 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/routes.HandleListTablesResp'
+            $ref: '#/definitions/models.ListTablesResp'
       tags:
       - Tables
-  /tables/{tableName}:
+  /table/{tableName}:
     delete:
       consumes:
       - application/json
@@ -169,7 +182,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/routes.HandleUpdateDeleteResp'
+            $ref: '#/definitions/models.SuccessResp'
       tags:
       - Tables
     post:
@@ -187,40 +200,104 @@ paths:
         name: tableData
         required: true
         schema:
-          $ref: '#/definitions/routes.HandleCreateTableBody'
+          $ref: '#/definitions/models.CreateTablePayload'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/routes.HandleCreateTableResp'
+            $ref: '#/definitions/models.CreateTableResp'
       tags:
       - Tables
-    put:
+  /table/{tableName}/column/add:
+    post:
       consumes:
       - application/json
-      - application/json
-      description: update table
+      description: Add column to table
       parameters:
       - description: table name
         in: path
         name: tableName
         required: true
         type: string
-      - description: update table data
+      - description: column data
         in: body
-        name: tableData
+        name: columnData
         required: true
         schema:
-          $ref: '#/definitions/lib.UpdateTableProps'
+          $ref: '#/definitions/models.AddUpdateColumnPayload'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/models.SuccessResp'
+      tags:
+      - Tables
+  /table/{tableName}/column/delete:
+    delete:
+      consumes:
+      - application/json
+      description: Delete/Drop table column
+      parameters:
+      - description: table name
+        in: path
+        name: tableName
+        required: true
+        type: string
+      - description: column name
+        in: body
+        name: columnData
+        required: true
+        schema:
+          $ref: '#/definitions/models.DeleteColumnPayload'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/routes.HandleUpdateDeleteResp'
+            $ref: '#/definitions/models.SuccessResp'
+      tags:
+      - Tables
+  /table/{tableName}/column/modify:
+    put:
+      consumes:
+      - application/json
+      description: Update table column
+      parameters:
+      - description: table name
+        in: path
+        name: tableName
+        required: true
+        type: string
+      - description: column data
+        in: body
+        name: columnData
+        required: true
+        schema:
+          $ref: '#/definitions/models.AddUpdateColumnPayload'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.SuccessResp'
+      tags:
+      - Tables
+  /table/{tableName}/describe:
+    get:
+      description: Get detailed info about a specific table
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/models.TableInfoResp'
       tags:
       - Tables
 swagger: "2.0"

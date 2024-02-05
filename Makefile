@@ -1,20 +1,11 @@
 build:
 	@go build -o bin/
 run: build
-	@./bin/mysql-meta.exe
-watch:
-	@docker compose up -d mysql-meta
-	@air
+	@./bin/meta-x.exe
 testv:
-	@go test -v ./...
-setup_test:
-	@docker compose up -d test
-test:
-	-@go test ./...
-cleanup_test:
-	@docker compose down
+	@go test ./... -race
 swag:
 	@swag fmt
-	@swag init
-generate:
+	@swag init 
+graphql:
 	@go run github.com/99designs/gqlgen generate

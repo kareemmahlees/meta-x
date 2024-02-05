@@ -4,8 +4,9 @@ import (
 	"net/http/httptest"
 	"testing"
 
+	"meta-x/utils"
+
 	"github.com/gofiber/fiber/v2"
-	"github.com/kareemmahlees/mysql-meta/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -15,32 +16,17 @@ func TestRegisterDefaultRoutes(t *testing.T) {
 
 	RegisterDefaultRoutes(app)
 
-	var routes []struct {
-		method string
-		params []string
-		path   string
-	}
-
+	var routes []utils.FiberRoute
 	for _, route := range app.GetRoutes() {
-		routes = append(routes, struct {
-			method string
-			params []string
-			path   string
-		}{
-			method: route.Method,
-			params: route.Params,
-			path:   route.Path,
+		routes = append(routes, utils.FiberRoute{
+			Method: route.Method,
+			Path:   route.Path,
 		})
 	}
 
-	assert.Contains(t, routes, struct {
-		method string
-		params []string
-		path   string
-	}{
-		method: "GET",
-		params: []string(nil),
-		path:   "/health",
+	assert.Contains(t, routes, utils.FiberRoute{
+		Method: "GET",
+		Path:   "/health",
 	})
 
 }
@@ -52,7 +38,7 @@ func TestHealthCheck(t *testing.T) {
 	req := httptest.NewRequest("GET", "http://localhost:4000/health", nil)
 
 	resp, _ := app.Test(req)
-	payload := utils.ReadBody[map[string]any](resp.Body)
+	payload := utils.DecodeBody[map[string]any](resp.Body)
 
 	assert.Equal(t, resp.StatusCode, fiber.StatusOK)
 
@@ -68,7 +54,7 @@ func TestBaseUrl(t *testing.T) {
 
 	resp, err := app.Test(req)
 	assert.Nil(t, err)
-	_ = utils.ReadBody[map[string]any](resp.Body)
+	_ = utils.DecodeBody[map[string]any](resp.Body)
 
 	assert.Equal(t, resp.StatusCode, fiber.StatusOK)
 }

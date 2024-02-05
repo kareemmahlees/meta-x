@@ -1,141 +1,198 @@
 package routes
 
 import (
+	_ "meta-x/docs"
+	db_handlers "meta-x/internal/db"
+	"meta-x/lib"
+	"meta-x/models"
+	"meta-x/utils"
+
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
-	_ "github.com/kareemmahlees/mysql-meta/docs"
-	db_handlers "github.com/kareemmahlees/mysql-meta/internal/db"
-	"github.com/kareemmahlees/mysql-meta/lib"
-	"github.com/kareemmahlees/mysql-meta/utils"
 )
 
 func RegisterTablesRoutes(app *fiber.App, db *sqlx.DB) {
-	tableGroup := app.Group("tables")
+	tableGroup := app.Group("table")
 	tableGroup.Get("", utils.RouteHandler(db, handleListTables))
-	tableGroup.Get("/:tableName/describe", utils.RouteHandler(db, handeGetTableInfo))
+	tableGroup.Get("/:tableName/describe", utils.RouteHandler(db, handleGetTableInfo))
 	tableGroup.Post("/:tableName", utils.RouteHandler(db, handleCreateTable))
 	tableGroup.Delete("/:tableName", utils.RouteHandler(db, handleDeleteTable))
-	tableGroup.Put("/:tableName", utils.RouteHandler(db, handleUpdateTable))
+	tableGroup.Post("/:tableName/column/add", utils.RouteHandler(db, handleAddColumn))
+	tableGroup.Put("/:tableName/column/modify", utils.RouteHandler(db, handleModifyColumn))
+	tableGroup.Delete("/:tableName/column/delete", utils.RouteHandler(db, handleDeleteColumn))
 }
 
-func handeGetTableInfo(c *fiber.Ctx, db *sqlx.DB) error {
-	if err := lib.ValidateVar(c.Params("tableName"), "required,alpha"); err != nil {
-		return c.JSON(lib.ResponseError400(err.Error()))
+// Get detailed info about the specified table
+//
+//	@tags			Tables
+//	@description	Get detailed info about a specific table
+//	@router			/table/{tableName}/describe [get]
+//	@produce		json
+//	@success		200	{object}	[]models.TableInfoResp
+func handleGetTableInfo(c *fiber.Ctx, db *sqlx.DB) error {
+	tableName := c.Params("tableName")
+
+	if err := lib.ValidateVar(tableName, "required,alpha"); err != nil {
+		return lib.BadRequestErr(c, err.Error())
 	}
-	info, err := db_handlers.GetTableInfo(db, c.Params("tableName"))
+	tableInfo, err := db_handlers.GetTableInfo(db, tableName, c.Locals("provider").(string))
 	if err != nil {
-		return c.JSON(lib.ResponseError500(err.Error()))
+		return lib.InternalServerErr(c, err.Error())
 	}
-	return c.JSON(info)
-}
-
-type HandleListTablesResp struct {
-	Tables []string
+	return c.JSON(tableInfo)
 }
 
 // Lists all tables in the database
 //
 //	@tags			Tables
 //	@description	list tables
-//	@router			/tables [get]
+//	@router			/table [get]
 //	@produce		json
-//	@success		200	{object}	HandleListTablesResp
+//	@success		200	{object}	models.ListTablesResp
 func handleListTables(c *fiber.Ctx, db *sqlx.DB) error {
-	tables, err := db_handlers.ListTables(db)
+	tables, err := db_handlers.ListTables(db, c.Locals("provider").(string))
 	if err != nil {
-		return c.JSON(lib.ResponseError500(err.Error()))
+		return lib.InternalServerErr(c, err.Error())
 	}
-	return c.JSON(fiber.Map{"tables": tables})
-}
-
-type HandleCreateTableResp struct {
-	Created string
-}
-type HandleCreateTableBody struct {
-	ColName lib.CreateTableProps
+	return c.JSON(models.ListTablesResp{Tables: tables})
 }
 
 // Creates a Table
 //
 //	@tags			Tables
 //	@description	create table
-//	@router			/tables/{tableName} [post]
-//	@param			tableName	path	string					true	"table name"
-//	@param			tableData	body	HandleCreateTableBody	true	"create table data"
+//	@router			/table/{tableName} [post]
+//	@param			tableName	path	string						true	"table name"
+//	@param			tableData	body	models.CreateTablePayload	true	"create table data"
 //	@accept			json
 //	@produce		json
-//	@success		201	{object}	HandleCreateTableResp
+//	@success		201	{object}	models.CreateTableResp
 func handleCreateTable(c *fiber.Ctx, db *sqlx.DB) error {
-	if err := lib.ValidateVar(c.Params("tableName"), "required,alpha"); err != nil {
-		return c.JSON(lib.ResponseError400(err.Error()))
+	tableName := c.Params("tableName")
+
+	if err := lib.ValidateVar(tableName, "required,alphanum"); err != nil {
+		return lib.BadRequestErr(c, err.Error())
 	}
-	var payload map[string]lib.CreateTableProps
+	var payload []models.CreateTablePayload
 	if err := c.BodyParser(&payload); err != nil {
-		return c.JSON(lib.ResponseError500(err.Error()))
+		return lib.UnprocessableEntityErr(c, err)
 	}
 	for _, v := range payload {
-		errs := lib.ValidateStruct(v)
-		if len(errs) > 0 {
-			return c.Status(400).JSON(lib.ResponseError400(errs))
+		if errs := lib.ValidateStruct(v); len(errs) > 0 {
+			return lib.BadRequestErr(c, errs)
 		}
 	}
-	err := db_handlers.CreateTable(db, c.Params("tableName"), payload)
+	err := db_handlers.CreateTable(db, tableName, payload)
 	if err != nil {
-		return c.JSON(lib.ResponseError500(err.Error()))
+		return c.JSON(lib.InternalServerErr(c, err.Error()))
 	}
-	return c.Status(fiber.StatusCreated).JSON(fiber.Map{"created": c.Params("tableName")})
+	return c.Status(fiber.StatusCreated).JSON(models.CreateTableResp{Created: tableName})
 }
 
-type HandleUpdateDeleteResp struct {
-	Success bool
-}
-
-// Updates a Table either by add,modify or delete
+// Updates a table by adding a column
 //
 //	@tags			Tables
-//	@description	update table
-//	@router			/tables/{tableName} [put]
-//	@param			tableName	path	string					true	"table name"
-//	@param			tableData	body	lib.UpdateTableProps	true	"update table data"
+//	@description	Add column to table
+//	@router			/table/{tableName}/column/add [post]
+//	@param			tableName	path	string							true	"table name"
+//	@param			columnData	body	models.AddModifyColumnPayload	true	"column data"
 //	@accept			json
 //	@produce		json
-//	@accept			json
-//	@success		200	{object}	HandleUpdateDeleteResp
-func handleUpdateTable(c *fiber.Ctx, db *sqlx.DB) error {
-	if err := lib.ValidateVar(c.Params("tableName"), "required,alpha"); err != nil {
-		return c.JSON(lib.ResponseError400(err.Error()))
+//	@success		201	{object}	models.SuccessResp
+func handleAddColumn(c *fiber.Ctx, db *sqlx.DB) error {
+	if err := lib.ValidateVar(c.Params("tableName"), "required,alphanum"); err != nil {
+		return lib.BadRequestErr(c, err.Error())
 	}
-	var payload lib.UpdateTableProps
+	var payload models.AddModifyColumnPayload
 	if err := c.BodyParser(&payload); err != nil {
-		return c.JSON(lib.ResponseError500(err.Error()))
+		return lib.UnprocessableEntityErr(c, err.Error())
 	}
-	errs := lib.ValidateStruct(payload)
-	if len(errs) > 0 {
-		return c.JSON(lib.ResponseError400(errs))
+	if errs := lib.ValidateStruct(payload); len(errs) > 0 {
+		return lib.BadRequestErr(c, errs)
 	}
-	err := db_handlers.UpdateTable(db, c.Params("tableName"), payload)
+	err := db_handlers.AddColumn(db, c.Params("tableName"), payload)
 	if err != nil {
-		return c.JSON(lib.ResponseError500(err.Error()))
+		return lib.InternalServerErr(c, err.Error())
 	}
-	return c.JSON(fiber.Map{"success": true})
+	return c.Status(fiber.StatusCreated).JSON(models.SuccessResp{Success: true})
+}
+
+// Updates a table by modifying a column
+//
+//	@tags			Tables
+//	@description	Update table column
+//	@router			/table/{tableName}/column/modify [put]
+//	@param			tableName	path	string							true	"table name"
+//	@param			columnData	body	models.AddModifyColumnPayload	true	"column data"
+//	@accept			json
+//	@produce		json
+//	@success		200	{object}	models.SuccessResp
+func handleModifyColumn(c *fiber.Ctx, db *sqlx.DB) error {
+	if c.Locals("provider") == lib.SQLITE3 {
+		return lib.ForbiddenErr(c, "MODIFY COLUMN not supported by sqlite")
+	}
+
+	if err := lib.ValidateVar(c.Params("tableName"), "required,alphanum"); err != nil {
+		return lib.BadRequestErr(c, err.Error())
+	}
+	var payload models.AddModifyColumnPayload
+	if err := c.BodyParser(&payload); err != nil {
+		return lib.UnprocessableEntityErr(c, err.Error())
+	}
+	if errs := lib.ValidateStruct(payload); len(errs) > 0 {
+		return lib.BadRequestErr(c, errs)
+	}
+	err := db_handlers.UpdateColumn(db, c.Locals("provider").(string), c.Params("tableName"), payload)
+	if err != nil {
+		return lib.InternalServerErr(c, err.Error())
+	}
+	return c.JSON(models.SuccessResp{Success: true})
+}
+
+// Updates a table by deleting/dropping a column
+//
+//	@tags			Tables
+//	@description	Delete/Drop table column
+//	@router			/table/{tableName}/column/delete [delete]
+//	@param			tableName	path	string						true	"table name"
+//	@param			columnData	body	models.DeleteColumnPayload	true	"column name"
+//	@accept			json
+//	@produce		json
+//	@success		200	{object}	models.SuccessResp
+func handleDeleteColumn(c *fiber.Ctx, db *sqlx.DB) error {
+	if err := lib.ValidateVar(c.Params("tableName"), "required,alphanum"); err != nil {
+		return lib.BadRequestErr(c, err.Error())
+	}
+	var payload models.DeleteColumnPayload
+	if err := c.BodyParser(&payload); err != nil {
+		return lib.UnprocessableEntityErr(c, err.Error())
+	}
+	if errs := lib.ValidateStruct(payload); len(errs) > 0 {
+		return lib.BadRequestErr(c, errs)
+	}
+	err := db_handlers.DeleteColumn(db, c.Params("tableName"), payload)
+	if err != nil {
+		return lib.InternalServerErr(c, err.Error())
+	}
+	return c.JSON(models.SuccessResp{Success: true})
 }
 
 // Deletes a table
 //
 //	@tags		Tables
 //	@decription	delete table
-//	@router		/tables/{tableName} [delete]
+//	@router		/table/{tableName} [delete]
 //	@param		tableName	path	string	true	"table name"
 //	@accept		json
 //	@produce	json
-//	@success	200	{object}	HandleUpdateDeleteResp
+//	@success	200	{object}	models.SuccessResp
 func handleDeleteTable(c *fiber.Ctx, db *sqlx.DB) error {
 	if err := lib.ValidateVar(c.Params("tableName"), "required,alpha"); err != nil {
-		return c.JSON(lib.ResponseError400(err.Error()))
+		return lib.BadRequestErr(c, err.Error())
 	}
 	err := db_handlers.DeleteTable(db, c.Params("tableName"))
 	if err != nil {
-		return c.JSON(lib.ResponseError500(err.Error()))
+		return lib.InternalServerErr(c, err.Error())
 	}
-	return c.JSON(fiber.Map{"success": true})
+	return c.JSON(models.SuccessResp{Success: true})
 }

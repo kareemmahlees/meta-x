@@ -2,31 +2,59 @@ package db
 
 import (
 	"fmt"
-	"strings"
+
+	"meta-x/lib"
+	"meta-x/models"
 
 	"github.com/jmoiron/sqlx"
-	"github.com/kareemmahlees/mysql-meta/lib"
 )
 
-type tableInfoStruct struct {
-	Field   string `db:"Field" json:"field"`
-	Type    string `db:"Type" json:"type"`
-	Null    string `db:"Null" json:"null"`
-	Key     string `db:"Key" json:"key"`
-	Default any    `db:"Default" json:"default"`
-	Extra   any    `db:"Extra" json:"extra"`
-}
+func GetTableInfo(db *sqlx.DB, tableName, provider string) (result []*models.TableInfoResp, err error) {
+	var queryString string
+	switch provider {
+	case lib.SQLITE3:
+		queryString = `
+		SELECT name,type,
+			CASE when 'notnull' = 1
+			THEN 'NO'
+			ELSE 'YES'
+			END AS nullable,
 
-func GetTableInfo(db *sqlx.DB, tableName string) (result []tableInfoStruct, err error) {
-	rows, err := db.Queryx(fmt.Sprintf("desc %s", tableName))
+			CASE WHEN pk = 1
+			THEN 'PRI'
+			END AS key,
+			dflt_value AS 'default'
+		FROM pragma_table_info('%s');`
+	case lib.PSQL:
+		queryString = `
+		SELECT col.column_name AS name,
+			col.data_type AS type,
+			col.is_nullable AS nullable,
+			kcu.constraint_name AS key,
+			col.column_default AS default
+		FROM information_schema.columns AS col
+		LEFT JOIN information_schema.key_column_usage AS kcu ON col.column_name = kcu.column_name
+		WHERE col.table_name = '%s';`
+	case lib.MYSQL:
+		queryString = `
+		SELECT column_name AS name,
+			column_type AS type,
+			is_nullable AS nullable,
+			column_key AS 'key',
+			column_default AS 'default'
+		FROM information_schema.columns
+		WHERE table_name='%s';
+		`
+	}
+	rows, err := db.Queryx(fmt.Sprintf(queryString, tableName))
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var tablesDescriptions = []tableInfoStruct{}
+	tablesDescriptions := []*models.TableInfoResp{}
 	for rows.Next() {
-		var tableDesc tableInfoStruct
-		err := rows.StructScan(&tableDesc)
+		tableDesc := new(models.TableInfoResp)
+		err := rows.StructScan(tableDesc)
 		if err != nil {
 			return nil, err
 		}
@@ -35,15 +63,26 @@ func GetTableInfo(db *sqlx.DB, tableName string) (result []tableInfoStruct, err 
 	return tablesDescriptions, nil
 }
 
-func ListTables(db *sqlx.DB) (result []string, err error) {
-	rows, err := db.Queryx("show tables")
+func ListTables(db *sqlx.DB, provider string) (result []*string, err error) {
+	var queryString string
+	switch provider {
+	case lib.SQLITE3:
+		queryString = "SELECT tbl_name FROM sqlite_master where type='table'"
+	case lib.PSQL:
+		queryString = "SELECT tablename FROM pg_catalog.pg_tables where schemaname='public';"
+	case lib.MYSQL:
+		queryString = "SHOW TABLES"
+	}
+
+	rows, err := db.Queryx(queryString)
 	if err != nil {
 		return nil, err
 	}
 	defer rows.Close()
-	var tables = []string{}
+
+	var tables = []*string{}
 	for rows.Next() {
-		var table string
+		table := new(string)
 		err := rows.Scan(&table)
 		if err != nil {
 			return nil, err
@@ -53,20 +92,12 @@ func ListTables(db *sqlx.DB) (result []string, err error) {
 	return tables, nil
 }
 
-var dataTypesMappings = map[string]string{
-	"text":   "varchar(255)",
-	"number": "int",
-}
-
-func CreateTable(db *sqlx.DB, tableName string, payload map[string]lib.CreateTableProps) error {
+func CreateTable(db *sqlx.DB, tableName string, data []models.CreateTablePayload) error {
 	// this long solution is made because placeholders "?" can't
 	// be used for db, table or column names
 	dataString := ""
-	for col, props := range payload {
-		if _, ok := dataTypesMappings[props.Type]; ok {
-			props.Type = dataTypesMappings[props.Type]
-		}
-		dataString += fmt.Sprintf("%s\t%s\t", col, props.Type)
+	for _, props := range data {
+		dataString += fmt.Sprintf("%s\t%s\t", props.ColName, props.Type)
 		if props.Nullable != nil && props.Nullable == false {
 			dataString += "NOT NULL\t"
 		}
@@ -74,11 +105,11 @@ func CreateTable(db *sqlx.DB, tableName string, payload map[string]lib.CreateTab
 			dataString += "UNIQUE\t"
 		}
 		if props.Default != nil {
-			dataString += fmt.Sprintf("DEFAULT \t'%s'", props.Default)
+			dataString += fmt.Sprintf("DEFAULT\t'%s'", props.Default)
 		}
 		dataString += ",\n"
 	}
-	res, err := db.Exec(fmt.Sprintf(`
+	_, err := db.Exec(fmt.Sprintf(`
 	CREATE TABLE IF NOT EXISTS %s (
 		id int NOT NULL,
 		%s
@@ -88,28 +119,37 @@ func CreateTable(db *sqlx.DB, tableName string, payload map[string]lib.CreateTab
 	if err != nil {
 		return err
 	}
-	_, err = res.LastInsertId()
-	return err
+	return nil
 
 }
 
-func UpdateTable(db *sqlx.DB, tableName string, payload lib.UpdateTableProps) error {
+func AddColumn(db *sqlx.DB, tableName string, payload models.AddModifyColumnPayload) error {
 	dataString := ""
-	switch payload.Operation.Type {
-	case "add":
-		for col, dataType := range payload.Operation.Data.(map[string]interface{}) {
-			dataString += fmt.Sprintf("ADD %s %s,\n", col, dataType)
-		}
-	case "modify":
-		for col, dataType := range payload.Operation.Data.(map[string]interface{}) {
-			dataString += fmt.Sprintf("MODIFY COLUMN %s %s,\n", col, dataType)
-		}
-	case "delete":
-		for _, col := range payload.Operation.Data.([]interface{}) {
-			dataString += fmt.Sprintf("DROP COLUMN %s,\n", col)
-		}
+	dataString += fmt.Sprintf("ADD %s %s\n", payload.ColName, payload.Type)
+
+	return alterTable(db, tableName, dataString)
+}
+
+func UpdateColumn(db *sqlx.DB, provider, tableName string, payload models.AddModifyColumnPayload) error {
+	dataString := ""
+	switch provider {
+	case lib.PSQL:
+		dataString += fmt.Sprintf("ALTER COLUMN %s TYPE %s\n", payload.ColName, payload.Type)
+	default:
+		dataString += fmt.Sprintf("MODIFY COLUMN %s %s\n", payload.ColName, payload.Type)
 	}
-	dataString, _ = strings.CutSuffix(dataString, ",\n")
+
+	return alterTable(db, tableName, dataString)
+}
+
+func DeleteColumn(db *sqlx.DB, tableName string, payload models.DeleteColumnPayload) error {
+	dataString := ""
+	dataString += fmt.Sprintf("DROP COLUMN %s\n", payload.ColName)
+
+	return alterTable(db, tableName, dataString)
+}
+
+func alterTable(db *sqlx.DB, tableName string, dataString string) error {
 	_, err := db.Exec(fmt.Sprintf(`
 	ALTER TABLE %s 
 		%s

@@ -4,8 +4,9 @@ tmp_dir = "tmp"
 
 [build]
   args_bin = []
-  bin = "tmp\\main.exe"
+  bin = "tmp\\main.exe sqlite3 -f .\\test.db"
   cmd = "go build -o ./tmp/main.exe ."
+  pre_cmd = ["make swag"]
   delay = 1000
   exclude_dir = ["assets", "tmp", "vendor", "testdata"]
   exclude_file = []

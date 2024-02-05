@@ -2,10 +2,30 @@ package lib
 
 import "github.com/gofiber/fiber/v2"
 
-func ResponseError400(errMsg any) fiber.Map {
-	return fiber.Map{"status": 400, "error": errMsg}
+func BadRequestErr(c *fiber.Ctx, errMsg any) error {
+	return c.Status(fiber.StatusBadRequest).JSON(fiber.Map{
+		"code":    fiber.StatusBadRequest,
+		"message": errMsg,
+	})
 }
 
-func ResponseError500(errMsg any) fiber.Map {
-	return fiber.Map{"status": 500, "error": errMsg}
+func UnprocessableEntityErr(c *fiber.Ctx, errMsg any) error {
+	return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{
+		"code":    fiber.StatusUnprocessableEntity,
+		"message": errMsg,
+	})
+}
+
+func ForbiddenErr(c *fiber.Ctx, errMsg any) error {
+	return c.Status(fiber.StatusForbidden).JSON(fiber.Map{
+		"code":    fiber.StatusForbidden,
+		"message": errMsg,
+	})
+}
+
+func InternalServerErr(c *fiber.Ctx, errMsg any) error {
+	return c.Status(fiber.StatusInternalServerError).JSON(fiber.Map{
+		"code":    fiber.StatusInternalServerError,
+		"message": errMsg,
+	})
 }
