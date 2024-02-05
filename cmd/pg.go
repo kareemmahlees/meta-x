@@ -14,9 +14,11 @@ var pgCommand = &cobra.Command{
 	Use:   "pg",
 	Short: "use postgres as the database provider",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var password string
-		fmt.Println("Enter password: ")
-		fmt.Scanln(&password)
+		dbPassword, _ := cmd.Flags().GetString("password")
+		if dbPassword == "" {
+			fmt.Println("Enter password: ")
+			fmt.Scanln(&dbPassword)
+		}
 
 		dbUsername, _ := cmd.Flags().GetString("username")
 		dbHost, _ := cmd.Flags().GetString("host")
@@ -24,7 +26,7 @@ var pgCommand = &cobra.Command{
 		dbName, _ := cmd.Flags().GetString("db")
 		dbSslMode, _ := cmd.Flags().GetString("sslmode")
 
-		cfg, _ := pq.ParseURL(fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s", dbUsername, password, dbHost, dbPort, dbName, dbSslMode))
+		cfg, _ := pq.ParseURL(fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s", dbUsername, dbPassword, dbHost, dbPort, dbName, dbSslMode))
 
 		port, _ := cmd.Flags().GetInt("port")
 
@@ -38,6 +40,7 @@ var pgCommand = &cobra.Command{
 func init() {
 
 	pgCommand.Flags().String("username", "", "db username")
+	pgCommand.Flags().String("password", "", "db password")
 	pgCommand.Flags().String("host", "localhost", "db host")
 	pgCommand.Flags().Int("dbPort", 5432, "db port")
 	pgCommand.Flags().String("db", "postgres", "db name")

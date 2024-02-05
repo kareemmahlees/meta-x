@@ -13,9 +13,11 @@ var mysqlCommand = &cobra.Command{
 	Use:   "mysql",
 	Short: "use mysql as the database provider",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var password string
-		fmt.Println("Enter password: ")
-		fmt.Scanln(&password)
+		dbPassword, _ := cmd.Flags().GetString("password")
+		if dbPassword == "" {
+			fmt.Println("Enter password: ")
+			fmt.Scanln(&dbPassword)
+		}
 
 		dbUsername, _ := cmd.Flags().GetString("username")
 		dbHost, _ := cmd.Flags().GetString("host")
@@ -24,7 +26,7 @@ var mysqlCommand = &cobra.Command{
 
 		cfg := mysql.Config{
 			User:   dbUsername,
-			Passwd: password,
+			Passwd: dbPassword,
 			DBName: dbName,
 			Net:    "tcp",
 			Addr:   fmt.Sprintf("%s:%d", dbHost, dbPort),
@@ -42,6 +44,7 @@ var mysqlCommand = &cobra.Command{
 func init() {
 
 	mysqlCommand.Flags().String("username", "", "db username")
+	mysqlCommand.Flags().String("password", "", "db password")
 	mysqlCommand.Flags().String("host", "localhost", "db host")
 	mysqlCommand.Flags().Int("dbPort", 3306, "db port")
 	mysqlCommand.Flags().String("db", "mysql", "db name")
