@@ -13,28 +13,36 @@ var mysqlCommand = &cobra.Command{
 	Use:   "mysql",
 	Short: "use mysql as the database provider",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		dbPassword, _ := cmd.Flags().GetString("password")
-		if dbPassword == "" {
-			fmt.Println("Enter password: ")
-			fmt.Scanln(&dbPassword)
-		}
+		var cfg string
 
-		dbUsername, _ := cmd.Flags().GetString("username")
-		dbHost, _ := cmd.Flags().GetString("host")
-		dbPort, _ := cmd.Flags().GetInt("dbPort")
-		dbName, _ := cmd.Flags().GetString("db")
+		connUrl, _ := cmd.Flags().GetString("url")
+		if connUrl != "" {
+			cfg = connUrl
+		} else {
+			dbUsername, _ := cmd.Flags().GetString("username")
+			dbHost, _ := cmd.Flags().GetString("host")
+			dbPort, _ := cmd.Flags().GetInt("dbPort")
+			dbName, _ := cmd.Flags().GetString("db")
 
-		cfg := mysql.Config{
-			User:   dbUsername,
-			Passwd: dbPassword,
-			DBName: dbName,
-			Net:    "tcp",
-			Addr:   fmt.Sprintf("%s:%d", dbHost, dbPort),
+			dbPassword, _ := cmd.Flags().GetString("password")
+			if dbPassword == "" {
+				fmt.Println("Enter password: ")
+				fmt.Scanln(&dbPassword)
+			}
+
+			conf := mysql.Config{
+				User:   dbUsername,
+				Passwd: dbPassword,
+				DBName: dbName,
+				Net:    "tcp",
+				Addr:   fmt.Sprintf("%s:%d", dbHost, dbPort),
+			}
+			cfg = conf.FormatDSN()
 		}
 
 		port, _ := cmd.Flags().GetInt("port")
 
-		if err := internal.InitDBAndServer(lib.PSQL, cfg.FormatDSN(), port); err != nil {
+		if err := internal.InitDBAndServer(lib.MYSQL, cfg, port); err != nil {
 			return err
 		}
 		return nil
@@ -48,7 +56,9 @@ func init() {
 	mysqlCommand.Flags().String("host", "localhost", "db host")
 	mysqlCommand.Flags().Int("dbPort", 3306, "db port")
 	mysqlCommand.Flags().String("db", "mysql", "db name")
-	_ = mysqlCommand.MarkFlagRequired("username")
+	mysqlCommand.Flags().String("url", "", "connection url/string")
+
+	mysqlCommand.MarkFlagsMutuallyExclusive("username", "url")
 
 	rootCmd.AddCommand(mysqlCommand)
 }

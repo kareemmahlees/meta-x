@@ -2,7 +2,9 @@ build:
 	@go build -o bin/
 run: build
 	@./bin/meta-x.exe
-testv:
+
+# make sure to run docker first
+test:
 	@go test ./... -race
 swag:
 	@swag fmt
