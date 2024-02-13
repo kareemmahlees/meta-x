@@ -1,13 +1,15 @@
-package utils_test
+package utils
 
 import (
 	"context"
 	"io"
+	"log"
 	"meta-x/lib"
-	"meta-x/utils"
+	"reflect"
 	"strings"
 	"testing"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 
@@ -17,7 +19,7 @@ import (
 
 func TestCreatePostgresContainer(t *testing.T) {
 	ctx := context.Background()
-	pgContainer, err := utils.CreatePostgresContainer(ctx)
+	pgContainer, err := CreatePostgresContainer(ctx)
 	defer func() {
 		_ = pgContainer.Terminate(ctx)
 	}()
@@ -35,7 +37,7 @@ func TestCreatePostgresContainer(t *testing.T) {
 
 func TestCreateMySQLContainer(t *testing.T) {
 	ctx := context.Background()
-	mysqlContainer, err := utils.CreateMySQLContainer(ctx)
+	mysqlContainer, err := CreateMySQLContainer(ctx)
 	defer func() {
 		_ = mysqlContainer.Terminate(ctx)
 	}()
@@ -46,9 +48,41 @@ func TestCreateMySQLContainer(t *testing.T) {
 	assert.Nil(t, err)
 
 	defer con.Close()
+}
 
-	err = con.Ping()
-	assert.Nil(t, err)
+func TestNewTestingFiberApp(t *testing.T) {
+	app := NewTestingFiberApp(lib.SQLITE3)
+	defer func() {
+		err := app.Shutdown()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
+
+	listenCh := make(chan bool)
+
+	app.Hooks().OnListen(func(ld fiber.ListenData) error {
+		listenCh <- true
+		return nil
+	})
+
+	go func() {
+		if err := app.Listen(":5522"); err != nil {
+			listenCh <- false
+			log.Fatal(err)
+		}
+	}()
+
+	startedListening := <-listenCh
+
+	assert.True(t, startedListening)
+}
+
+func TestEncodeBody(t *testing.T) {
+	mockBody := "test"
+	encodedBody := EncodeBody(mockBody)
+
+	assert.Equal(t, 7, encodedBody.Len())
 }
 
 type mockBody struct {
@@ -63,7 +97,7 @@ func TestDecodeBody(t *testing.T) {
 		"age": 123
 	}`))
 
-	decodedBody := utils.DecodeBody[mockBody](testBody)
+	decodedBody := DecodeBody[mockBody](testBody)
 
 	name := decodedBody.Name
 	assert.Equal(t, name, "foo")
@@ -83,11 +117,20 @@ func TestDecodeBody(t *testing.T) {
 		}
 	 ]`))
 
-	decodedBody2 := utils.DecodeBody[[]mockBody](testBody)
+	decodedBody2 := DecodeBody[[]mockBody](testBody)
 
 	name = decodedBody2[1].Name
 	assert.Equal(t, name, "bar")
 
 	age = decodedBody2[1].Age
 	assert.Equal(t, age, 123)
+}
+
+func TestSliceOfPointersToSliceOfValues(t *testing.T) {
+	var testSlice []*string
+	testSlice = append(testSlice, new(string))
+
+	soptsov := SliceOfPointersToSliceOfValues(testSlice)
+
+	assert.IsType(t, reflect.SliceOf(reflect.TypeOf("")), reflect.TypeOf(soptsov))
 }

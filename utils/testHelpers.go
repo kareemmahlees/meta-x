@@ -72,7 +72,9 @@ func CreateMySQLContainer(ctx context.Context) (*MySQLContainer, error) {
 }
 
 func NewTestingFiberApp(provider string) *fiber.App {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		DisableStartupMessage: true,
+	})
 	app.Use(func(c *fiber.Ctx) error {
 		c.Locals("provider", provider)
 		return c.Next()
