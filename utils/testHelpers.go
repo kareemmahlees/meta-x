@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"io"
-	"log"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -82,22 +81,19 @@ func NewTestingFiberApp(provider string) *fiber.App {
 	return app
 }
 
-func EncodeBody[T any](body T) *bytes.Buffer {
+func EncodeBody[T any](body T) (*bytes.Buffer, error) {
 	var buf bytes.Buffer
 	err := json.NewEncoder(&buf).Encode(body)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return &buf
+	return &buf, nil
 }
 
 func DecodeBody[K any](body io.ReadCloser) K {
 	var parsedPayload K
 	decoder := json.NewDecoder(body)
-	err := decoder.Decode(&parsedPayload)
-	if err != nil {
-		log.Fatal(err)
-	}
+	_ = decoder.Decode(&parsedPayload)
 	return parsedPayload
 }
 

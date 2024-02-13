@@ -189,7 +189,7 @@ func (suite *TableRoutesTestSuite) TestHandleAddColumn() {
 		con := suite.getConnection(provider)
 		routes.RegisterTablesRoutes(app, con)
 
-		reqBody := utils.EncodeBody(models.AddModifyColumnPayload{ColName: fmt.Sprintf("test%d", idx), Type: "varchar(255)"})
+		reqBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{ColName: fmt.Sprintf("test%d", idx), Type: "varchar(255)"})
 
 		req := httptest.NewRequest(http.MethodPost, "http://localhost:5522/table/test/column/add", reqBody)
 		req.Header.Set("Content-Type", "application/json")
@@ -231,7 +231,7 @@ func (suite *TableRoutesTestSuite) TestHandleModifyColumn() {
 		con := suite.getConnection(provider)
 		routes.RegisterTablesRoutes(app, con)
 
-		reqBody := utils.EncodeBody(models.AddModifyColumnPayload{ColName: "name", Type: fmt.Sprintf("varchar(5%d)", idx)})
+		reqBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{ColName: "name", Type: fmt.Sprintf("varchar(5%d)", idx)})
 
 		req := httptest.NewRequest(http.MethodPut, "http://localhost:5522/table/test/column/modify", reqBody)
 		req.Header.Set("Content-Type", "application/json")
@@ -257,7 +257,7 @@ func (suite *TableRoutesTestSuite) TestHandleDeleteColumn() {
 		con := suite.getConnection(provider)
 		routes.RegisterTablesRoutes(app, con)
 
-		reqBody := utils.EncodeBody(models.DeleteColumnPayload{ColName: "name"})
+		reqBody, _ := utils.EncodeBody(models.DeleteColumnPayload{ColName: "name"})
 
 		req := httptest.NewRequest(http.MethodDelete, "http://localhost:5522/table/test/column/delete", reqBody)
 		req.Header.Set("Content-Type", "application/json")

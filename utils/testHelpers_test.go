@@ -2,6 +2,7 @@ package utils
 
 import (
 	"context"
+	"errors"
 	"io"
 	"log"
 	"meta-x/lib"
@@ -80,14 +81,29 @@ func TestNewTestingFiberApp(t *testing.T) {
 
 func TestEncodeBody(t *testing.T) {
 	mockBody := "test"
-	encodedBody := EncodeBody(mockBody)
+	encodedBody, err := EncodeBody(mockBody)
 
 	assert.Equal(t, 7, encodedBody.Len())
+	assert.Nil(t, err)
+
+	_, err = EncodeBody(make(chan any)) // make encoding fail
+	assert.NotNil(t, err)
 }
 
 type mockBody struct {
 	Name string `json:"name"`
 	Age  int    `json:"age"`
+}
+
+// A mocked Reader that implements io.ReadClose which always returns an error
+type errReader int
+
+func (errReader) Read(p []byte) (n int, err error) {
+	return 0, errors.New("test error")
+}
+
+func (errReader) Close() error {
+	return errors.New("test error")
 }
 
 func TestDecodeBody(t *testing.T) {
@@ -124,6 +140,10 @@ func TestDecodeBody(t *testing.T) {
 
 	age = decodedBody2[1].Age
 	assert.Equal(t, age, 123)
+
+	decodedBody3 := DecodeBody[string](errReader(0))
+
+	assert.Empty(t, decodedBody3)
 }
 
 func TestSliceOfPointersToSliceOfValues(t *testing.T) {
