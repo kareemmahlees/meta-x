@@ -19,8 +19,6 @@ jobs:
         with:
           go-version: "1.21"
           cache: false
-      - name: Run gqlgen generate
-        run: make graphql
       - name: golangci-lint
         uses: golangci/golangci-lint-action@v3
         with:
