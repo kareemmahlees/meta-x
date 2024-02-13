@@ -1,5 +1,6 @@
 run:
   timeout: 5m
   tests: false
+  go: "1.21"
   skip-files:
     - internal/graph/generated.go
