@@ -68,7 +68,7 @@ func TestNewTestingFiberApp(t *testing.T) {
 	})
 
 	go func() {
-		if err := app.Listen(":5522"); err != nil {
+		if err := app.Listen(":55221"); err != nil {
 			listenCh <- false
 			log.Fatal(err)
 		}
