@@ -123,13 +123,23 @@ func (suite *TableRoutesTestSuite) TestHandleDescribeTable() {
 		con := suite.getConnection(provider)
 		routes.RegisterTablesRoutes(app, con)
 
+		// test passing
 		req := httptest.NewRequest("GET", "http://localhost:5522/table/test/describe", nil)
-
 		resp, _ := app.Test(req)
 
 		tableFields := utils.DecodeBody[[]models.TableInfoResp](resp.Body)
+
 		assert.NotEmpty(t, tableFields)
 		assert.Equal(t, tableFields[0].Name, "name")
+
+		// test failing bad request
+		req = httptest.NewRequest("GET", "http://localhost:5522/table/12345/describe", nil)
+		resp, _ = app.Test(req)
+
+		body := utils.DecodeBody[models.ErrResp](resp.Body)
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		assert.Contains(t, body.Message, "alpha")
 	}
 
 }
@@ -159,6 +169,7 @@ func (suite *TableRoutesTestSuite) TestHandleCreateTable() {
 		con := suite.getConnection(provider)
 		routes.RegisterTablesRoutes(app, con)
 
+		// test passing
 		req := httptest.NewRequest("POST", fmt.Sprintf("http://localhost:5522/table/test%d", idx), strings.NewReader(fmt.Sprintf(`
 		[{	
 				"column_name":"test%d",
@@ -170,14 +181,56 @@ func (suite *TableRoutesTestSuite) TestHandleCreateTable() {
 		req.Header.Set("Content-Type", "application/json")
 
 		resp, _ := app.Test(req)
-
 		body := utils.DecodeBody[models.CreateTableResp](resp.Body)
+
+		assert.Equal(t, http.StatusCreated, resp.StatusCode)
 		assert.Equal(t, body.Created, fmt.Sprintf("test%d", idx))
 
 		tables, _ := db.ListTables(con, provider)
 		convertedTables := utils.SliceOfPointersToSliceOfValues(tables)
 		assert.NotEmpty(t, convertedTables)
 		assert.Contains(t, convertedTables, fmt.Sprintf("test%d", idx))
+
+		// test failing unprocessable entity
+		req = httptest.NewRequest("POST", "http://localhost:5522/table/anything", nil)
+		resp, _ = app.Test(req)
+		errBody := utils.DecodeBody[models.ErrResp](resp.Body)
+
+		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+		assert.Contains(t, errBody.Message, "Unprocessable Entity")
+
+		// test failing bad request
+		reqBody, _ := utils.EncodeBody([]models.CreateTablePayload{{
+			ColName:  fmt.Sprintf("test%d", idx),
+			Type:     "varchar(255)",
+			Nullable: "should fail",
+			Default:  nil,
+			Unique:   nil,
+		}})
+
+		req = httptest.NewRequest("POST", "http://localhost:5522/table/anything", reqBody)
+		req.Header.Set("Content-Type", "application/json")
+		resp, _ = app.Test(req)
+		errBody = utils.DecodeBody[models.ErrResp](resp.Body)
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		assert.NotZero(t, errBody.Message)
+
+		// test failing internal server
+		reqBody, _ = utils.EncodeBody([]models.CreateTablePayload{{
+			ColName:  "123",
+			Type:     "varchar(255)",
+			Nullable: nil,
+			Default:  nil,
+			Unique:   nil,
+		}})
+		req = httptest.NewRequest("POST", "http://localhost:5522/table/anything", reqBody)
+		req.Header.Set("Content-Type", "application/json")
+		resp, _ = app.Test(req)
+		errBody = utils.DecodeBody[models.ErrResp](resp.Body)
+
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+		assert.Contains(t, errBody.Message, "syntax")
 	}
 
 }
@@ -189,8 +242,8 @@ func (suite *TableRoutesTestSuite) TestHandleAddColumn() {
 		con := suite.getConnection(provider)
 		routes.RegisterTablesRoutes(app, con)
 
+		// test passing
 		reqBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{ColName: fmt.Sprintf("test%d", idx), Type: "varchar(255)"})
-
 		req := httptest.NewRequest(http.MethodPost, "http://localhost:5522/table/test/column/add", reqBody)
 		req.Header.Set("Content-Type", "application/json")
 
@@ -221,6 +274,41 @@ func (suite *TableRoutesTestSuite) TestHandleAddColumn() {
 				Nullable: "YES",
 				Key:      key,
 				Default:  nil})
+
+		// test failing unprocessable entity
+		req = httptest.NewRequest("POST", "http://localhost:5522/table/test/column/add", nil)
+		resp, _ = app.Test(req)
+		errBody := utils.DecodeBody[models.ErrResp](resp.Body)
+
+		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+		assert.Contains(t, errBody.Message, "Unprocessable Entity")
+
+		// test failing bad request
+		reqBody, _ = utils.EncodeBody(models.AddModifyColumnPayload{
+			ColName: "",
+			Type:    "varchar(255)",
+		})
+
+		req = httptest.NewRequest("POST", "http://localhost:5522/table/test/column/add", reqBody)
+		req.Header.Set("Content-Type", "application/json")
+		resp, _ = app.Test(req)
+		errBody = utils.DecodeBody[models.ErrResp](resp.Body)
+
+		assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+		assert.NotZero(t, errBody.Message)
+
+		// test failing internal server
+		reqBody, _ = utils.EncodeBody(models.AddModifyColumnPayload{
+			ColName: "123",
+			Type:    "varchar(255)",
+		})
+		req = httptest.NewRequest("POST", "http://localhost:5522/table/test/column/add", reqBody)
+		req.Header.Set("Content-Type", "application/json")
+		resp, _ = app.Test(req)
+		errBody = utils.DecodeBody[models.ErrResp](resp.Body)
+
+		assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+		assert.Contains(t, errBody.Message, "syntax")
 	}
 }
 
@@ -231,8 +319,8 @@ func (suite *TableRoutesTestSuite) TestHandleModifyColumn() {
 		con := suite.getConnection(provider)
 		routes.RegisterTablesRoutes(app, con)
 
+		// test passing
 		reqBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{ColName: "name", Type: fmt.Sprintf("varchar(5%d)", idx)})
-
 		req := httptest.NewRequest(http.MethodPut, "http://localhost:5522/table/test/column/modify", reqBody)
 		req.Header.Set("Content-Type", "application/json")
 
@@ -245,6 +333,56 @@ func (suite *TableRoutesTestSuite) TestHandleModifyColumn() {
 			assert.Equal(t, http.StatusForbidden, resp.StatusCode)
 		default:
 			assert.True(t, respBody.Success)
+		}
+
+		// test failing unprocessable entity
+		req = httptest.NewRequest(http.MethodPut, "http://localhost:5522/table/test/column/modify", nil)
+		resp, _ = app.Test(req)
+		errBody := utils.DecodeBody[models.ErrResp](resp.Body)
+
+		switch provider {
+		case lib.SQLITE3:
+			assert.Equal(t, http.StatusForbidden, resp.StatusCode)
+		default:
+			assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+			assert.Contains(t, errBody.Message, "Unprocessable Entity")
+		}
+
+		// test failing bad request
+		reqBody, _ = utils.EncodeBody(models.AddModifyColumnPayload{
+			ColName: "",
+			Type:    "varchar(255)",
+		})
+
+		req = httptest.NewRequest(http.MethodPut, "http://localhost:5522/table/test/column/modify", reqBody)
+		req.Header.Set("Content-Type", "application/json")
+		resp, _ = app.Test(req)
+		errBody = utils.DecodeBody[models.ErrResp](resp.Body)
+
+		switch provider {
+		case lib.SQLITE3:
+			assert.Equal(t, http.StatusForbidden, resp.StatusCode)
+		default:
+			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
+			assert.NotZero(t, errBody.Message)
+		}
+
+		// test failing internal server
+		reqBody, _ = utils.EncodeBody(models.AddModifyColumnPayload{
+			ColName: "123",
+			Type:    "varchar(255)",
+		})
+		req = httptest.NewRequest(http.MethodPut, "http://localhost:5522/table/test/column/modify", reqBody)
+		req.Header.Set("Content-Type", "application/json")
+		resp, _ = app.Test(req)
+		errBody = utils.DecodeBody[models.ErrResp](resp.Body)
+
+		switch provider {
+		case lib.SQLITE3:
+			assert.Equal(t, http.StatusForbidden, resp.StatusCode)
+		default:
+			assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+			assert.Contains(t, errBody.Message, "syntax")
 		}
 
 	}
@@ -275,6 +413,14 @@ func (suite *TableRoutesTestSuite) TestHandleDeleteColumn() {
 			tableInfo, _ := db.GetTableInfo(con, "test", provider)
 			assert.Empty(t, tableInfo)
 		}
+
+		// test failing unprocessable entity
+		req = httptest.NewRequest(http.MethodDelete, "http://localhost:5522/table/test/column/delete", nil)
+		resp, _ = app.Test(req)
+		errBody := utils.DecodeBody[models.ErrResp](resp.Body)
+
+		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
+		assert.Contains(t, errBody.Message, "Unprocessable Entity")
 
 	}
 

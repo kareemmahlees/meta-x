@@ -75,7 +75,7 @@ func handleCreateTable(c *fiber.Ctx, db *sqlx.DB) error {
 	}
 	var payload []models.CreateTablePayload
 	if err := c.BodyParser(&payload); err != nil {
-		return lib.UnprocessableEntityErr(c, err)
+		return lib.UnprocessableEntityErr(c, err.Error())
 	}
 	for _, v := range payload {
 		if errs := lib.ValidateStruct(v); len(errs) > 0 {
@@ -84,7 +84,7 @@ func handleCreateTable(c *fiber.Ctx, db *sqlx.DB) error {
 	}
 	err := db_handlers.CreateTable(db, tableName, payload)
 	if err != nil {
-		return c.JSON(lib.InternalServerErr(c, err.Error()))
+		return lib.InternalServerErr(c, err.Error())
 	}
 	return c.Status(fiber.StatusCreated).JSON(models.CreateTableResp{Created: tableName})
 }
