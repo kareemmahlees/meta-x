@@ -6,6 +6,7 @@ import (
 	"io"
 	"log"
 	"meta-x/lib"
+	"net/http"
 	"reflect"
 	"strings"
 	"testing"
@@ -153,4 +154,20 @@ func TestSliceOfPointersToSliceOfValues(t *testing.T) {
 	soptsov := SliceOfPointersToSliceOfValues(testSlice)
 
 	assert.IsType(t, reflect.SliceOf(reflect.TypeOf("")), reflect.TypeOf(soptsov))
+}
+
+func TestRunRequest(t *testing.T) {
+	app := fiber.New()
+	app.Get("/health", func(c *fiber.Ctx) error {
+		return c.Status(fiber.StatusOK).JSON(fiber.Map{"date": "fake_date"})
+	})
+	mockStruct := RequestTesting[struct {
+		Date string `json:"date"`
+	}]{
+		ReqMethod: http.MethodGet,
+		ReqUrl:    "/health",
+	}
+	decodedRes, rawRes := mockStruct.RunRequest(app)
+	assert.Equal(t, http.StatusOK, rawRes.StatusCode)
+	assert.NotEmpty(t, decodedRes.Date)
 }
