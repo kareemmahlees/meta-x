@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
 	"meta-x/internal"
@@ -325,118 +324,136 @@ func (suite *TableRoutesTestSuite) TestHandleAddColumnFailing() {
 	}
 }
 
-func (suite *TableRoutesTestSuite) TestHandleModifyColumn() {
+func (suite *TableRoutesTestSuite) TestHandleModifyColumnPassing() {
 	t := suite.T()
 	for idx, provider := range suite.providers {
+		passingBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{ColName: "name", Type: fmt.Sprintf("varchar(5%d)", idx)})
+		passing := utils.RequestTesting[models.SuccessResp]{
+			ReqMethod: http.MethodPut,
+			ReqUrl:    "/table/test/column/modify",
+			ReqBody:   passingBody,
+		}
 		app := utils.NewTestingFiberApp(provider)
 		con := suite.getConnection(provider)
 		routes.RegisterTablesRoutes(app, con)
 
 		// test passing
-		reqBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{ColName: "name", Type: fmt.Sprintf("varchar(5%d)", idx)})
-		req := httptest.NewRequest(http.MethodPut, "http://localhost:5522/table/test/column/modify", reqBody)
-		req.Header.Set("Content-Type", "application/json")
-
-		resp, _ := app.Test(req)
-
-		respBody := utils.DecodeBody[models.SuccessResp](resp.Body)
+		decodedRes, rawRes := passing.RunRequest(app)
 
 		switch provider {
 		case lib.SQLITE3:
-			assert.Equal(t, http.StatusForbidden, resp.StatusCode)
+			assert.Equal(t, http.StatusForbidden, rawRes.StatusCode)
 		default:
-			assert.True(t, respBody.Success)
-		}
-
-		// test failing unprocessable entity
-		req = httptest.NewRequest(http.MethodPut, "http://localhost:5522/table/test/column/modify", nil)
-		resp, _ = app.Test(req)
-		errBody := utils.DecodeBody[models.ErrResp](resp.Body)
-
-		switch provider {
-		case lib.SQLITE3:
-			assert.Equal(t, http.StatusForbidden, resp.StatusCode)
-		default:
-			assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
-			assert.Contains(t, errBody.Message, "Unprocessable Entity")
-		}
-
-		// test failing bad request
-		reqBody, _ = utils.EncodeBody(models.AddModifyColumnPayload{
-			ColName: "",
-			Type:    "varchar(255)",
-		})
-
-		req = httptest.NewRequest(http.MethodPut, "http://localhost:5522/table/test/column/modify", reqBody)
-		req.Header.Set("Content-Type", "application/json")
-		resp, _ = app.Test(req)
-		errBody = utils.DecodeBody[models.ErrResp](resp.Body)
-
-		switch provider {
-		case lib.SQLITE3:
-			assert.Equal(t, http.StatusForbidden, resp.StatusCode)
-		default:
-			assert.Equal(t, http.StatusBadRequest, resp.StatusCode)
-			assert.NotZero(t, errBody.Message)
-		}
-
-		// test failing internal server
-		reqBody, _ = utils.EncodeBody(models.AddModifyColumnPayload{
-			ColName: "123",
-			Type:    "varchar(255)",
-		})
-		req = httptest.NewRequest(http.MethodPut, "http://localhost:5522/table/test/column/modify", reqBody)
-		req.Header.Set("Content-Type", "application/json")
-		resp, _ = app.Test(req)
-		errBody = utils.DecodeBody[models.ErrResp](resp.Body)
-
-		switch provider {
-		case lib.SQLITE3:
-			assert.Equal(t, http.StatusForbidden, resp.StatusCode)
-		default:
-			assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
-			assert.Contains(t, errBody.Message, "syntax")
+			assert.True(t, decodedRes.Success)
 		}
 
 	}
 }
 
-func (suite *TableRoutesTestSuite) TestHandleDeleteColumn() {
+func (suite *TableRoutesTestSuite) TestHandleModifyColumnFailing() {
 	t := suite.T()
 	for _, provider := range suite.providers {
 		app := utils.NewTestingFiberApp(provider)
 		con := suite.getConnection(provider)
 		routes.RegisterTablesRoutes(app, con)
 
-		reqBody, _ := utils.EncodeBody(models.DeleteColumnPayload{ColName: "name"})
+		failingUnprocessableEntity := utils.RequestTesting[models.ErrResp]{
+			ReqMethod: http.MethodPut,
+			ReqUrl:    "/table/test/column/modify",
+		}
+		decodedRes, rawRes := failingUnprocessableEntity.RunRequest(app)
+		switch provider {
+		case lib.SQLITE3:
+			assert.Equal(t, http.StatusForbidden, rawRes.StatusCode)
+		default:
+			assert.Equal(t, http.StatusUnprocessableEntity, rawRes.StatusCode)
+			assert.Contains(t, decodedRes.Message, "Unprocessable Entity")
+		}
 
-		req := httptest.NewRequest(http.MethodDelete, "http://localhost:5522/table/test/column/delete", reqBody)
-		req.Header.Set("Content-Type", "application/json")
+		failingBadRequestBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{
+			ColName: "",
+			Type:    "varchar(255)",
+		})
+		failingBadRequest := utils.RequestTesting[models.ErrResp]{
+			ReqMethod: http.MethodPut,
+			ReqUrl:    "/table/test/column/modify",
+			ReqBody:   failingBadRequestBody,
+		}
+		decodedRes, rawRes = failingBadRequest.RunRequest(app)
+		switch provider {
+		case lib.SQLITE3:
+			assert.Equal(t, http.StatusForbidden, rawRes.StatusCode)
+		default:
+			assert.Equal(t, http.StatusBadRequest, rawRes.StatusCode)
+			assert.NotZero(t, decodedRes.Message)
+		}
 
-		resp, _ := app.Test(req)
+		failingInternalServerBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{
+			ColName: "123",
+			Type:    "varchar(255)",
+		})
+		failingInternalServer := utils.RequestTesting[models.ErrResp]{
+			ReqMethod: http.MethodPut,
+			ReqUrl:    "/table/test/column/modify",
+			ReqBody:   failingInternalServerBody,
+		}
+		decodedRes, rawRes = failingInternalServer.RunRequest(app)
+		switch provider {
+		case lib.SQLITE3:
+			assert.Equal(t, http.StatusForbidden, rawRes.StatusCode)
+		default:
+			assert.Equal(t, http.StatusInternalServerError, rawRes.StatusCode)
+			assert.Contains(t, decodedRes.Message, "syntax")
+		}
+	}
+}
+
+func (suite *TableRoutesTestSuite) TestHandleDeleteColumnPassing() {
+	t := suite.T()
+	for _, provider := range suite.providers {
+		app := utils.NewTestingFiberApp(provider)
+		con := suite.getConnection(provider)
+		routes.RegisterTablesRoutes(app, con)
+
+		passingBody, _ := utils.EncodeBody(models.DeleteColumnPayload{ColName: "name"})
+		passing := utils.RequestTesting[models.SuccessResp]{
+			ReqMethod: http.MethodDelete,
+			ReqUrl:    "/table/test/column/delete",
+			ReqBody:   passingBody,
+		}
+
+		decoedRes, rawRes := passing.RunRequest(app)
 
 		switch provider {
 		// those two forbid to delete all columns of table
 		case lib.SQLITE3, lib.MYSQL:
-			assert.Equal(t, http.StatusInternalServerError, resp.StatusCode)
+			assert.Equal(t, http.StatusInternalServerError, rawRes.StatusCode)
 		case lib.PSQL:
-			respBody := utils.DecodeBody[models.SuccessResp](resp.Body)
-			assert.True(t, respBody.Success)
+			assert.True(t, decoedRes.Success)
 
 			tableInfo, _ := db.GetTableInfo(con, "test", provider)
 			assert.Empty(t, tableInfo)
 		}
 
-		// test failing unprocessable entity
-		req = httptest.NewRequest(http.MethodDelete, "http://localhost:5522/table/test/column/delete", nil)
-		resp, _ = app.Test(req)
-		errBody := utils.DecodeBody[models.ErrResp](resp.Body)
-
-		assert.Equal(t, http.StatusUnprocessableEntity, resp.StatusCode)
-		assert.Contains(t, errBody.Message, "Unprocessable Entity")
-
 	}
 
+}
+func (suite *TableRoutesTestSuite) TestHandleDeleteColumnFailing() {
+	t := suite.T()
+	for _, provider := range suite.providers {
+		app := utils.NewTestingFiberApp(provider)
+		con := suite.getConnection(provider)
+		routes.RegisterTablesRoutes(app, con)
+
+		failingBadRequest := utils.RequestTesting[models.ErrResp]{
+			ReqMethod: http.MethodDelete,
+			ReqUrl:    "/table/test/column/delete",
+		}
+		decodedRes, rawRes := failingBadRequest.RunRequest(app)
+
+		assert.Equal(t, http.StatusUnprocessableEntity, rawRes.StatusCode)
+		assert.Contains(t, decodedRes.Message, "Unprocessable Entity")
+	}
 }
 
 func (suite *TableRoutesTestSuite) TestHandleDeleteTable() {
@@ -446,12 +463,12 @@ func (suite *TableRoutesTestSuite) TestHandleDeleteTable() {
 		con := suite.getConnection(provider)
 		routes.RegisterTablesRoutes(app, con)
 
-		req := httptest.NewRequest("DELETE", "http://localhost:5522/table/test", nil)
-
-		resp, _ := app.Test(req)
-
-		payload := utils.DecodeBody[models.SuccessResp](resp.Body)
-		assert.True(t, payload.Success)
+		passing := utils.RequestTesting[models.SuccessResp]{
+			ReqMethod: http.MethodDelete,
+			ReqUrl:    "/table/test",
+		}
+		decodedRes, _ := passing.RunRequest(app)
+		assert.True(t, decodedRes.Success)
 	}
 
 }
