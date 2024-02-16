@@ -21,7 +21,7 @@ var sqlite3Command = &cobra.Command{
 			return err
 		}
 		app := fiber.New(fiber.Config{DisableStartupMessage: true})
-		if err = internal.InitDBAndServer(app, lib.SQLITE3, filePath, port, make(chan bool)); err != nil {
+		if err = internal.InitDBAndServer(app, lib.SQLITE3, filePath, port, make(chan bool, 1)); err != nil {
 			return err
 		}
 		return nil

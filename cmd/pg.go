@@ -40,7 +40,7 @@ var pgCommand = &cobra.Command{
 
 		app := fiber.New(fiber.Config{DisableStartupMessage: true})
 
-		if err := internal.InitDBAndServer(app, lib.PSQL, cfg, port, make(chan bool)); err != nil {
+		if err := internal.InitDBAndServer(app, lib.PSQL, cfg, port, make(chan bool, 1)); err != nil {
 			return err
 		}
 		return nil

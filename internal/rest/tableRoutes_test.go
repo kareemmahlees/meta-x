@@ -136,7 +136,7 @@ func (suite *TableRoutesTestSuite) TestHandleDescribeTable() {
 
 		decoedResp, rawResp := failingBadRequest.RunRequest(app)
 		assert.Equal(t, http.StatusBadRequest, rawResp.StatusCode)
-		assert.Contains(t, decoedResp.Message, "alpha")
+		assert.Len(t, decoedResp.Message, 1)
 	}
 
 }
@@ -206,6 +206,14 @@ func (suite *TableRoutesTestSuite) TestHandleCreateTableFailing() {
 		assert.Equal(t, http.StatusUnprocessableEntity, rawResp.StatusCode)
 		assert.Contains(t, decodedResp.Message, "Unprocessable Entity")
 
+		failingBadRequest := utils.RequestTesting[models.ErrResp]{
+			ReqMethod: http.MethodPost,
+			ReqUrl:    "/table/1.1",
+		}
+		decodedResp, rawResp = failingBadRequest.RunRequest(app)
+		assert.Equal(t, http.StatusBadRequest, rawResp.StatusCode)
+		assert.NotZero(t, decodedResp.Message)
+
 		failingBadRequestBody, _ := utils.EncodeBody([]models.CreateTablePayload{{
 			ColName:  fmt.Sprintf("test%d", idx),
 			Type:     "varchar(255)",
@@ -213,7 +221,7 @@ func (suite *TableRoutesTestSuite) TestHandleCreateTableFailing() {
 			Default:  nil,
 			Unique:   nil,
 		}})
-		failingBadRequest := utils.RequestTesting[models.ErrResp]{
+		failingBadRequest = utils.RequestTesting[models.ErrResp]{
 			ReqMethod: http.MethodPost,
 			ReqUrl:    "/table/anything",
 			ReqBody:   failingBadRequestBody,
@@ -296,6 +304,14 @@ func (suite *TableRoutesTestSuite) TestHandleAddColumnFailing() {
 		assert.Equal(t, http.StatusUnprocessableEntity, rawResp.StatusCode)
 		assert.Contains(t, decodedResp.Message, "Unprocessable Entity")
 
+		failingBadRequestParam := utils.RequestTesting[models.ErrResp]{
+			ReqMethod: http.MethodPost,
+			ReqUrl:    "/table/1.1/column/add",
+		}
+		decodedRes, rawRes := failingBadRequestParam.RunRequest(app)
+		assert.Equal(t, http.StatusBadRequest, rawRes.StatusCode)
+		assert.Len(t, decodedRes.Message, 1)
+
 		failingBadRequestBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{
 			ColName: "",
 			Type:    "varchar(255)",
@@ -368,6 +384,19 @@ func (suite *TableRoutesTestSuite) TestHandleModifyColumnFailing() {
 		default:
 			assert.Equal(t, http.StatusUnprocessableEntity, rawRes.StatusCode)
 			assert.Contains(t, decodedRes.Message, "Unprocessable Entity")
+		}
+
+		failingBadRequestParam := utils.RequestTesting[models.ErrResp]{
+			ReqMethod: http.MethodPut,
+			ReqUrl:    "/table/1.1/column/modify",
+		}
+		decodedRes, rawRes = failingBadRequestParam.RunRequest(app)
+		switch provider {
+		case lib.SQLITE3:
+			assert.Equal(t, http.StatusForbidden, rawRes.StatusCode)
+		default:
+			assert.Equal(t, http.StatusBadRequest, rawRes.StatusCode)
+			assert.Len(t, decodedRes.Message, 1)
 		}
 
 		failingBadRequestBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{
@@ -445,18 +474,37 @@ func (suite *TableRoutesTestSuite) TestHandleDeleteColumnFailing() {
 		con := suite.getConnection(provider)
 		routes.RegisterTablesRoutes(app, con)
 
+		failingBadRequestParam := utils.RequestTesting[models.ErrResp]{
+			ReqMethod: http.MethodDelete,
+			ReqUrl:    "/table/1.1/column/delete",
+		}
+		decodedRes, rawRes := failingBadRequestParam.RunRequest(app)
+		assert.Equal(t, http.StatusBadRequest, rawRes.StatusCode)
+		assert.Len(t, decodedRes.Message, 1)
+
+		failingBadRequestBody, _ := utils.EncodeBody(models.DeleteColumnPayload{
+			ColName: "",
+		})
 		failingBadRequest := utils.RequestTesting[models.ErrResp]{
 			ReqMethod: http.MethodDelete,
 			ReqUrl:    "/table/test/column/delete",
+			ReqBody:   failingBadRequestBody,
 		}
-		decodedRes, rawRes := failingBadRequest.RunRequest(app)
+		decodedRes, rawRes = failingBadRequest.RunRequest(app)
+		assert.Equal(t, http.StatusBadRequest, rawRes.StatusCode)
+		assert.Len(t, decodedRes.Message, 1)
 
+		failingUnprocessableEntity := utils.RequestTesting[models.ErrResp]{
+			ReqMethod: http.MethodDelete,
+			ReqUrl:    "/table/test/column/delete",
+		}
+		decodedRes, rawRes = failingUnprocessableEntity.RunRequest(app)
 		assert.Equal(t, http.StatusUnprocessableEntity, rawRes.StatusCode)
 		assert.Contains(t, decodedRes.Message, "Unprocessable Entity")
 	}
 }
 
-func (suite *TableRoutesTestSuite) TestHandleDeleteTable() {
+func (suite *TableRoutesTestSuite) TestHandleDeleteTablePassing() {
 	t := suite.T()
 	for _, provider := range suite.providers {
 		app := utils.NewTestingFiberApp(provider)
@@ -471,6 +519,23 @@ func (suite *TableRoutesTestSuite) TestHandleDeleteTable() {
 		assert.True(t, decodedRes.Success)
 	}
 
+}
+func (suite *TableRoutesTestSuite) TestHandleDeleteTableFailing() {
+
+	t := suite.T()
+	for _, provider := range suite.providers {
+		app := utils.NewTestingFiberApp(provider)
+		con := suite.getConnection(provider)
+		routes.RegisterTablesRoutes(app, con)
+
+		failingBadRequestParams := utils.RequestTesting[models.ErrResp]{
+			ReqMethod: http.MethodDelete,
+			ReqUrl:    "/table/1.1",
+		}
+		decodedRes, rawRes := failingBadRequestParams.RunRequest(app)
+		assert.Equal(t, http.StatusBadRequest, rawRes.StatusCode)
+		assert.Len(t, decodedRes.Message, 1)
+	}
 }
 
 func TestTableRoutesTestSuite(t *testing.T) {
