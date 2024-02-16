@@ -63,6 +63,11 @@ func TestNewTestingFiberApp(t *testing.T) {
 
 	listenCh := make(chan bool)
 
+	app.Get("/test", func(c *fiber.Ctx) error {
+		assert.NotEmpty(t, c.Locals("provider"))
+		return nil
+	})
+
 	app.Hooks().OnListen(func(ld fiber.ListenData) error {
 		listenCh <- true
 		return nil
@@ -76,8 +81,13 @@ func TestNewTestingFiberApp(t *testing.T) {
 	}()
 
 	startedListening := <-listenCh
-
 	assert.True(t, startedListening)
+
+	request := RequestTesting[any]{
+		ReqMethod: http.MethodGet,
+		ReqUrl:    "/test",
+	}
+	_, _ = request.RunRequest(app)
 }
 
 func TestEncodeBody(t *testing.T) {
@@ -161,13 +171,40 @@ func TestRunRequest(t *testing.T) {
 	app.Get("/health", func(c *fiber.Ctx) error {
 		return c.Status(fiber.StatusOK).JSON(fiber.Map{"date": "fake_date"})
 	})
-	mockStruct := RequestTesting[struct {
+	mockReq1 := RequestTesting[struct {
 		Date string `json:"date"`
 	}]{
 		ReqMethod: http.MethodGet,
 		ReqUrl:    "/health",
 	}
-	decodedRes, rawRes := mockStruct.RunRequest(app)
+	decodedRes, rawRes := mockReq1.RunRequest(app)
 	assert.Equal(t, http.StatusOK, rawRes.StatusCode)
 	assert.NotEmpty(t, decodedRes.Date)
+
+	type mockPayload struct {
+		Name string `json:"name"`
+	}
+
+	app.Post("/test", func(c *fiber.Ctx) error {
+		var payload mockPayload
+		if err := c.BodyParser(&payload); err != nil {
+			return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{})
+		}
+		return nil
+	})
+	mockBody, _ := EncodeBody(mockPayload{Name: "any"})
+	mockReq2 := RequestTesting[any]{
+		ReqMethod: http.MethodPost,
+		ReqUrl:    "/test",
+		ReqBody:   mockBody,
+	}
+	_, rawResponse := mockReq2.RunRequest(app)
+	assert.NotEqual(t, http.StatusUnprocessableEntity, rawResponse.StatusCode)
+
+	mockReq3 := RequestTesting[any]{
+		ReqMethod: http.MethodPost,
+		ReqUrl:    "/test",
+	}
+	_, rawResponse = mockReq3.RunRequest(app)
+	assert.Equal(t, http.StatusUnprocessableEntity, rawResponse.StatusCode)
 }
