@@ -59,6 +59,12 @@ func TestInitDBAndServerFailing(t *testing.T) {
 	listenCh := make(chan bool)
 
 	app := fiber.New(fiber.Config{DisableStartupMessage: true})
+	defer func() {
+		err := app.Shutdown()
+		if err != nil {
+			log.Fatal(err)
+		}
+	}()
 
 	go func(app *fiber.App) {
 		err := InitDBAndServer(app, lib.SQLITE3, ":memory:", 100000, listenCh)

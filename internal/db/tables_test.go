@@ -141,6 +141,9 @@ func (suite *TablesTestSuite) TestCreateTable() {
 		result, _ := db.ListTables(con, provider)
 		convertedResult := utils.SliceOfPointersToSliceOfValues(result)
 		assert.Contains(t, convertedResult, "test_create_table")
+
+		err = db.CreateTable(con, "123456", nil)
+		assert.NotNil(t, err)
 	}
 }
 

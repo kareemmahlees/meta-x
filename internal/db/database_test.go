@@ -103,6 +103,15 @@ func (suite *DatabaseTestSuite) TestListDatabases() {
 
 		assert.Nil(t, err)
 		assert.Greater(t, len(dbs), 0)
+
+		switch provider {
+		// we reverse the order here to intentionally make the query fail
+		case lib.SQLITE3:
+			_, err = db.ListDatabasesPgMySQL(suite.sqliteConnection, provider)
+		case lib.PSQL, lib.MYSQL:
+			_, err = db.ListDatabasesSqlite(con)
+		}
+		assert.NotNil(t, err)
 	}
 }
 
@@ -117,9 +126,14 @@ func (suite *DatabaseTestSuite) TestCreateDatabase() {
 		switch provider {
 		case lib.PSQL, lib.MYSQL:
 			err = db.CreatePgMysqlDatabase(con, provider, "metax")
+			assert.Nil(t, err)
 		}
 
-		assert.Nil(t, err)
+		switch provider {
+		case lib.PSQL, lib.MYSQL:
+			err = db.CreatePgMysqlDatabase(con, provider, "true")
+			assert.NotNil(t, err)
+		}
 	}
 }
 
