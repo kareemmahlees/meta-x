@@ -30,12 +30,15 @@ func RegisterTablesRoutes(app *fiber.App, db *sqlx.DB) {
 //	@produce		json
 //	@success		200	{object}	[]models.TableInfoResp
 func handleGetTableInfo(c *fiber.Ctx, db *sqlx.DB) error {
-	tableName := c.Params("tableName")
+	params := struct {
+		TableName string `params:"tableName" validate:"required,alpha"`
+	}{}
+	_ = c.ParamsParser(&params)
 
-	if err := lib.ValidateVar(tableName, "required,alpha"); err != nil {
-		return lib.BadRequestErr(c, err.Error())
+	if errs := lib.ValidateStruct(params); len(errs) > 0 {
+		return lib.BadRequestErr(c, errs)
 	}
-	tableInfo, err := db_handlers.GetTableInfo(db, tableName, c.Locals("provider").(string))
+	tableInfo, err := db_handlers.GetTableInfo(db, params.TableName, c.Locals("provider").(string))
 	if err != nil {
 		return lib.InternalServerErr(c, err.Error())
 	}
@@ -68,25 +71,28 @@ func handleListTables(c *fiber.Ctx, db *sqlx.DB) error {
 //	@produce		json
 //	@success		201	{object}	models.CreateTableResp
 func handleCreateTable(c *fiber.Ctx, db *sqlx.DB) error {
-	tableName := c.Params("tableName")
+	params := struct {
+		TableName string `params:"tableName" validate:"required,alphanum"`
+	}{}
+	_ = c.ParamsParser(&params)
 
-	if err := lib.ValidateVar(tableName, "required,alphanum"); err != nil {
-		return lib.BadRequestErr(c, err.Error())
+	if errs := lib.ValidateStruct(params); len(errs) > 0 {
+		return lib.BadRequestErr(c, errs)
 	}
 	var payload []models.CreateTablePayload
 	if err := c.BodyParser(&payload); err != nil {
-		return lib.UnprocessableEntityErr(c, err)
+		return lib.UnprocessableEntityErr(c, err.Error())
 	}
 	for _, v := range payload {
 		if errs := lib.ValidateStruct(v); len(errs) > 0 {
 			return lib.BadRequestErr(c, errs)
 		}
 	}
-	err := db_handlers.CreateTable(db, tableName, payload)
+	err := db_handlers.CreateTable(db, params.TableName, payload)
 	if err != nil {
-		return c.JSON(lib.InternalServerErr(c, err.Error()))
+		return lib.InternalServerErr(c, err.Error())
 	}
-	return c.Status(fiber.StatusCreated).JSON(models.CreateTableResp{Created: tableName})
+	return c.Status(fiber.StatusCreated).JSON(models.CreateTableResp{Created: params.TableName})
 }
 
 // Updates a table by adding a column
@@ -100,8 +106,12 @@ func handleCreateTable(c *fiber.Ctx, db *sqlx.DB) error {
 //	@produce		json
 //	@success		201	{object}	models.SuccessResp
 func handleAddColumn(c *fiber.Ctx, db *sqlx.DB) error {
-	if err := lib.ValidateVar(c.Params("tableName"), "required,alphanum"); err != nil {
-		return lib.BadRequestErr(c, err.Error())
+	params := struct {
+		TableName string `params:"tableName" validate:"required,alphanum"`
+	}{}
+	_ = c.ParamsParser(&params)
+	if errs := lib.ValidateStruct(params); len(errs) > 0 {
+		return lib.BadRequestErr(c, errs)
 	}
 	var payload models.AddModifyColumnPayload
 	if err := c.BodyParser(&payload); err != nil {
@@ -131,9 +141,13 @@ func handleModifyColumn(c *fiber.Ctx, db *sqlx.DB) error {
 	if c.Locals("provider") == lib.SQLITE3 {
 		return lib.ForbiddenErr(c, "MODIFY COLUMN not supported by sqlite")
 	}
+	params := struct {
+		TableName string `params:"tableName" validate:"required,alphanum"`
+	}{}
 
-	if err := lib.ValidateVar(c.Params("tableName"), "required,alphanum"); err != nil {
-		return lib.BadRequestErr(c, err.Error())
+	_ = c.ParamsParser(&params)
+	if errs := lib.ValidateStruct(params); len(errs) > 0 {
+		return lib.BadRequestErr(c, errs)
 	}
 	var payload models.AddModifyColumnPayload
 	if err := c.BodyParser(&payload); err != nil {
@@ -160,9 +174,14 @@ func handleModifyColumn(c *fiber.Ctx, db *sqlx.DB) error {
 //	@produce		json
 //	@success		200	{object}	models.SuccessResp
 func handleDeleteColumn(c *fiber.Ctx, db *sqlx.DB) error {
-	if err := lib.ValidateVar(c.Params("tableName"), "required,alphanum"); err != nil {
-		return lib.BadRequestErr(c, err.Error())
+	params := struct {
+		TableName string `params:"tableName" validate:"required,alphanum"`
+	}{}
+	_ = c.ParamsParser(&params)
+	if errs := lib.ValidateStruct(params); len(errs) > 0 {
+		return lib.BadRequestErr(c, errs)
 	}
+
 	var payload models.DeleteColumnPayload
 	if err := c.BodyParser(&payload); err != nil {
 		return lib.UnprocessableEntityErr(c, err.Error())
@@ -170,7 +189,7 @@ func handleDeleteColumn(c *fiber.Ctx, db *sqlx.DB) error {
 	if errs := lib.ValidateStruct(payload); len(errs) > 0 {
 		return lib.BadRequestErr(c, errs)
 	}
-	err := db_handlers.DeleteColumn(db, c.Params("tableName"), payload)
+	err := db_handlers.DeleteColumn(db, params.TableName, payload)
 	if err != nil {
 		return lib.InternalServerErr(c, err.Error())
 	}
@@ -187,9 +206,14 @@ func handleDeleteColumn(c *fiber.Ctx, db *sqlx.DB) error {
 //	@produce	json
 //	@success	200	{object}	models.SuccessResp
 func handleDeleteTable(c *fiber.Ctx, db *sqlx.DB) error {
-	if err := lib.ValidateVar(c.Params("tableName"), "required,alpha"); err != nil {
-		return lib.BadRequestErr(c, err.Error())
+	params := struct {
+		TableName string `params:"tableName" validate:"required,alpha"`
+	}{}
+	_ = c.ParamsParser(&params)
+	if errs := lib.ValidateStruct(params); len(errs) > 0 {
+		return lib.BadRequestErr(c, errs)
 	}
+
 	err := db_handlers.DeleteTable(db, c.Params("tableName"))
 	if err != nil {
 		return lib.InternalServerErr(c, err.Error())

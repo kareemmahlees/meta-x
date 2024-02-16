@@ -14,17 +14,16 @@ import (
 )
 
 // Initializes a database connection and starts the fiber
-// server on the supplied port
-func InitDBAndServer(provider, cfg string, port int) error {
+// server on the supplied port.
+//
+// listenCh is only used for the sake of testing, and app is passed as an argument instead of initializing
+// inside the function to make it easier for testing
+func InitDBAndServer(app *fiber.App, provider, cfg string, port int, listenCh chan bool) error {
 
 	con, err := InitDBConn(provider, cfg)
 	if err != nil {
-		// log.Error("Error connecting to DB")
 		return err
 	}
-	app := fiber.New(fiber.Config{
-		DisableStartupMessage: true,
-	})
 	defer con.Close()
 
 	// see https://github.com/99designs/gqlgen/issues/1664#issuecomment-1616620967
@@ -34,14 +33,14 @@ func InitDBAndServer(provider, cfg string, port int) error {
 	app.All("/graphql", func(c *fiber.Ctx) error {
 		utils.GraphQLHandler(h.ServeHTTP)(c)
 		return nil
-	})
+	}).Name("graphql")
 
 	app.All("/playground", func(c *fiber.Ctx) error {
 		utils.GraphQLHandler(playground.Handler("GraphQL", "/graphql"))(c)
 		return nil
-	})
+	}).Name("playground")
 
-	app.Get("/swagger/*", swagger.HandlerDefault)
+	app.Get("/swagger/*", swagger.HandlerDefault).Name("swagger")
 	app.Use(logger.New())
 	// set the provider to pass it to other handlers
 	app.Use(func(c *fiber.Ctx) error {
@@ -56,7 +55,13 @@ func InitDBAndServer(provider, cfg string, port int) error {
 	fmt.Println(utils.NewStyle("GraphQl", "#FF70FD"), fmt.Sprintf("http://localhost:%d/graphql", port))
 	fmt.Println(utils.NewStyle("Playground", "#B6B5B5"), fmt.Sprintf("http://localhost:%d/playground\n", port))
 
+	app.Hooks().OnListen(func(ld fiber.ListenData) error {
+		listenCh <- true
+		return nil
+	})
+
 	if err := app.Listen(fmt.Sprintf(":%d", port)); err != nil {
+		listenCh <- false
 		return err
 	}
 	return nil

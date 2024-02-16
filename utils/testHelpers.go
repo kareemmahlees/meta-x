@@ -4,8 +4,10 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
+	"fmt"
 	"io"
-	"log"
+	"net/http"
+	"net/http/httptest"
 	"time"
 
 	"github.com/gofiber/fiber/v2"
@@ -72,7 +74,9 @@ func CreateMySQLContainer(ctx context.Context) (*MySQLContainer, error) {
 }
 
 func NewTestingFiberApp(provider string) *fiber.App {
-	app := fiber.New()
+	app := fiber.New(fiber.Config{
+		DisableStartupMessage: true,
+	})
 	app.Use(func(c *fiber.Ctx) error {
 		c.Locals("provider", provider)
 		return c.Next()
@@ -80,22 +84,19 @@ func NewTestingFiberApp(provider string) *fiber.App {
 	return app
 }
 
-func EncodeBody[T any](body T) *bytes.Buffer {
+func EncodeBody[T any](body T) (*bytes.Buffer, error) {
 	var buf bytes.Buffer
 	err := json.NewEncoder(&buf).Encode(body)
 	if err != nil {
-		log.Fatal(err)
+		return nil, err
 	}
-	return &buf
+	return &buf, nil
 }
 
 func DecodeBody[K any](body io.ReadCloser) K {
 	var parsedPayload K
 	decoder := json.NewDecoder(body)
-	err := decoder.Decode(&parsedPayload)
-	if err != nil {
-		log.Fatal(err)
-	}
+	_ = decoder.Decode(&parsedPayload)
 	return parsedPayload
 }
 
@@ -110,4 +111,27 @@ func SliceOfPointersToSliceOfValues[T any](s []*T) []T {
 type FiberRoute struct {
 	Method string
 	Path   string
+}
+
+// Struct for aiding the process of testing routes.
+// Header is set by default to "Content-Type": "application/json"
+type RequestTesting[T any] struct {
+	ReqMethod string
+	ReqUrl    string // relative to the base url which is "http://localhost:5522"
+	ReqBody   io.Reader
+	Res       *http.Response
+	ResBody   T
+}
+
+// Runs a request and returns the decoded form [T] and the raw form [*http.Response]
+func (rt *RequestTesting[T]) RunRequest(app *fiber.App) (T, *http.Response) {
+	req := httptest.NewRequest(rt.ReqMethod, fmt.Sprintf("http://localhost:5522%s", rt.ReqUrl), rt.ReqBody)
+	if rt.ReqBody != nil {
+		req.Header.Set("Content-Type", "application/json")
+	}
+	resp, _ := app.Test(req)
+
+	resBody := DecodeBody[T](resp.Body)
+	rt.ResBody = resBody
+	return resBody, resp
 }

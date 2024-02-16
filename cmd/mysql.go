@@ -6,6 +6,7 @@ import (
 	"meta-x/lib"
 
 	"github.com/go-sql-driver/mysql"
+	"github.com/gofiber/fiber/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -42,7 +43,9 @@ var mysqlCommand = &cobra.Command{
 
 		port, _ := cmd.Flags().GetInt("port")
 
-		if err := internal.InitDBAndServer(lib.MYSQL, cfg, port); err != nil {
+		app := fiber.New(fiber.Config{DisableStartupMessage: true})
+
+		if err := internal.InitDBAndServer(app, lib.MYSQL, cfg, port, make(chan bool, 1)); err != nil {
 			return err
 		}
 		return nil

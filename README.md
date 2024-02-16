@@ -6,8 +6,9 @@
 
 <div align='center'>
 
-![GitHub go.mod Go version (subdirectory of monorepo)](https://img.shields.io/github/go-mod/go-version/kareemmahlees/mysql-meta)
-![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/kareemmahlees/mysql-meta/lint.yml)
+![GitHub go.mod Go version (subdirectory of monorepo)](https://img.shields.io/github/go-mod/go-version/kareemmahlees/meta-x)
+![Codecov](https://img.shields.io/codecov/c/github/kareemmahlees/meta-x)
+![GitHub Workflow Status (with event)](https://img.shields.io/github/actions/workflow/status/kareemmahlees/meta-x/lint.yml)
 
 </div>
 
@@ -21,7 +22,7 @@
 
 - ### Download the binary
 
-  You can download the binary from the [releases page](https://github.com/kareemmahlees/mysql-meta/releases).
+  You can download the binary from the [releases page](https://github.com/kareemmahlees/meta-x/releases).
 
   Make sure you add the executable to your `PATH` environment variable.
 

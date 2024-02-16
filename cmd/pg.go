@@ -5,6 +5,7 @@ import (
 	"meta-x/internal"
 	"meta-x/lib"
 
+	"github.com/gofiber/fiber/v2"
 	"github.com/lib/pq"
 
 	"github.com/spf13/cobra"
@@ -37,7 +38,9 @@ var pgCommand = &cobra.Command{
 
 		port, _ := cmd.Flags().GetInt("port")
 
-		if err := internal.InitDBAndServer(lib.PSQL, cfg, port); err != nil {
+		app := fiber.New(fiber.Config{DisableStartupMessage: true})
+
+		if err := internal.InitDBAndServer(app, lib.PSQL, cfg, port, make(chan bool, 1)); err != nil {
 			return err
 		}
 		return nil
