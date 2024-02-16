@@ -12,7 +12,7 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-func TestInitDBAndServer(t *testing.T) {
+func TestInitDBAndServerPassing(t *testing.T) {
 	listenCh := make(chan bool)
 
 	app := fiber.New(fiber.Config{DisableStartupMessage: true})
@@ -53,12 +53,18 @@ func TestInitDBAndServer(t *testing.T) {
 
 	}
 
+}
+
+func TestInitDBAndServerFailing(t *testing.T) {
+	listenCh := make(chan bool)
+
+	app := fiber.New(fiber.Config{DisableStartupMessage: true})
+
 	go func(app *fiber.App) {
-		err = InitDBAndServer(app, lib.SQLITE3, ":memory:", 100000, listenCh)
+		err := InitDBAndServer(app, lib.SQLITE3, ":memory:", 100000, listenCh)
 		assert.NotNil(t, err)
 	}(app)
 
-	listenting = <-listenCh
+	listenting := <-listenCh
 	assert.False(t, listenting)
-
 }

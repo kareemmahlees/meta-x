@@ -3,8 +3,8 @@ package routes_test
 import (
 	"context"
 	"log"
+	"net/http"
 	"net/http/httptest"
-	"strings"
 	"testing"
 
 	"meta-x/internal"
@@ -116,28 +116,57 @@ func (suite *DatabaseRoutesTestSuite) TestHandleListDatabases() {
 	}
 }
 
-func (suite *DatabaseRoutesTestSuite) TestHandleCreateDatabase() {
+func (suite *DatabaseRoutesTestSuite) TestHandleCreateDatabasePassing() {
 	t := suite.T()
 	for _, provider := range suite.providers {
 		app := utils.NewTestingFiberApp(provider)
 		con := suite.getConnection(provider)
 		routes.RegisterDatabasesRoutes(app, con)
 
-		req := httptest.NewRequest("POST", "http://localhost:5522/database", strings.NewReader(`
-			{
-				"name":"test"
-			}
-		`))
-		req.Header.Set("Content-Type", "application/json")
+		passingBody, _ := utils.EncodeBody(models.CreatePgMySqlDBPayload{
+			Name: "testing",
+		})
+		passing := utils.RequestTesting[models.SuccessResp]{
+			ReqMethod: http.MethodPost,
+			ReqUrl:    "/database",
+			ReqBody:   passingBody,
+		}
 
-		resp, _ := app.Test(req)
-		defer resp.Body.Close()
-		payload := utils.DecodeBody[models.SuccessResp](resp.Body)
-
-		assert.Equal(t, resp.StatusCode, fiber.StatusCreated)
-		assert.True(t, payload.Success)
+		decodedRes, rawRes := passing.RunRequest(app)
+		assert.Equal(t, rawRes.StatusCode, fiber.StatusCreated)
+		assert.True(t, decodedRes.Success)
 	}
 
+}
+
+func (suite *DatabaseRoutesTestSuite) TestHandleCreateDatabaseFailing() {
+
+	t := suite.T()
+	for _, provider := range suite.providers {
+		app := utils.NewTestingFiberApp(provider)
+		con := suite.getConnection(provider)
+		routes.RegisterDatabasesRoutes(app, con)
+
+		failingUnprocessableEntity := utils.RequestTesting[models.ErrResp]{
+			ReqMethod: http.MethodPost,
+			ReqUrl:    "/database",
+		}
+		decodedRes, rawRes := failingUnprocessableEntity.RunRequest(app)
+		assert.Equal(t, http.StatusUnprocessableEntity, rawRes.StatusCode)
+		assert.Contains(t, decodedRes.Message, "Unprocessable Entity")
+
+		failingBadRequestBody, _ := utils.EncodeBody(models.CreatePgMySqlDBPayload{
+			Name: "",
+		})
+		failingBadRequest := utils.RequestTesting[models.ErrResp]{
+			ReqMethod: http.MethodPost,
+			ReqUrl:    "/database",
+			ReqBody:   failingBadRequestBody,
+		}
+		decodedRes, rawRes = failingBadRequest.RunRequest(app)
+		assert.Equal(t, http.StatusBadRequest, rawRes.StatusCode)
+		assert.Len(t, decodedRes.Message, 1)
+	}
 }
 
 func TestDatabaseRoutesTestSuite(t *testing.T) {

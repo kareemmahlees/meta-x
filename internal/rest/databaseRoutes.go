@@ -52,9 +52,9 @@ func handleListDatabases(c *fiber.Ctx, db *sqlx.DB) error {
 //	@param			pg_mysql_db_data	body		models.CreatePgMySqlDBPayload	true	"only supported for pg and mysql, because attached sqlite dbs are temporary"
 //	@success		201					{object}	models.SuccessResp
 func handleCreateDatabase(c *fiber.Ctx, db *sqlx.DB) error {
-	payload := new(models.CreatePgMySqlDBPayload)
+	var payload models.CreatePgMySqlDBPayload
 
-	if err := c.BodyParser(payload); err != nil {
+	if err := c.BodyParser(&payload); err != nil {
 		return lib.UnprocessableEntityErr(c, err.Error())
 	}
 
