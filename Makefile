@@ -1,7 +1,7 @@
 build:
 	@go build -o bin/
 run: build
-	@./bin/meta-x.exe
+	@./bin/meta-x.exe --help
 
 # make sure to run docker first
 test:

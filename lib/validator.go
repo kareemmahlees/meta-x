@@ -15,7 +15,6 @@ var validate *validator.Validate
 
 func init() {
 	validate = validator.New(validator.WithRequiredStructEnabled())
-	_ = validate.RegisterValidation("notEmpty", notEmtpy)
 }
 
 func ValidateStruct(data interface{}) []ErrorResponse {
@@ -35,18 +34,4 @@ func ValidateStruct(data interface{}) []ErrorResponse {
 	}
 
 	return validationErrors
-}
-
-func ValidateVar(value interface{}, tags string) error {
-
-	err := validate.Var(value, tags)
-
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
-func notEmtpy(fl validator.FieldLevel) bool {
-	return fl.Field().Len() != 0
 }

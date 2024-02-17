@@ -32,31 +32,3 @@ func TestValidateStruct(t *testing.T) {
 		assert.Contains(t, failedTags, test.FailureTag)
 	}
 }
-
-func TestValidateVar(t *testing.T) {
-	const validationTags = "required,alpha,min=3"
-
-	err := ValidateVar("kareem", validationTags)
-	assert.Nil(t, err)
-
-	err = ValidateVar(123, validationTags)
-	assert.Error(t, err)
-}
-
-func TestNotEmpty(t *testing.T) {
-	testStructs := []struct {
-		Names []string `validate:"notEmpty"`
-	}{
-		{Names: []string{"foo", "bar", "baz"}},
-		{Names: []string{}},
-	}
-	for idx, test := range testStructs {
-		errs := ValidateStruct(test)
-		if idx == 0 {
-			assert.Zero(t, len(errs))
-		} else if idx == 1 {
-			assert.Greater(t, len(errs), 0)
-			assert.Equal(t, errs[0].Tag, "notEmpty")
-		}
-	}
-}

@@ -22,17 +22,25 @@
 
 - ### Download the binary
 
-  You can download the binary from the [releases page](https://github.com/kareemmahlees/meta-x/releases).
+You can download the binary from the [releases page](https://github.com/kareemmahlees/meta-x/releases/latest).
 
-  Make sure you add the executable to your `PATH` environment variable.
+Make sure you add the executable to your `PATH` environment variable.
 
-- ### Go Install
+- ### Building from source
 
-  You can use the `go install` command to install like so:
+  First clone the repo:
 
   ```shell
-    go install github.com/kareemmahlees/mysql-meta
+    git clone github.com/kareemmahlees/meta-x --depth=1
   ```
+
+  And then install the tool:
+
+  ```shell
+    go install
+  ```
+
+  And it will automatically be added to your `PATH`
 
 ## Running
 
@@ -78,12 +86,14 @@ Additionally, you can playaround with the GraphQL version by jumping into the pl
   - [ ] delete views
   - [ ] query by views
 - Config
-  - [ ] get mysql version
+  - [ ] get version
 
 ## Contributing
 
-We strongly encourage anyone who wants to contribute to go ahead, not matter what skill level your are.
+We strongly encourage anyone who wants to contribute to go ahead, no matter what skill level your are.
 
 Contributions can be as small as suggesting a feature, reporting a bug or enhancing the docs.
 
-For more details, please visit [CONTRIBUTING.md]()
+**Want to contribute but don't know where to start?**
+
+Checkout our [Codebase Overview](./CONTRIBUTING.md#codebase-overview) section in [CONTRIBUTING.md](./CONTRIBUTING.md), then head to our [issues](https://github.com/kareemmahlees/meta-x/issues) section and pick an issue to work on 🚀.
