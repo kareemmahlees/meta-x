@@ -1,6 +1,6 @@
 basePath: /
 definitions:
-  models.AddUpdateColumnPayload:
+  models.AddModifyColumnPayload:
     properties:
       column_name:
         type: string
@@ -94,7 +94,7 @@ info:
     email: kareemmahlees@gmail.com
     name: Kareem Ebrahim
   description: A RESTFull and GraphQL API to manage your MySQL DB
-  title: MySQL Meta
+  title: MetaX
   version: "1.0"
 paths:
   /:
@@ -226,7 +226,7 @@ paths:
         name: columnData
         required: true
         schema:
-          $ref: '#/definitions/models.AddUpdateColumnPayload'
+          $ref: '#/definitions/models.AddModifyColumnPayload'
       produces:
       - application/json
       responses:
@@ -278,7 +278,7 @@ paths:
         name: columnData
         required: true
         schema:
-          $ref: '#/definitions/models.AddUpdateColumnPayload'
+          $ref: '#/definitions/models.AddModifyColumnPayload'
       produces:
       - application/json
       responses:
@@ -297,7 +297,9 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/models.TableInfoResp'
+            items:
+              $ref: '#/definitions/models.TableInfoResp'
+            type: array
       tags:
       - Tables
 swagger: "2.0"

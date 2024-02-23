@@ -220,7 +220,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AddUpdateColumnPayload"
+                            "$ref": "#/definitions/models.AddModifyColumnPayload"
                         }
                     }
                 ],
@@ -300,7 +300,7 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AddUpdateColumnPayload"
+                            "$ref": "#/definitions/models.AddModifyColumnPayload"
                         }
                     }
                 ],
@@ -327,7 +327,10 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.TableInfoResp"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.TableInfoResp"
+                            }
                         }
                     }
                 }
@@ -335,7 +338,7 @@ const docTemplate = `{
         }
     },
     "definitions": {
-        "models.AddUpdateColumnPayload": {
+        "models.AddModifyColumnPayload": {
             "type": "object",
             "required": [
                 "column_name",
@@ -478,7 +481,7 @@ var SwaggerInfo = &swag.Spec{
 	Host:             "localhost:5522",
 	BasePath:         "/",
 	Schemes:          []string{},
-	Title:            "MySQL Meta",
+	Title:            "MetaX",
 	Description:      "A RESTFull and GraphQL API to manage your MySQL DB",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,

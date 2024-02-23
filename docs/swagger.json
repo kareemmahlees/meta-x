@@ -2,7 +2,7 @@
     "swagger": "2.0",
     "info": {
         "description": "A RESTFull and GraphQL API to manage your MySQL DB",
-        "title": "MySQL Meta",
+        "title": "MetaX",
         "contact": {
             "name": "Kareem Ebrahim",
             "email": "kareemmahlees@gmail.com"
@@ -213,7 +213,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AddUpdateColumnPayload"
+                            "$ref": "#/definitions/models.AddModifyColumnPayload"
                         }
                     }
                 ],
@@ -293,7 +293,7 @@
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/models.AddUpdateColumnPayload"
+                            "$ref": "#/definitions/models.AddModifyColumnPayload"
                         }
                     }
                 ],
@@ -320,7 +320,10 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/models.TableInfoResp"
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/models.TableInfoResp"
+                            }
                         }
                     }
                 }
@@ -328,7 +331,7 @@
         }
     },
     "definitions": {
-        "models.AddUpdateColumnPayload": {
+        "models.AddModifyColumnPayload": {
             "type": "object",
             "required": [
                 "column_name",

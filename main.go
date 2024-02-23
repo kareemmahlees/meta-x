@@ -7,7 +7,7 @@ import (
 
 // Main
 //
-//	@title			MySQL Meta
+//	@title			MetaX
 //	@version		1.0
 //	@description	A RESTFull and GraphQL API to manage your MySQL DB
 //	@contact.name	Kareem Ebrahim
