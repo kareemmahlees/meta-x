@@ -1,25 +1,23 @@
 name: Test and coverage
 
-on: [push, pull_request]
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-    services:
-      mysql:
-        image: mysql
-        ports:
-          - 33061:3306
-        env:
-          MYSQL_ROOT_PASSWORD: kareem
-          MYSQL_DATABASE: mysqlmeta
-          MYSQL_USER: kareem
-          MYSQL_PASSWORD: password123
     steps:
-      - uses: actions/checkout@v2
-      - uses: actions/setup-go@v2
+      - uses: actions/checkout@v4
+      - uses: actions/setup-go@v4
         with:
-          go-version: "1.21"
+          cache: true
+          cache-dependency-path: "**/go.sum"
+          go-version-file: "./go.mod"
       - name: Run coverage
         run: go test ./... -race -coverprofile=coverage.out -covermode=atomic
       - name: Upload coverage to Codecov
