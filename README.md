@@ -26,21 +26,13 @@ You can download the binary from the [releases page](https://github.com/kareemma
 
 Make sure you add the executable to your `PATH` environment variable.
 
-- ### Building from source
+- ### With `go install`
 
-  First clone the repo:
-
-  ```shell
-    git clone github.com/kareemmahlees/meta-x --depth=1
-  ```
-
-  And then install the tool:
+  By running the following command:
 
   ```shell
-    go install
+  go install github.com/kareemmahlees/meta-x
   ```
-
-  And it will automatically be added to your `PATH`
 
 ## Running
 
