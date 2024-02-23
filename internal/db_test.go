@@ -3,9 +3,9 @@ package internal_test
 import (
 	"context"
 	"log"
-	"meta-x/internal"
-	"meta-x/lib"
-	"meta-x/utils"
+	"github.com/kareemmahlees/meta-x/internal"
+	"github.com/kareemmahlees/meta-x/lib"
+	"github.com/kareemmahlees/meta-x/utils"
 	"testing"
 
 	"github.com/stretchr/testify/assert"

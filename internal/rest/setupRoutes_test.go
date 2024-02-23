@@ -1,8 +1,8 @@
 package routes_test
 
 import (
-	routes "meta-x/internal/rest"
-	"meta-x/utils"
+	routes "github.com/kareemmahlees/meta-x/internal/rest"
+	"github.com/kareemmahlees/meta-x/utils"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"

@@ -5,7 +5,7 @@ import (
 	"errors"
 	"io"
 	"log"
-	"meta-x/lib"
+	"github.com/kareemmahlees/meta-x/lib"
 	"net/http"
 	"reflect"
 	"strings"

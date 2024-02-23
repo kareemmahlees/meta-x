@@ -1,7 +1,7 @@
 package lib
 
 import (
-	"meta-x/models"
+	"github.com/kareemmahlees/meta-x/models"
 
 	"github.com/gofiber/fiber/v2"
 )

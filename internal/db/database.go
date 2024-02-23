@@ -2,7 +2,7 @@ package db
 
 import (
 	"fmt"
-	"meta-x/lib"
+	"github.com/kareemmahlees/meta-x/lib"
 
 	"github.com/jmoiron/sqlx"
 )

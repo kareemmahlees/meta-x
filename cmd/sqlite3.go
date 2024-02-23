@@ -1,8 +1,8 @@
 package cmd
 
 import (
-	"meta-x/internal"
-	"meta-x/lib"
+	"github.com/kareemmahlees/meta-x/internal"
+	"github.com/kareemmahlees/meta-x/lib"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/spf13/cobra"

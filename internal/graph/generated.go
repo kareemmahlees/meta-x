@@ -8,7 +8,7 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"meta-x/internal/graph/model"
+	"github.com/kareemmahlees/meta-x/internal/graph/model"
 	"strconv"
 	"sync"
 	"sync/atomic"

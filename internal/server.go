@@ -2,9 +2,9 @@ package internal
 
 import (
 	"fmt"
-	"meta-x/internal/graph"
-	routes "meta-x/internal/rest"
-	"meta-x/utils"
+	"github.com/kareemmahlees/meta-x/internal/graph"
+	routes "github.com/kareemmahlees/meta-x/internal/rest"
+	"github.com/kareemmahlees/meta-x/utils"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"

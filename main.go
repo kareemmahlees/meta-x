@@ -1,8 +1,8 @@
 package main
 
 import (
-	"meta-x/cmd"
-	_ "meta-x/docs"
+	"github.com/kareemmahlees/meta-x/cmd"
+	_ "github.com/kareemmahlees/meta-x/docs"
 )
 
 // Main

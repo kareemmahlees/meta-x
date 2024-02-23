@@ -4,7 +4,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"meta-x/utils"
+	"github.com/kareemmahlees/meta-x/utils"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/stretchr/testify/assert"

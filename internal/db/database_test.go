@@ -3,10 +3,10 @@ package db_test
 import (
 	"context"
 	"log"
-	"meta-x/internal"
-	"meta-x/internal/db"
-	"meta-x/lib"
-	"meta-x/utils"
+	"github.com/kareemmahlees/meta-x/internal"
+	"github.com/kareemmahlees/meta-x/internal/db"
+	"github.com/kareemmahlees/meta-x/lib"
+	"github.com/kareemmahlees/meta-x/utils"
 	"testing"
 
 	"github.com/jmoiron/sqlx"

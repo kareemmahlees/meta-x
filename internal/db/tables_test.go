@@ -7,11 +7,11 @@ import (
 	"reflect"
 	"testing"
 
-	"meta-x/internal"
-	"meta-x/internal/db"
-	"meta-x/lib"
-	"meta-x/models"
-	"meta-x/utils"
+	"github.com/kareemmahlees/meta-x/internal"
+	"github.com/kareemmahlees/meta-x/internal/db"
+	"github.com/kareemmahlees/meta-x/lib"
+	"github.com/kareemmahlees/meta-x/models"
+	"github.com/kareemmahlees/meta-x/utils"
 
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"

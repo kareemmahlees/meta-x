@@ -3,8 +3,8 @@ package internal
 import (
 	"fmt"
 	"log"
-	"meta-x/lib"
-	"meta-x/utils"
+	"github.com/kareemmahlees/meta-x/lib"
+	"github.com/kareemmahlees/meta-x/utils"
 	"net/http"
 	"testing"
 

@@ -3,8 +3,8 @@ package db
 import (
 	"fmt"
 
-	"meta-x/lib"
-	"meta-x/models"
+	"github.com/kareemmahlees/meta-x/lib"
+	"github.com/kareemmahlees/meta-x/models"
 
 	"github.com/jmoiron/sqlx"
 )

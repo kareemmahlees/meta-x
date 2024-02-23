@@ -3,7 +3,7 @@ package routes
 import (
 	"time"
 
-	_ "meta-x/docs"
+	_ "github.com/kareemmahlees/meta-x/docs"
 
 	"github.com/gofiber/fiber/v2"
 )

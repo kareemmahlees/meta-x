@@ -6,10 +6,10 @@ package graph
 
 import (
 	"context"
-	"meta-x/internal/db"
-	"meta-x/internal/graph/model"
-	"meta-x/lib"
-	"meta-x/models"
+	"github.com/kareemmahlees/meta-x/internal/db"
+	"github.com/kareemmahlees/meta-x/internal/graph/model"
+	"github.com/kareemmahlees/meta-x/lib"
+	"github.com/kareemmahlees/meta-x/models"
 )
 
 // CreateDatabase is the resolver for the createDatabase field.

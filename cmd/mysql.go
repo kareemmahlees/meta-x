@@ -2,8 +2,8 @@ package cmd
 
 import (
 	"fmt"
-	"meta-x/internal"
-	"meta-x/lib"
+	"github.com/kareemmahlees/meta-x/internal"
+	"github.com/kareemmahlees/meta-x/lib"
 
 	"github.com/go-sql-driver/mysql"
 	"github.com/gofiber/fiber/v2"

@@ -1,4 +1,4 @@
-module meta-x
+module github.com/kareemmahlees/meta-x
 
 go 1.21
 
