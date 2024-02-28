@@ -1,5 +1,5 @@
 build:
-	@go build -o bin/
+	@go build -o bin/ -ldflags "-w -s"
 run: build
 	@./bin/meta-x.exe --help
 
