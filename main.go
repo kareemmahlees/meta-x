@@ -8,8 +8,8 @@ import (
 // Main
 //
 //	@title			MetaX
-//	@version		1.0
-//	@description	A RESTFull and GraphQL API to manage your MySQL DB
+//	@version		0.1.1
+//	@description	A RESTFull and GraphQL API to supercharge your database
 //	@contact.name	Kareem Ebrahim
 //	@contact.email	kareemmahlees@gmail.com
 //	@host			localhost:5522

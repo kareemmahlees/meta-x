@@ -1,9 +1,5 @@
-<h1 align='center'>
-    MetaX
-</h1>
-<p align='center'>
-    RESTfull & GraphQL API for your database</p>
-
+<img src="./docs/banner.png"/>
+<p></p>
 <div align='center'>
 
 ![GitHub go.mod Go version (subdirectory of monorepo)](https://img.shields.io/github/go-mod/go-version/kareemmahlees/meta-x)
@@ -16,7 +12,7 @@
 
 **MetaX** introduces a _RESTFull_ and _GraphQL_ API that allows you to control your database through http requests programmatically, i.e creating tables and databases, adding columns and deleting columns, etc .
 
-![Screen shot of running application](./docs/screenshot.png)
+<!-- [Screen shot of running application](./docs/screenshot.png) -->
 
 ## Installation
 
