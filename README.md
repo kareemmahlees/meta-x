@@ -30,6 +30,10 @@ Make sure you add the executable to your `PATH` environment variable.
   go install github.com/kareemmahlees/meta-x
   ```
 
+## Announcements 🎉
+
+MetaX binary size is now 25% smaller 🔥
+
 ## Running
 
 Once you [installed](#installation) the binary, _MetaX_ comes with subocommands to each you can supply your database connection parameters as command line flags.
