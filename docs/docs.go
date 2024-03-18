@@ -338,6 +338,31 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "handlers.APIInfoResult": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "string"
+                },
+                "contact": {
+                    "type": "string"
+                },
+                "repo": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handlers.HealthCheckResult": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                }
+            }
+        },
         "models.AddModifyColumnPayload": {
             "type": "object",
             "required": [
@@ -477,12 +502,12 @@ const docTemplate = `{
 
 // SwaggerInfo holds exported Swagger Info so clients can modify it
 var SwaggerInfo = &swag.Spec{
-	Version:          "1.0",
+	Version:          "0.1.1",
 	Host:             "localhost:5522",
 	BasePath:         "/",
 	Schemes:          []string{},
 	Title:            "MetaX",
-	Description:      "A RESTFull and GraphQL API to manage your MySQL DB",
+	Description:      "A RESTFull and GraphQL API to supercharge your database",
 	InfoInstanceName: "swagger",
 	SwaggerTemplate:  docTemplate,
 	LeftDelim:        "{{",
