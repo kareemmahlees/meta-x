@@ -1,5 +1,21 @@
 basePath: /
 definitions:
+  handlers.APIInfoResult:
+    properties:
+      author:
+        type: string
+      contact:
+        type: string
+      repo:
+        type: string
+      year:
+        type: integer
+    type: object
+  handlers.HealthCheckResult:
+    properties:
+      date:
+        type: string
+    type: object
   models.AddModifyColumnPayload:
     properties:
       column_name:
@@ -93,9 +109,9 @@ info:
   contact:
     email: kareemmahlees@gmail.com
     name: Kareem Ebrahim
-  description: A RESTFull and GraphQL API to manage your MySQL DB
+  description: A RESTFull and GraphQL API to supercharge your database
   title: MetaX
-  version: "1.0"
+  version: 0.1.1
 paths:
   /:
     get:

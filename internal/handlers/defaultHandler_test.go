@@ -1,20 +1,20 @@
-package routes
+package handlers
 
 import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/kareemmahlees/meta-x/utils"
-
 	"github.com/gofiber/fiber/v2"
+	"github.com/kareemmahlees/meta-x/utils"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestRegisterDefaultRoutes(t *testing.T) {
 
 	app := fiber.New()
+	handler := NewDefaultHandler(nil)
 
-	RegisterDefaultRoutes(app)
+	handler.RegisterRoutes(app)
 
 	var routes []utils.FiberRoute
 	for _, route := range app.GetRoutes() {
@@ -33,7 +33,8 @@ func TestRegisterDefaultRoutes(t *testing.T) {
 
 func TestHealthCheck(t *testing.T) {
 	app := fiber.New()
-	RegisterDefaultRoutes(app)
+	handler := NewDefaultHandler(nil)
+	handler.RegisterRoutes(app)
 
 	req := httptest.NewRequest("GET", "http://localhost:4000/health", nil)
 
@@ -48,7 +49,8 @@ func TestHealthCheck(t *testing.T) {
 
 func TestBaseUrl(t *testing.T) {
 	app := fiber.New()
-	RegisterDefaultRoutes(app)
+	handler := NewDefaultHandler(nil)
+	handler.RegisterRoutes(app)
 
 	req := httptest.NewRequest("GET", "http://localhost:4000", nil)
 

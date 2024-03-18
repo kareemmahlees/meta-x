@@ -2,7 +2,9 @@ package internal
 
 import (
 	"fmt"
+
 	"github.com/kareemmahlees/meta-x/internal/graph"
+	"github.com/kareemmahlees/meta-x/internal/handlers"
 	routes "github.com/kareemmahlees/meta-x/internal/rest"
 	"github.com/kareemmahlees/meta-x/utils"
 
@@ -49,6 +51,9 @@ func InitDBAndServer(app *fiber.App, provider, cfg string, port int, listenCh ch
 	})
 
 	routes.Setup(app, con)
+
+	defaultHandler := handlers.NewDefaultHandler(nil)
+	defaultHandler.RegisterRoutes(app)
 
 	fmt.Println(utils.NewStyle("REST", "#4B87FF"), fmt.Sprintf("http://localhost:%d", port))
 	fmt.Println(utils.NewStyle("Swagger", "#0EEBA1"), fmt.Sprintf("http://localhost:%d/swagger", port))

@@ -1,13 +1,13 @@
 {
     "swagger": "2.0",
     "info": {
-        "description": "A RESTFull and GraphQL API to manage your MySQL DB",
+        "description": "A RESTFull and GraphQL API to supercharge your database",
         "title": "MetaX",
         "contact": {
             "name": "Kareem Ebrahim",
             "email": "kareemmahlees@gmail.com"
         },
-        "version": "1.0"
+        "version": "0.1.1"
     },
     "host": "localhost:5522",
     "basePath": "/",
@@ -331,6 +331,31 @@
         }
     },
     "definitions": {
+        "handlers.APIInfoResult": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "type": "string"
+                },
+                "contact": {
+                    "type": "string"
+                },
+                "repo": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "handlers.HealthCheckResult": {
+            "type": "object",
+            "properties": {
+                "date": {
+                    "type": "string"
+                }
+            }
+        },
         "models.AddModifyColumnPayload": {
             "type": "object",
             "required": [
