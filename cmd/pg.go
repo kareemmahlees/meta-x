@@ -1,13 +1,6 @@
 package cmd
 
 import (
-	"fmt"
-	"github.com/kareemmahlees/meta-x/internal"
-	"github.com/kareemmahlees/meta-x/lib"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/lib/pq"
-
 	"github.com/spf13/cobra"
 )
 
@@ -15,34 +8,34 @@ var pgCommand = &cobra.Command{
 	Use:   "pg",
 	Short: "use postgres as the database provider",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var cfg string
+		// var cfg string
 
-		connUrl, _ := cmd.Flags().GetString("url")
-		if connUrl != "" {
-			cfg = connUrl
-		} else {
-			dbUsername, _ := cmd.Flags().GetString("username")
-			dbHost, _ := cmd.Flags().GetString("host")
-			dbPort, _ := cmd.Flags().GetInt("dbPort")
-			dbName, _ := cmd.Flags().GetString("db")
-			dbSslMode, _ := cmd.Flags().GetString("sslmode")
+		// connUrl, _ := cmd.Flags().GetString("url")
+		// if connUrl != "" {
+		// 	cfg = connUrl
+		// } else {
+		// 	dbUsername, _ := cmd.Flags().GetString("username")
+		// 	dbHost, _ := cmd.Flags().GetString("host")
+		// 	dbPort, _ := cmd.Flags().GetInt("dbPort")
+		// 	dbName, _ := cmd.Flags().GetString("db")
+		// 	dbSslMode, _ := cmd.Flags().GetString("sslmode")
 
-			dbPassword, _ := cmd.Flags().GetString("password")
-			if dbPassword == "" {
-				fmt.Println("Enter password: ")
-				fmt.Scanln(&dbPassword)
-			}
+		// 	dbPassword, _ := cmd.Flags().GetString("password")
+		// 	if dbPassword == "" {
+		// 		fmt.Println("Enter password: ")
+		// 		fmt.Scanln(&dbPassword)
+		// 	}
 
-			cfg, _ = pq.ParseURL(fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s", dbUsername, dbPassword, dbHost, dbPort, dbName, dbSslMode))
-		}
+		// 	cfg, _ = pq.ParseURL(fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s", dbUsername, dbPassword, dbHost, dbPort, dbName, dbSslMode))
+		// }
 
-		port, _ := cmd.Flags().GetInt("port")
+		// port, _ := cmd.Flags().GetInt("port")
 
-		app := fiber.New(fiber.Config{DisableStartupMessage: true})
+		// app := fiber.New(fiber.Config{DisableStartupMessage: true})
 
-		if err := internal.InitDBAndServer(app, lib.PSQL, cfg, port, make(chan bool, 1)); err != nil {
-			return err
-		}
+		// if err := internal.InitDBAndServer(app, lib.PSQL, cfg, port, make(chan bool, 1)); err != nil {
+		// 	return err
+		// }
 		return nil
 	},
 }

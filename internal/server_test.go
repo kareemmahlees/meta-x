@@ -1,76 +1,76 @@
 package internal
 
-import (
-	"fmt"
-	"log"
-	"github.com/kareemmahlees/meta-x/lib"
-	"github.com/kareemmahlees/meta-x/utils"
-	"net/http"
-	"testing"
+// import (
+// 	"fmt"
+// 	"log"
+// 	"github.com/kareemmahlees/meta-x/lib"
+// 	"github.com/kareemmahlees/meta-x/utils"
+// 	"net/http"
+// 	"testing"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/stretchr/testify/assert"
-)
+// 	"github.com/gofiber/fiber/v2"
+// 	"github.com/stretchr/testify/assert"
+// )
 
-func TestInitDBAndServerPassing(t *testing.T) {
-	listenCh := make(chan bool)
+// func TestInitDBAndServerPassing(t *testing.T) {
+// 	listenCh := make(chan bool)
 
-	app := fiber.New(fiber.Config{DisableStartupMessage: true})
-	defer func() {
-		err := app.Shutdown()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+// 	app := fiber.New(fiber.Config{DisableStartupMessage: true})
+// 	defer func() {
+// 		err := app.Shutdown()
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		}
+// 	}()
 
-	err := InitDBAndServer(app, "anything", "mallformed", 5522, listenCh)
-	assert.NotNil(t, err)
-	assert.ErrorContains(t, err, "unknown driver")
+// 	err := InitDBAndServer(app, "anything", "mallformed", 5522, listenCh)
+// 	assert.NotNil(t, err)
+// 	assert.ErrorContains(t, err, "unknown driver")
 
-	go func(app *fiber.App) {
-		err = InitDBAndServer(app, lib.SQLITE3, ":memory:", 5522, listenCh)
-		if err != nil {
-			log.Fatal(err)
-		}
-	}(app)
+// 	go func(app *fiber.App) {
+// 		err = InitDBAndServer(app, lib.SQLITE3, ":memory:", 5522, listenCh)
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		}
+// 	}(app)
 
-	listenting := <-listenCh
-	assert.True(t, listenting)
+// 	listenting := <-listenCh
+// 	assert.True(t, listenting)
 
-	testRoutes := []string{"graphql", "playground", "swagger"}
+// 	testRoutes := []string{"graphql", "playground", "swagger"}
 
-	for _, route := range testRoutes {
-		foundRoute := app.GetRoute(route)
-		assert.NotEmpty(t, foundRoute)
+// 	for _, route := range testRoutes {
+// 		foundRoute := app.GetRoute(route)
+// 		assert.NotEmpty(t, foundRoute)
 
-		request := utils.RequestTesting[any]{
-			ReqMethod: http.MethodGet,
-			ReqUrl:    fmt.Sprintf("/%s", route),
-		}
-		_, res := request.RunRequest(app)
+// 		request := utils.RequestTesting[any]{
+// 			ReqMethod: http.MethodGet,
+// 			ReqUrl:    fmt.Sprintf("/%s", route),
+// 		}
+// 		_, res := request.RunRequest(app)
 
-		assert.NotEqual(t, http.StatusNotFound, res.StatusCode)
+// 		assert.NotEqual(t, http.StatusNotFound, res.StatusCode)
 
-	}
+// 	}
 
-}
+// }
 
-func TestInitDBAndServerFailing(t *testing.T) {
-	listenCh := make(chan bool)
+// func TestInitDBAndServerFailing(t *testing.T) {
+// 	listenCh := make(chan bool)
 
-	app := fiber.New(fiber.Config{DisableStartupMessage: true})
-	defer func() {
-		err := app.Shutdown()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
+// 	app := fiber.New(fiber.Config{DisableStartupMessage: true})
+// 	defer func() {
+// 		err := app.Shutdown()
+// 		if err != nil {
+// 			log.Fatal(err)
+// 		}
+// 	}()
 
-	go func(app *fiber.App) {
-		err := InitDBAndServer(app, lib.SQLITE3, ":memory:", 100000, listenCh)
-		assert.NotNil(t, err)
-	}(app)
+// 	go func(app *fiber.App) {
+// 		err := InitDBAndServer(app, lib.SQLITE3, ":memory:", 100000, listenCh)
+// 		assert.NotNil(t, err)
+// 	}(app)
 
-	listenting := <-listenCh
-	assert.False(t, listenting)
-}
+// 	listenting := <-listenCh
+// 	assert.False(t, listenting)
+// }

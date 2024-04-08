@@ -7,15 +7,15 @@ import (
 	"github.com/kareemmahlees/meta-x/internal/db"
 )
 
-type defaultHandler struct {
+type DefaultHandler struct {
 	storage *db.Storage
 }
 
-func NewDefaultHandler(storage *db.Storage) *defaultHandler {
-	return &defaultHandler{storage}
+func NewDefaultHandler(storage *db.Storage) *DefaultHandler {
+	return &DefaultHandler{storage}
 }
 
-func (h *defaultHandler) RegisterRoutes(app *fiber.App) {
+func (h *DefaultHandler) RegisterRoutes(app *fiber.App) {
 	app.Get("/health", h.healthCheck)
 	app.Get("/", h.apiInfo)
 }
@@ -31,7 +31,7 @@ type HealthCheckResult struct {
 //	@tags			default
 //	@router			/health [get]
 //	@success		200	{object}	HealthCheckResult
-func (h *defaultHandler) healthCheck(c *fiber.Ctx) error {
+func (h *DefaultHandler) healthCheck(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"date": time.Now()})
 }
 
@@ -49,7 +49,7 @@ type APIInfoResult struct {
 //	@tags			default
 //	@router			/ [get]
 //	@success		200	{object}	APIInfoResult
-func (h *defaultHandler) apiInfo(c *fiber.Ctx) error {
+func (h *DefaultHandler) apiInfo(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"author":  "Kareem Ebrahim",
 		"year":    2023,
