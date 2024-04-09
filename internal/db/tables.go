@@ -149,17 +149,6 @@ func DeleteColumn(db *sqlx.DB, tableName string, payload models.DeleteColumnPayl
 	return alterTable(db, tableName, dataString)
 }
 
-func alterTable(db *sqlx.DB, tableName string, dataString string) error {
-	_, err := db.Exec(fmt.Sprintf(`
-	ALTER TABLE %s 
-		%s
-	`, tableName, dataString))
-	if err != nil {
-		return err
-	}
-	return nil
-}
-
 func DeleteTable(db *sqlx.DB, tableName string) error {
 	_, err := db.Exec(fmt.Sprintf(`DROP TABLE %s`, tableName))
 	if err != nil {

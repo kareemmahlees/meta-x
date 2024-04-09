@@ -1,6 +1,8 @@
 package db
 
-import "github.com/kareemmahlees/meta-x/models"
+import (
+	"github.com/kareemmahlees/meta-x/models"
+)
 
 // Interface that must be implemented by any
 // storage driver dealing with database logic
@@ -18,6 +20,7 @@ type TableExecuter interface {
 	DeleteTable(tableName string) error
 	AddColumn(tableName string, data models.AddModifyColumnPayload) error
 	UpdateColumn(tableName string, data models.AddModifyColumnPayload) error
+	DeleteColumn(tableName string, data models.DeleteColumnPayload) error
 }
 
 type Storage interface {

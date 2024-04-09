@@ -13,7 +13,7 @@ import (
 )
 
 type Server struct {
-	provider db.DatabaseExecuter
+	provider db.Storage
 	port     int
 	listenCh chan<- bool
 }
@@ -44,9 +44,11 @@ func (s *Server) Serve() error {
 
 	defaultHandler := handlers.NewDefaultHandler(nil)
 	dbHandler := handlers.NewDBHandler(s.provider)
+	tableHandler := handlers.NewTableHandler(s.provider)
 
 	defaultHandler.RegisterRoutes(app)
 	dbHandler.RegisterRoutes(app)
+	tableHandler.RegisterRoutes(app)
 
 	app.Hooks().OnListen(func(ld fiber.ListenData) error {
 
