@@ -12,13 +12,13 @@ var pgCommand = &cobra.Command{
 	Use:   "pg",
 	Short: "use postgres as the database provider",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		var pgConfig utils.PgConfig
+		var pgConfig *utils.PgConfig
 
 		port, _ := cmd.Flags().GetInt("port")
 
 		connUrl, _ := cmd.Flags().GetString("url")
 		if connUrl != "" {
-			pgConfig = utils.PgConfig{ConnUrl: &connUrl, ConnParams: nil}
+			pgConfig = utils.NewPGConfig(&connUrl, nil)
 		} else {
 			dbUsername, _ := cmd.Flags().GetString("username")
 			dbHost, _ := cmd.Flags().GetString("host")
@@ -27,14 +27,14 @@ var pgCommand = &cobra.Command{
 			dbSslMode, _ := cmd.Flags().GetString("sslmode")
 			dbPassword, _ := cmd.Flags().GetString("password")
 
-			pgConfig = utils.PgConfig{ConnUrl: nil, ConnParams: &utils.PgConnectionParams{
-				DbUsername: dbUsername,
-				DbPassword: dbPassword,
-				DbHost:     dbHost,
-				DbPort:     dbPort,
-				DbName:     dbName,
-				DbSslMode:  dbSslMode,
-			}}
+			pgConfig = utils.NewPGConfig(nil, &utils.PgConnectionParams{
+				DBUsername: dbUsername,
+				DBPassword: dbPassword,
+				DBHost:     dbHost,
+				DBPort:     dbPort,
+				DBName:     dbName,
+				DBSslMode:  dbSslMode,
+			})
 		}
 		conn, err := internal.InitDBConn(lib.PSQL, pgConfig)
 		if err != nil {

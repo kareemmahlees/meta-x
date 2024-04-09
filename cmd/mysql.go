@@ -1,6 +1,10 @@
 package cmd
 
 import (
+	"github.com/kareemmahlees/meta-x/internal"
+	"github.com/kareemmahlees/meta-x/internal/db"
+	"github.com/kareemmahlees/meta-x/lib"
+	"github.com/kareemmahlees/meta-x/utils"
 	"github.com/spf13/cobra"
 )
 
@@ -8,54 +12,54 @@ var mysqlCommand = &cobra.Command{
 	Use:   "mysql",
 	Short: "use mysql as the database provider",
 	RunE: func(cmd *cobra.Command, args []string) error {
-		// var cfg string
+		var mysqlConfig *utils.MySQLConfig
 
-		// connUrl, _ := cmd.Flags().GetString("url")
-		// if connUrl != "" {
-		// 	cfg = connUrl
-		// } else {
-		// 	dbUsername, _ := cmd.Flags().GetString("username")
-		// 	dbHost, _ := cmd.Flags().GetString("host")
-		// 	dbPort, _ := cmd.Flags().GetInt("dbPort")
-		// 	dbName, _ := cmd.Flags().GetString("db")
+		port, _ := cmd.Flags().GetInt("port")
 
-		// 	dbPassword, _ := cmd.Flags().GetString("password")
-		// 	if dbPassword == "" {
-		// 		fmt.Println("Enter password: ")
-		// 		fmt.Scanln(&dbPassword)
-		// 	}
+		connUrl, _ := cmd.Flags().GetString("url")
+		if connUrl != "" {
+			mysqlConfig = utils.NewMySQLConfig(&connUrl, nil)
+		} else {
+			dbUsername, _ := cmd.Flags().GetString("username")
+			dbHost, _ := cmd.Flags().GetString("host")
+			dbPort, _ := cmd.Flags().GetInt("dbPort")
+			dbName, _ := cmd.Flags().GetString("db")
+			dbPassword, _ := cmd.Flags().GetString("password")
 
-		// 	conf := mysql.Config{
-		// 		User:   dbUsername,
-		// 		Passwd: dbPassword,
-		// 		DBName: dbName,
-		// 		Net:    "tcp",
-		// 		Addr:   fmt.Sprintf("%s:%d", dbHost, dbPort),
-		// 	}
-		// 	cfg = conf.FormatDSN()
-		// }
+			mysqlConfig = utils.NewMySQLConfig(nil, &utils.MySQLConnectionParams{
+				DBUsername: dbUsername,
+				DBPassword: dbPassword,
+				DBHost:     dbHost,
+				DBPort:     dbPort,
+				DBName:     dbName,
+			})
+		}
 
-		// port, _ := cmd.Flags().GetInt("port")
+		conn, err := internal.InitDBConn(lib.MYSQL, mysqlConfig)
+		if err != nil {
+			return err
+		}
+		provider := db.NewMySQLProvider(conn)
+		server := internal.NewServer(provider, port, make(chan<- bool))
 
-		// app := fiber.New(fiber.Config{DisableStartupMessage: true})
+		if err := server.Serve(); err != nil {
+			return err
+		}
 
-		// if err := internal.InitDBAndServer(app, lib.MYSQL, cfg, port, make(chan bool, 1)); err != nil {
-		// 	return err
-		// }
 		return nil
 	},
 }
 
 func init() {
 
-	mysqlCommand.Flags().String("username", "", "db username")
+	mysqlCommand.Flags().String("username", "root", "db username")
 	mysqlCommand.Flags().String("password", "", "db password")
 	mysqlCommand.Flags().String("host", "localhost", "db host")
 	mysqlCommand.Flags().Int("dbPort", 3306, "db port")
 	mysqlCommand.Flags().String("db", "mysql", "db name")
 	mysqlCommand.Flags().String("url", "", "connection url/string")
 
-	mysqlCommand.MarkFlagsMutuallyExclusive("username", "url")
+	mysqlCommand.MarkFlagsMutuallyExclusive("password", "url")
 
 	rootCmd.AddCommand(mysqlCommand)
 }
