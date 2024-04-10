@@ -3,7 +3,10 @@ package internal
 import (
 	"fmt"
 
+	"github.com/99designs/gqlgen/graphql/handler"
+	"github.com/99designs/gqlgen/graphql/playground"
 	"github.com/kareemmahlees/meta-x/internal/db"
+	"github.com/kareemmahlees/meta-x/internal/graph"
 	"github.com/kareemmahlees/meta-x/internal/handlers"
 	"github.com/kareemmahlees/meta-x/utils"
 
@@ -13,38 +16,38 @@ import (
 )
 
 type Server struct {
-	provider db.Storage
+	storage  db.Storage
 	port     int
 	listenCh chan<- bool
 }
 
-func NewServer(provider db.Storage, port int, listenCh chan<- bool) *Server {
-	return &Server{provider, port, listenCh}
+func NewServer(storage db.Storage, port int, listenCh chan<- bool) *Server {
+	return &Server{storage, port, listenCh}
 }
 
 func (s *Server) Serve() error {
 	// see https://github.com/99designs/gqlgen/issues/1664#issuecomment-1616620967
 	// Create a gqlgen handler
-	// h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{DB: con, Provider: provider}}))
+	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{Storage: s.storage}}))
 
 	app := fiber.New(fiber.Config{DisableStartupMessage: true})
 
-	// app.All("/graphql", func(c *fiber.Ctx) error {
-	// 	utils.GraphQLHandler(h.ServeHTTP)(c)
-	// 	return nil
-	// }).Name("graphql")
+	app.All("/graphql", func(c *fiber.Ctx) error {
+		utils.GraphQLHandler(h.ServeHTTP)(c)
+		return nil
+	}).Name("graphql")
 
-	// app.All("/playground", func(c *fiber.Ctx) error {
-	// 	utils.GraphQLHandler(playground.Handler("GraphQL", "/graphql"))(c)
-	// 	return nil
-	// }).Name("playground")
+	app.All("/playground", func(c *fiber.Ctx) error {
+		utils.GraphQLHandler(playground.Handler("GraphQL", "/graphql"))(c)
+		return nil
+	}).Name("playground")
 
 	app.Get("/swagger/*", swagger.HandlerDefault).Name("swagger")
 	app.Use(logger.New())
 
 	defaultHandler := handlers.NewDefaultHandler(nil)
-	dbHandler := handlers.NewDBHandler(s.provider)
-	tableHandler := handlers.NewTableHandler(s.provider)
+	dbHandler := handlers.NewDBHandler(s.storage)
+	tableHandler := handlers.NewTableHandler(s.storage)
 
 	defaultHandler.RegisterRoutes(app)
 	dbHandler.RegisterRoutes(app)

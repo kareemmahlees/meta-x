@@ -8,7 +8,6 @@ import (
 )
 
 type DBHandler struct {
-	// TODO: change the interface
 	storage db.DatabaseExecuter
 }
 

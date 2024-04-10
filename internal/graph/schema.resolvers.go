@@ -6,15 +6,14 @@ package graph
 
 import (
 	"context"
-	"github.com/kareemmahlees/meta-x/internal/db"
+
 	"github.com/kareemmahlees/meta-x/internal/graph/model"
-	"github.com/kareemmahlees/meta-x/lib"
 	"github.com/kareemmahlees/meta-x/models"
 )
 
 // CreateDatabase is the resolver for the createDatabase field.
 func (r *mutationResolver) CreateDatabase(ctx context.Context, name string) (*model.SuccessResponse, error) {
-	err := db.CreatePgMysqlDatabase(r.DB, r.Provider, name)
+	err := r.Storage.CreateDB(name)
 	if err != nil {
 		return nil, err
 	}
@@ -35,7 +34,7 @@ func (r *mutationResolver) CreateTable(ctx context.Context, name string, data []
 			Unique:   props.Unique,
 		})
 	}
-	err := db.CreateTable(r.DB, name, convertedData)
+	err := r.Storage.CreateTable(name, convertedData)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +45,7 @@ func (r *mutationResolver) CreateTable(ctx context.Context, name string, data []
 
 // DeleteTable is the resolver for the deleteTable field.
 func (r *mutationResolver) DeleteTable(ctx context.Context, name string) (*model.SuccessResponse, error) {
-	err := db.DeleteTable(r.DB, name)
+	err := r.Storage.DeleteTable(name)
 	if err != nil {
 		return nil, err
 	}
@@ -61,7 +60,7 @@ func (r *mutationResolver) AddColumn(ctx context.Context, tableName string, data
 		ColName: *data.ColName,
 		Type:    *data.Type,
 	}
-	err := db.AddColumn(r.DB, tableName, convertedData)
+	err := r.Storage.AddColumn(tableName, convertedData)
 	if err != nil {
 		return nil, err
 	}
@@ -74,7 +73,7 @@ func (r *mutationResolver) ModifyColumn(ctx context.Context, tableName string, d
 		ColName: *data.ColName,
 		Type:    *data.Type,
 	}
-	err := db.UpdateColumn(r.DB, r.Provider, tableName, convertedData)
+	err := r.Storage.UpdateColumn(tableName, convertedData)
 	if err != nil {
 		return nil, err
 	}
@@ -86,7 +85,7 @@ func (r *mutationResolver) DeleteColumn(ctx context.Context, tableName string, d
 	convertedData := models.DeleteColumnPayload{
 		ColName: *data.ColName,
 	}
-	err := db.DeleteColumn(r.DB, tableName, convertedData)
+	err := r.Storage.DeleteColumn(tableName, convertedData)
 	if err != nil {
 		return nil, err
 	}
@@ -95,18 +94,7 @@ func (r *mutationResolver) DeleteColumn(ctx context.Context, tableName string, d
 
 // Databases is the resolver for the databases field.
 func (r *queryResolver) Databases(ctx context.Context) ([]*string, error) {
-	var dbs []*string
-	var err error
-
-	provider := r.Provider
-	switch provider {
-	case lib.SQLITE3:
-		dbs, err = db.ListDatabasesSqlite(r.DB)
-	case lib.PSQL:
-		dbs, err = db.ListDatabasesPgMySQL(r.DB, lib.PSQL)
-	case lib.MYSQL:
-		dbs, err = db.ListDatabasesPgMySQL(r.DB, lib.MYSQL)
-	}
+	dbs, err := r.Storage.ListDBs()
 	if err != nil {
 		return nil, err
 	}
@@ -116,7 +104,7 @@ func (r *queryResolver) Databases(ctx context.Context) ([]*string, error) {
 
 // Tables is the resolver for the tables field.
 func (r *queryResolver) Tables(ctx context.Context) ([]*string, error) {
-	tables, err := db.ListTables(r.DB, r.Provider)
+	tables, err := r.Storage.ListTables()
 	if err != nil {
 		return nil, err
 	}
@@ -126,7 +114,7 @@ func (r *queryResolver) Tables(ctx context.Context) ([]*string, error) {
 
 // Table is the resolver for the table field.
 func (r *queryResolver) Table(ctx context.Context, name *string) ([]*model.TableInfo, error) {
-	result, err := db.GetTableInfo(r.DB, *name, r.Provider)
+	result, err := r.Storage.GetTable(*name)
 	if err != nil {
 		return nil, err
 	}
