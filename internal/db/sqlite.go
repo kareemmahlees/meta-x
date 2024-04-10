@@ -138,9 +138,7 @@ func (p *SqliteProvider) AddColumn(tableName string, data models.AddModifyColumn
 	return alterTable(p.db, tableName, dataString)
 }
 func (p *SqliteProvider) UpdateColumn(tableName string, data models.AddModifyColumnPayload) error {
-	dataString := fmt.Sprintf("MODIFY COLUMN %s %s\n", data.ColName, data.Type)
-
-	return alterTable(p.db, tableName, dataString)
+	return errors.New("Unsupported")
 }
 func (p *SqliteProvider) DeleteColumn(tableName string, data models.DeleteColumnPayload) error {
 	dataString := fmt.Sprintf("DROP COLUMN %s\n", data.ColName)

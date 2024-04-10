@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/kareemmahlees/meta-x/internal"
 	"github.com/kareemmahlees/meta-x/internal/db"
 	"github.com/kareemmahlees/meta-x/lib"
 	"github.com/kareemmahlees/meta-x/utils"
@@ -36,12 +35,12 @@ var pgCommand = &cobra.Command{
 				DBSslMode:  dbSslMode,
 			})
 		}
-		conn, err := internal.InitDBConn(lib.PSQL, pgConfig)
+		conn, err := db.InitDBConn(lib.PSQL, pgConfig)
 		if err != nil {
 			return err
 		}
 		provider := db.NewPgProvider(conn)
-		server := internal.NewServer(provider, port, make(chan<- bool))
+		server := NewServer(provider, port, make(chan<- bool))
 
 		if err := server.Serve(); err != nil {
 			return err

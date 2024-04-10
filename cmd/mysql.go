@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/kareemmahlees/meta-x/internal"
 	"github.com/kareemmahlees/meta-x/internal/db"
 	"github.com/kareemmahlees/meta-x/lib"
 	"github.com/kareemmahlees/meta-x/utils"
@@ -35,12 +34,12 @@ var mysqlCommand = &cobra.Command{
 			})
 		}
 
-		conn, err := internal.InitDBConn(lib.MYSQL, mysqlConfig)
+		conn, err := db.InitDBConn(lib.MYSQL, mysqlConfig)
 		if err != nil {
 			return err
 		}
 		provider := db.NewMySQLProvider(conn)
-		server := internal.NewServer(provider, port, make(chan<- bool))
+		server := NewServer(provider, port, make(chan<- bool))
 
 		if err := server.Serve(); err != nil {
 			return err

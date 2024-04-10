@@ -1,7 +1,6 @@
 package cmd
 
 import (
-	"github.com/kareemmahlees/meta-x/internal"
 	"github.com/kareemmahlees/meta-x/internal/db"
 	"github.com/kareemmahlees/meta-x/lib"
 	"github.com/kareemmahlees/meta-x/utils"
@@ -23,13 +22,13 @@ var sqlite3Command = &cobra.Command{
 		}
 		sqliteConfig := utils.NewSQLiteConfig(filePath)
 
-		conn, err := internal.InitDBConn(lib.SQLITE3, sqliteConfig)
+		conn, err := db.InitDBConn(lib.SQLITE3, sqliteConfig)
 		if err != nil {
 			return err
 		}
 		provider := db.NewSQLiteProvider(conn)
 
-		server := internal.NewServer(provider, port, make(chan bool))
+		server := NewServer(provider, port, make(chan bool))
 		if err = server.Serve(); err != nil {
 			return err
 		}
