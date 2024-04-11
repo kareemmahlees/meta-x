@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/gofiber/fiber/v2"
+	"github.com/kareemmahlees/meta-x/models"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/mysql"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -72,17 +73,6 @@ func CreateMySQLContainer(ctx context.Context) (*MySQLContainer, error) {
 	}, nil
 }
 
-func NewTestingFiberApp(provider string) *fiber.App {
-	app := fiber.New(fiber.Config{
-		DisableStartupMessage: true,
-	})
-	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("provider", provider)
-		return c.Next()
-	})
-	return app
-}
-
 func EncodeBody[T any](body T) (*bytes.Buffer, error) {
 	var buf bytes.Buffer
 	err := json.NewEncoder(&buf).Encode(body)
@@ -133,4 +123,39 @@ func (rt *RequestTesting[T]) RunRequest(app *fiber.App) (T, *http.Response) {
 	resBody := DecodeBody[T](resp.Body)
 	rt.ResBody = resBody
 	return resBody, resp
+}
+
+type MockStorage struct{}
+
+func NewMockStorage() *MockStorage {
+	return &MockStorage{}
+}
+
+func (ms *MockStorage) ListDBs() ([]*string, error) {
+	db := "test"
+	return []*string{&db}, nil
+}
+func (ms *MockStorage) CreateDB(dbName string) error {
+	return nil
+}
+func (ms *MockStorage) GetTable(tableName string) ([]*models.TableInfoResp, error) {
+	return []*models.TableInfoResp{}, nil
+}
+func (ms *MockStorage) ListTables() ([]*string, error) {
+	return []*string{}, nil
+}
+func (ms *MockStorage) CreateTable(tableName string, data []models.CreateTablePayload) error {
+	return nil
+}
+func (ms *MockStorage) DeleteTable(tableName string) error {
+	return nil
+}
+func (ms *MockStorage) AddColumn(tableName string, data models.AddModifyColumnPayload) error {
+	return nil
+}
+func (ms *MockStorage) UpdateColumn(tableName string, data models.AddModifyColumnPayload) error {
+	return nil
+}
+func (ms *MockStorage) DeleteColumn(tableName string, data models.DeleteColumnPayload) error {
+	return nil
 }
