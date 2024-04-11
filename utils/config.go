@@ -4,7 +4,6 @@ import (
 	"fmt"
 
 	"github.com/go-sql-driver/mysql"
-	"github.com/lib/pq"
 )
 
 type Config interface {
@@ -42,17 +41,17 @@ func NewPGConfig(connUrl *string, pgConnParams *PgConnectionParams) *PgConfig {
 }
 
 func (pc PgConfig) DSN() string {
-	if *pc.ConnUrl != "" {
+	if pc.ConnUrl != nil {
 		return *pc.ConnUrl
 	} else {
-		cfg, _ := pq.ParseURL(fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
+		cfg := fmt.Sprintf("postgres://%s:%s@%s:%d/%s?sslmode=%s",
 			pc.ConnParams.DBUsername,
 			pc.ConnParams.DBPassword,
 			pc.ConnParams.DBHost,
 			pc.ConnParams.DBPort,
 			pc.ConnParams.DBName,
 			pc.ConnParams.DBSslMode,
-		))
+		)
 		return cfg
 	}
 }
@@ -75,7 +74,7 @@ func NewMySQLConfig(connUrl *string, pgConnParams *MySQLConnectionParams) *MySQL
 }
 
 func (mc *MySQLConfig) DSN() string {
-	if *mc.ConnUrl != "" {
+	if mc.ConnUrl != nil {
 		return *mc.ConnUrl
 	} else {
 		cfg := mysql.Config{
