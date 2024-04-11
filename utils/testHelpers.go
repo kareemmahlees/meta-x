@@ -30,8 +30,7 @@ type MySQLContainer struct {
 
 func CreatePostgresContainer(ctx context.Context) (*PostgresContainer, error) {
 	pgContainer, err := postgres.RunContainer(ctx,
-		testcontainers.WithImage("postgres:15"),
-		postgres.WithDatabase("test-db"),
+		testcontainers.WithImage("postgres:16.2"),
 		postgres.WithUsername("postgres"),
 		postgres.WithPassword("postgres"), // pragma: allowlist secret
 		testcontainers.WithWaitStrategy(
