@@ -139,10 +139,16 @@ func (ms *MockStorage) CreateDB(dbName string) error {
 	return nil
 }
 func (ms *MockStorage) GetTable(tableName string) ([]*models.TableInfoResp, error) {
-	return []*models.TableInfoResp{}, nil
+	tableInfo := models.TableInfoResp{
+		Name:     "name",
+		Type:     "varchar(255)",
+		Nullable: "Yes",
+	}
+	return []*models.TableInfoResp{&tableInfo}, nil
 }
 func (ms *MockStorage) ListTables() ([]*string, error) {
-	return []*string{}, nil
+	table := "test"
+	return []*string{&table}, nil
 }
 func (ms *MockStorage) CreateTable(tableName string, data []models.CreateTablePayload) error {
 	return nil
