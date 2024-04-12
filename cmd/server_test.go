@@ -6,88 +6,48 @@ import (
 	"net/http"
 	"testing"
 
+	"github.com/kareemmahlees/meta-x/models"
 	"github.com/kareemmahlees/meta-x/utils"
 	"github.com/stretchr/testify/assert"
 )
 
-// import (
-// 	"fmt"
-// 	"log"
-// 	"github.com/kareemmahlees/meta-x/lib"
-// 	"github.com/kareemmahlees/meta-x/utils"
-// 	"net/http"
-// 	"testing"
+type MockStorage struct{}
 
-// 	"github.com/gofiber/fiber/v2"
-// 	"github.com/stretchr/testify/assert"
-// )
+func NewMockStorage() *MockStorage {
+	return &MockStorage{}
+}
 
-// func TestInitDBAndServerPassing(t *testing.T) {
-// 	listenCh := make(chan bool)
-
-// 	app := fiber.New(fiber.Config{DisableStartupMessage: true})
-// 	defer func() {
-// 		err := app.Shutdown()
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 	}()
-
-// 	err := InitDBAndServer(app, "anything", "mallformed", 5522, listenCh)
-// 	assert.NotNil(t, err)
-// 	assert.ErrorContains(t, err, "unknown driver")
-
-// 	go func(app *fiber.App) {
-// 		err = InitDBAndServer(app, lib.SQLITE3, ":memory:", 5522, listenCh)
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 	}(app)
-
-// 	listenting := <-listenCh
-// 	assert.True(t, listenting)
-
-// 	testRoutes := []string{"graphql", "playground", "swagger"}
-
-// 	for _, route := range testRoutes {
-// 		foundRoute := app.GetRoute(route)
-// 		assert.NotEmpty(t, foundRoute)
-
-// 		request := utils.RequestTesting[any]{
-// 			ReqMethod: http.MethodGet,
-// 			ReqUrl:    fmt.Sprintf("/%s", route),
-// 		}
-// 		_, res := request.RunRequest(app)
-
-// 		assert.NotEqual(t, http.StatusNotFound, res.StatusCode)
-
-// 	}
-
-// }
-
-// func TestInitDBAndServerFailing(t *testing.T) {
-// 	listenCh := make(chan bool)
-
-// 	app := fiber.New(fiber.Config{DisableStartupMessage: true})
-// 	defer func() {
-// 		err := app.Shutdown()
-// 		if err != nil {
-// 			log.Fatal(err)
-// 		}
-// 	}()
-
-// 	go func(app *fiber.App) {
-// 		err := InitDBAndServer(app, lib.SQLITE3, ":memory:", 100000, listenCh)
-// 		assert.NotNil(t, err)
-// 	}(app)
-
-// 	listenting := <-listenCh
-// 	assert.False(t, listenting)
-// }
+func (ms *MockStorage) ListDBs() ([]*string, error) {
+	return nil, nil
+}
+func (ms *MockStorage) CreateDB(dbName string) error {
+	return nil
+}
+func (ms *MockStorage) GetTable(tableName string) ([]*models.TableInfoResp, error) {
+	return nil, nil
+}
+func (ms *MockStorage) ListTables() ([]*string, error) {
+	return nil, nil
+}
+func (ms *MockStorage) CreateTable(tableName string, data []models.CreateTablePayload) error {
+	return nil
+}
+func (ms *MockStorage) DeleteTable(tableName string) error {
+	return nil
+}
+func (ms *MockStorage) AddColumn(tableName string, data models.AddModifyColumnPayload) error {
+	return nil
+}
+func (ms *MockStorage) UpdateColumn(tableName string, data models.AddModifyColumnPayload) error {
+	return nil
+}
+func (ms *MockStorage) DeleteColumn(tableName string, data models.DeleteColumnPayload) error {
+	return nil
+}
 
 func TestServe(t *testing.T) {
 	listenCh := make(chan bool, 1)
-	server := NewServer(utils.NewMockStorage(), 5522, listenCh)
+	server := NewServer(NewMockStorage(), 5522, listenCh)
 	defer server.Shutdown()
 
 	go func() {
@@ -117,7 +77,7 @@ func TestServe(t *testing.T) {
 
 func TestShutDown(t *testing.T) {
 	listenCh := make(chan bool, 1)
-	server := NewServer(utils.NewMockStorage(), 5522, listenCh)
+	server := NewServer(NewMockStorage(), 5522, listenCh)
 
 	go func() {
 		if err := server.Serve(); err != nil {

@@ -11,6 +11,20 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+type MockDBExecutor struct{}
+
+func NewMockDBExecutor() *MockDBExecutor {
+	return &MockDBExecutor{}
+}
+
+func (md *MockDBExecutor) ListDBs() ([]*string, error) {
+	db := "test"
+	return []*string{&db}, nil
+}
+func (md *MockDBExecutor) CreateDB(dbName string) error {
+	return nil
+}
+
 type DBHandlerTestSuite struct {
 	suite.Suite
 	app *fiber.App
@@ -18,7 +32,7 @@ type DBHandlerTestSuite struct {
 
 func (suite *DBHandlerTestSuite) SetupSuite() {
 	app := fiber.New()
-	storage := utils.NewMockStorage()
+	storage := NewMockDBExecutor()
 
 	handler := NewDBHandler(storage)
 	handler.RegisterRoutes(app)

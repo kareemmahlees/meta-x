@@ -10,6 +10,40 @@ import (
 	"github.com/stretchr/testify/suite"
 )
 
+type MockTableExecutor struct{}
+
+func NewMockTableExecutor() *MockTableExecutor {
+	return &MockTableExecutor{}
+}
+
+func (ms *MockTableExecutor) GetTable(tableName string) ([]*models.TableInfoResp, error) {
+	tableInfo := models.TableInfoResp{
+		Name:     "name",
+		Type:     "varchar(255)",
+		Nullable: "Yes",
+	}
+	return []*models.TableInfoResp{&tableInfo}, nil
+}
+func (ms *MockTableExecutor) ListTables() ([]*string, error) {
+	table := "test"
+	return []*string{&table}, nil
+}
+func (ms *MockTableExecutor) CreateTable(tableName string, data []models.CreateTablePayload) error {
+	return nil
+}
+func (ms *MockTableExecutor) DeleteTable(tableName string) error {
+	return nil
+}
+func (ms *MockTableExecutor) AddColumn(tableName string, data models.AddModifyColumnPayload) error {
+	return nil
+}
+func (ms *MockTableExecutor) UpdateColumn(tableName string, data models.AddModifyColumnPayload) error {
+	return nil
+}
+func (ms *MockTableExecutor) DeleteColumn(tableName string, data models.DeleteColumnPayload) error {
+	return nil
+}
+
 type TableHandlerTestSuite struct {
 	suite.Suite
 	app *fiber.App
@@ -17,7 +51,7 @@ type TableHandlerTestSuite struct {
 
 func (suite *TableHandlerTestSuite) SetupSuite() {
 	app := fiber.New()
-	storage := utils.NewMockStorage()
+	storage := NewMockTableExecutor()
 
 	handler := NewTableHandler(storage)
 	handler.RegisterRoutes(app)
