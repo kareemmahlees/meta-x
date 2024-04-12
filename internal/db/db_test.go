@@ -1,75 +1,25 @@
 package db
 
-// import (
-// 	"context"
-// 	"log"
-// 	"github.com/kareemmahlees/meta-x/internal"
-// 	"github.com/kareemmahlees/meta-x/lib"
-// 	"github.com/kareemmahlees/meta-x/utils"
-// 	"testing"
+import (
+	"testing"
 
-// 	"github.com/stretchr/testify/assert"
-// 	"github.com/stretchr/testify/suite"
-// )
+	"github.com/kareemmahlees/meta-x/lib"
+	"github.com/kareemmahlees/meta-x/utils"
+	"github.com/stretchr/testify/assert"
+)
 
-// type DBTestSuite struct {
-// 	suite.Suite
-// 	pgContainer    *utils.PostgresContainer
-// 	mysqlContainer *utils.MySQLContainer
-// 	ctx            context.Context
-// }
+func TestInitDBConn(t *testing.T) {
+	var cfg utils.Config
 
-// func (suite *DBTestSuite) SetupSuite() {
-// 	suite.ctx = context.Background()
+	cfg = utils.NewSQLiteConfig(":memory:")
 
-// 	pgContainer, err := utils.CreatePostgresContainer(suite.ctx)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	suite.pgContainer = pgContainer
+	conn, err := InitDBConn(lib.SQLITE3, cfg)
+	assert.Nil(t, err)
+	defer conn.Close()
 
-// 	mysqlContainer, err := utils.CreateMySQLContainer(suite.ctx)
-// 	if err != nil {
-// 		log.Fatal(err)
-// 	}
-// 	suite.mysqlContainer = mysqlContainer
-// }
+	malformedConnUrl := "postgres://malformed"
+	cfg = utils.NewPGConfig(&malformedConnUrl, nil)
 
-// func (suite *DBTestSuite) TearDownSuite() {
-// 	if err := suite.pgContainer.Terminate(suite.ctx); err != nil {
-// 		log.Fatalf("error terminating postgres container: %s", err)
-// 	}
-
-// 	if err := suite.mysqlContainer.Terminate(suite.ctx); err != nil {
-// 		log.Fatalf("error terminating mysql container: %s", err)
-// 	}
-
-// }
-
-// func (suite *DBTestSuite) TestInitDBConn() {
-// 	providers := []string{lib.SQLITE3, lib.PSQL, lib.MYSQL}
-// 	t := suite.T()
-// 	for _, provider := range providers {
-
-// 		var cfg string
-// 		switch provider {
-// 		case lib.PSQL:
-// 			cfg = suite.pgContainer.ConnectionString
-// 		case lib.MYSQL:
-// 			cfg = suite.mysqlContainer.ConnectionString
-// 		case lib.SQLITE3:
-// 			cfg = ":memory:"
-// 		}
-
-// 		conn, err := internal.InitDBConn(provider, cfg)
-
-// 		conn.Close()
-
-// 		assert.Nil(t, err)
-
-// 	}
-// }
-
-// func TestDBTestSuite(t *testing.T) {
-// 	suite.Run(t, new(DBTestSuite))
-// }
+	conn, err = InitDBConn(lib.PSQL, cfg)
+	assert.Error(t, err)
+}
