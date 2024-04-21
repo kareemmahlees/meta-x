@@ -4,12 +4,12 @@ import (
 	"context"
 	"errors"
 	"io"
-	"log"
-	"github.com/kareemmahlees/meta-x/lib"
 	"net/http"
 	"reflect"
 	"strings"
 	"testing"
+
+	"github.com/kareemmahlees/meta-x/lib"
 
 	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
@@ -50,44 +50,6 @@ func TestCreateMySQLContainer(t *testing.T) {
 	assert.Nil(t, err)
 
 	defer con.Close()
-}
-
-func TestNewTestingFiberApp(t *testing.T) {
-	app := NewTestingFiberApp(lib.SQLITE3)
-	defer func() {
-		err := app.Shutdown()
-		if err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	listenCh := make(chan bool)
-
-	app.Get("/test", func(c *fiber.Ctx) error {
-		assert.NotEmpty(t, c.Locals("provider"))
-		return nil
-	})
-
-	app.Hooks().OnListen(func(ld fiber.ListenData) error {
-		listenCh <- true
-		return nil
-	})
-
-	go func() {
-		if err := app.Listen(":55221"); err != nil {
-			listenCh <- false
-			log.Fatal(err)
-		}
-	}()
-
-	startedListening := <-listenCh
-	assert.True(t, startedListening)
-
-	request := RequestTesting[any]{
-		ReqMethod: http.MethodGet,
-		ReqUrl:    "/test",
-	}
-	_, _ = request.RunRequest(app)
 }
 
 func TestEncodeBody(t *testing.T) {

@@ -2,9 +2,10 @@ package cmd
 
 import (
 	"github.com/kareemmahlees/meta-x/internal"
+	"github.com/kareemmahlees/meta-x/internal/db"
 	"github.com/kareemmahlees/meta-x/lib"
+	"github.com/kareemmahlees/meta-x/utils"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/spf13/cobra"
 )
 
@@ -20,8 +21,16 @@ var sqlite3Command = &cobra.Command{
 		if err != nil {
 			return err
 		}
-		app := fiber.New(fiber.Config{DisableStartupMessage: true})
-		if err = internal.InitDBAndServer(app, lib.SQLITE3, filePath, port, make(chan bool, 1)); err != nil {
+		sqliteConfig := utils.NewSQLiteConfig(filePath)
+
+		conn, err := db.InitDBConn(lib.SQLITE3, sqliteConfig)
+		if err != nil {
+			return err
+		}
+		provider := db.NewSQLiteProvider(conn)
+
+		server := internal.NewServer(provider, port, make(chan bool, 1))
+		if err = server.Serve(); err != nil {
 			return err
 		}
 		return nil

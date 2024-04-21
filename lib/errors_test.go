@@ -1,7 +1,6 @@
 package lib
 
 import (
-	"github.com/kareemmahlees/meta-x/utils"
 	"testing"
 
 	"github.com/gofiber/fiber/v2"
@@ -16,7 +15,7 @@ type ErrorTestSuite struct {
 }
 
 func (suite *ErrorTestSuite) SetupSuite() {
-	app := utils.NewTestingFiberApp(SQLITE3)
+	app := fiber.New()
 	suite.fiberCtx = app.AcquireCtx(&fasthttp.RequestCtx{})
 }
 

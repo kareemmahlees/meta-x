@@ -1,25 +1,29 @@
-package routes
+package handlers
 
 import (
-	_ "github.com/kareemmahlees/meta-x/docs"
-	db_handlers "github.com/kareemmahlees/meta-x/internal/db"
+	"github.com/gofiber/fiber/v2"
+	"github.com/kareemmahlees/meta-x/internal/db"
 	"github.com/kareemmahlees/meta-x/lib"
 	"github.com/kareemmahlees/meta-x/models"
-	"github.com/kareemmahlees/meta-x/utils"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/jmoiron/sqlx"
 )
 
-func RegisterTablesRoutes(app *fiber.App, db *sqlx.DB) {
+type TableHandler struct {
+	storage db.TableExecuter
+}
+
+func NewTableHandler(storage db.TableExecuter) *TableHandler {
+	return &TableHandler{storage}
+}
+
+func (th *TableHandler) RegisterRoutes(app *fiber.App) {
 	tableGroup := app.Group("table")
-	tableGroup.Get("", utils.RouteHandler(db, handleListTables))
-	tableGroup.Get("/:tableName/describe", utils.RouteHandler(db, handleGetTableInfo))
-	tableGroup.Post("/:tableName", utils.RouteHandler(db, handleCreateTable))
-	tableGroup.Delete("/:tableName", utils.RouteHandler(db, handleDeleteTable))
-	tableGroup.Post("/:tableName/column/add", utils.RouteHandler(db, handleAddColumn))
-	tableGroup.Put("/:tableName/column/modify", utils.RouteHandler(db, handleModifyColumn))
-	tableGroup.Delete("/:tableName/column/delete", utils.RouteHandler(db, handleDeleteColumn))
+	tableGroup.Get("", th.handleListTables)
+	tableGroup.Get("/:tableName/describe", th.handleGetTableInfo)
+	tableGroup.Post("/:tableName", th.handleCreateTable)
+	tableGroup.Delete("/:tableName", th.handleDeleteTable)
+	tableGroup.Post("/:tableName/column/add", th.handleAddColumn)
+	tableGroup.Put("/:tableName/column/modify", th.handleModifyColumn)
+	tableGroup.Delete("/:tableName/column/delete", th.handleDeleteColumn)
 }
 
 // Get detailed info about the specified table
@@ -29,7 +33,7 @@ func RegisterTablesRoutes(app *fiber.App, db *sqlx.DB) {
 //	@router			/table/{tableName}/describe [get]
 //	@produce		json
 //	@success		200	{object}	[]models.TableInfoResp
-func handleGetTableInfo(c *fiber.Ctx, db *sqlx.DB) error {
+func (th *TableHandler) handleGetTableInfo(c *fiber.Ctx) error {
 	params := struct {
 		TableName string `params:"tableName" validate:"required,alpha"`
 	}{}
@@ -38,7 +42,7 @@ func handleGetTableInfo(c *fiber.Ctx, db *sqlx.DB) error {
 	if errs := lib.ValidateStruct(params); len(errs) > 0 {
 		return lib.BadRequestErr(c, errs)
 	}
-	tableInfo, err := db_handlers.GetTableInfo(db, params.TableName, c.Locals("provider").(string))
+	tableInfo, err := th.storage.GetTable(params.TableName)
 	if err != nil {
 		return lib.InternalServerErr(c, err.Error())
 	}
@@ -52,8 +56,8 @@ func handleGetTableInfo(c *fiber.Ctx, db *sqlx.DB) error {
 //	@router			/table [get]
 //	@produce		json
 //	@success		200	{object}	models.ListTablesResp
-func handleListTables(c *fiber.Ctx, db *sqlx.DB) error {
-	tables, err := db_handlers.ListTables(db, c.Locals("provider").(string))
+func (th *TableHandler) handleListTables(c *fiber.Ctx) error {
+	tables, err := th.storage.ListTables()
 	if err != nil {
 		return lib.InternalServerErr(c, err.Error())
 	}
@@ -70,7 +74,7 @@ func handleListTables(c *fiber.Ctx, db *sqlx.DB) error {
 //	@accept			json
 //	@produce		json
 //	@success		201	{object}	models.CreateTableResp
-func handleCreateTable(c *fiber.Ctx, db *sqlx.DB) error {
+func (th *TableHandler) handleCreateTable(c *fiber.Ctx) error {
 	params := struct {
 		TableName string `params:"tableName" validate:"required,alphanum"`
 	}{}
@@ -88,7 +92,7 @@ func handleCreateTable(c *fiber.Ctx, db *sqlx.DB) error {
 			return lib.BadRequestErr(c, errs)
 		}
 	}
-	err := db_handlers.CreateTable(db, params.TableName, payload)
+	err := th.storage.CreateTable(params.TableName, payload)
 	if err != nil {
 		return lib.InternalServerErr(c, err.Error())
 	}
@@ -105,7 +109,7 @@ func handleCreateTable(c *fiber.Ctx, db *sqlx.DB) error {
 //	@accept			json
 //	@produce		json
 //	@success		201	{object}	models.SuccessResp
-func handleAddColumn(c *fiber.Ctx, db *sqlx.DB) error {
+func (th *TableHandler) handleAddColumn(c *fiber.Ctx) error {
 	params := struct {
 		TableName string `params:"tableName" validate:"required,alphanum"`
 	}{}
@@ -120,7 +124,7 @@ func handleAddColumn(c *fiber.Ctx, db *sqlx.DB) error {
 	if errs := lib.ValidateStruct(payload); len(errs) > 0 {
 		return lib.BadRequestErr(c, errs)
 	}
-	err := db_handlers.AddColumn(db, c.Params("tableName"), payload)
+	err := th.storage.AddColumn(c.Params("tableName"), payload)
 	if err != nil {
 		return lib.InternalServerErr(c, err.Error())
 	}
@@ -137,7 +141,7 @@ func handleAddColumn(c *fiber.Ctx, db *sqlx.DB) error {
 //	@accept			json
 //	@produce		json
 //	@success		200	{object}	models.SuccessResp
-func handleModifyColumn(c *fiber.Ctx, db *sqlx.DB) error {
+func (th *TableHandler) handleModifyColumn(c *fiber.Ctx) error {
 	if c.Locals("provider") == lib.SQLITE3 {
 		return lib.ForbiddenErr(c, "MODIFY COLUMN not supported by sqlite")
 	}
@@ -156,7 +160,7 @@ func handleModifyColumn(c *fiber.Ctx, db *sqlx.DB) error {
 	if errs := lib.ValidateStruct(payload); len(errs) > 0 {
 		return lib.BadRequestErr(c, errs)
 	}
-	err := db_handlers.UpdateColumn(db, c.Locals("provider").(string), c.Params("tableName"), payload)
+	err := th.storage.UpdateColumn(c.Params("tableName"), payload)
 	if err != nil {
 		return lib.InternalServerErr(c, err.Error())
 	}
@@ -173,7 +177,7 @@ func handleModifyColumn(c *fiber.Ctx, db *sqlx.DB) error {
 //	@accept			json
 //	@produce		json
 //	@success		200	{object}	models.SuccessResp
-func handleDeleteColumn(c *fiber.Ctx, db *sqlx.DB) error {
+func (th *TableHandler) handleDeleteColumn(c *fiber.Ctx) error {
 	params := struct {
 		TableName string `params:"tableName" validate:"required,alphanum"`
 	}{}
@@ -189,7 +193,7 @@ func handleDeleteColumn(c *fiber.Ctx, db *sqlx.DB) error {
 	if errs := lib.ValidateStruct(payload); len(errs) > 0 {
 		return lib.BadRequestErr(c, errs)
 	}
-	err := db_handlers.DeleteColumn(db, params.TableName, payload)
+	err := th.storage.DeleteColumn(params.TableName, payload)
 	if err != nil {
 		return lib.InternalServerErr(c, err.Error())
 	}
@@ -205,7 +209,7 @@ func handleDeleteColumn(c *fiber.Ctx, db *sqlx.DB) error {
 //	@accept		json
 //	@produce	json
 //	@success	200	{object}	models.SuccessResp
-func handleDeleteTable(c *fiber.Ctx, db *sqlx.DB) error {
+func (th *TableHandler) handleDeleteTable(c *fiber.Ctx) error {
 	params := struct {
 		TableName string `params:"tableName" validate:"required,alpha"`
 	}{}
@@ -214,7 +218,7 @@ func handleDeleteTable(c *fiber.Ctx, db *sqlx.DB) error {
 		return lib.BadRequestErr(c, errs)
 	}
 
-	err := db_handlers.DeleteTable(db, c.Params("tableName"))
+	err := th.storage.DeleteTable(c.Params("tableName"))
 	if err != nil {
 		return lib.InternalServerErr(c, err.Error())
 	}

@@ -30,8 +30,7 @@ type MySQLContainer struct {
 
 func CreatePostgresContainer(ctx context.Context) (*PostgresContainer, error) {
 	pgContainer, err := postgres.RunContainer(ctx,
-		testcontainers.WithImage("postgres:15"),
-		postgres.WithDatabase("test-db"),
+		testcontainers.WithImage("postgres:16.2"),
 		postgres.WithUsername("postgres"),
 		postgres.WithPassword("postgres"), // pragma: allowlist secret
 		testcontainers.WithWaitStrategy(
@@ -71,17 +70,6 @@ func CreateMySQLContainer(ctx context.Context) (*MySQLContainer, error) {
 		MySQLContainer:   mysqlContainer,
 		ConnectionString: connStr,
 	}, nil
-}
-
-func NewTestingFiberApp(provider string) *fiber.App {
-	app := fiber.New(fiber.Config{
-		DisableStartupMessage: true,
-	})
-	app.Use(func(c *fiber.Ctx) error {
-		c.Locals("provider", provider)
-		return c.Next()
-	})
-	return app
 }
 
 func EncodeBody[T any](body T) (*bytes.Buffer, error) {

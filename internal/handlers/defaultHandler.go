@@ -1,16 +1,23 @@
-package routes
+package handlers
 
 import (
 	"time"
 
-	_ "github.com/kareemmahlees/meta-x/docs"
-
 	"github.com/gofiber/fiber/v2"
+	"github.com/kareemmahlees/meta-x/internal/db"
 )
 
-func RegisterDefaultRoutes(app *fiber.App) {
-	app.Get("/health", healthCheck)
-	app.Get("/", apiInfo)
+type DefaultHandler struct {
+	storage *db.Storage
+}
+
+func NewDefaultHandler(storage *db.Storage) *DefaultHandler {
+	return &DefaultHandler{storage}
+}
+
+func (h *DefaultHandler) RegisterRoutes(app *fiber.App) {
+	app.Get("/health", h.healthCheck)
+	app.Get("/", h.apiInfo)
 }
 
 type HealthCheckResult struct {
@@ -24,7 +31,7 @@ type HealthCheckResult struct {
 //	@tags			default
 //	@router			/health [get]
 //	@success		200	{object}	HealthCheckResult
-func healthCheck(c *fiber.Ctx) error {
+func (h *DefaultHandler) healthCheck(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{"date": time.Now()})
 }
 
@@ -42,11 +49,11 @@ type APIInfoResult struct {
 //	@tags			default
 //	@router			/ [get]
 //	@success		200	{object}	APIInfoResult
-func apiInfo(c *fiber.Ctx) error {
+func (h *DefaultHandler) apiInfo(c *fiber.Ctx) error {
 	return c.JSON(fiber.Map{
 		"author":  "Kareem Ebrahim",
 		"year":    2023,
 		"contact": "kareemmahlees@gmail.com",
-		"repo":    "https://github.com/kareemmahlees/mysql-meta",
+		"repo":    "https://github.com/kareemmahlees/meta-x",
 	})
 }
