@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"errors"
 	"net/http"
 	"testing"
 
@@ -9,40 +10,6 @@ import (
 	"github.com/kareemmahlees/meta-x/utils"
 	"github.com/stretchr/testify/suite"
 )
-
-type MockTableExecutor struct{}
-
-func NewMockTableExecutor() *MockTableExecutor {
-	return &MockTableExecutor{}
-}
-
-func (ms *MockTableExecutor) GetTable(tableName string) ([]*models.TableInfoResp, error) {
-	tableInfo := models.TableInfoResp{
-		Name:     "name",
-		Type:     "varchar(255)",
-		Nullable: "Yes",
-	}
-	return []*models.TableInfoResp{&tableInfo}, nil
-}
-func (ms *MockTableExecutor) ListTables() ([]*string, error) {
-	table := "test"
-	return []*string{&table}, nil
-}
-func (ms *MockTableExecutor) CreateTable(tableName string, data []models.CreateTablePayload) error {
-	return nil
-}
-func (ms *MockTableExecutor) DeleteTable(tableName string) error {
-	return nil
-}
-func (ms *MockTableExecutor) AddColumn(tableName string, data models.AddModifyColumnPayload) error {
-	return nil
-}
-func (ms *MockTableExecutor) UpdateColumn(tableName string, data models.AddModifyColumnPayload) error {
-	return nil
-}
-func (ms *MockTableExecutor) DeleteColumn(tableName string, data models.DeleteColumnPayload) error {
-	return nil
-}
 
 type TableHandlerTestSuite struct {
 	suite.Suite
@@ -101,19 +68,56 @@ func (suite *TableHandlerTestSuite) TestHandleGetTableInfo() {
 		assert.Equal(http.StatusBadRequest, rawResp.StatusCode)
 		assert.Len(decoedResp.Message, 1)
 	})
+
+	t.Run("should fail internal server", func(t *testing.T) {
+		failingInternalServer := utils.RequestTesting[models.ErrResp]{
+			ReqMethod: http.MethodGet,
+			ReqUrl:    "/table/test/describe",
+		}
+
+		app := fiber.New()
+		storage := NewFaultyTableExecutor()
+
+		handler := NewTableHandler(storage)
+		handler.RegisterRoutes(app)
+
+		_, rawResp := failingInternalServer.RunRequest(app)
+		assert.Equal(http.StatusInternalServerError, rawResp.StatusCode)
+	})
 }
 
 func (suite *TableHandlerTestSuite) TestHandleListTables() {
 	assert := suite.Assert()
-	passing := utils.RequestTesting[models.ListTablesResp]{
-		ReqMethod: http.MethodGet,
-		ReqUrl:    "/table",
-	}
-	decoedRes, _ := passing.RunRequest(suite.app)
+	t := suite.T()
 
-	tables := utils.SliceOfPointersToSliceOfValues(decoedRes.Tables)
-	assert.NotEmpty(tables)
-	assert.Contains(tables, "test")
+	t.Run("should pass", func(t *testing.T) {
+		passing := utils.RequestTesting[models.ListTablesResp]{
+			ReqMethod: http.MethodGet,
+			ReqUrl:    "/table",
+		}
+		decoedRes, _ := passing.RunRequest(suite.app)
+
+		tables := utils.SliceOfPointersToSliceOfValues(decoedRes.Tables)
+		assert.NotEmpty(tables)
+		assert.Contains(tables, "test")
+
+	})
+
+	t.Run("should fail internal server", func(t *testing.T) {
+		failingInternalServer := utils.RequestTesting[models.ListTablesResp]{
+			ReqMethod: http.MethodGet,
+			ReqUrl:    "/table",
+		}
+
+		app := fiber.New()
+		storage := NewFaultyTableExecutor()
+
+		handler := NewTableHandler(storage)
+		handler.RegisterRoutes(app)
+
+		_, rawRes := failingInternalServer.RunRequest(app)
+		assert.Equal(http.StatusInternalServerError, rawRes.StatusCode)
+	})
 }
 
 func (suite *TableHandlerTestSuite) TestHandleCreateTable() {
@@ -175,6 +179,29 @@ func (suite *TableHandlerTestSuite) TestHandleCreateTable() {
 
 	})
 
+	t.Run("should fail internal server", func(t *testing.T) {
+		failingInternalServerBody, _ := utils.EncodeBody([]models.CreateTablePayload{{ColName: "test1",
+			Type:     "varchar(255)",
+			Nullable: true,
+			Default:  "kareem",
+			Unique:   true,
+		}})
+		failingInternalServer := utils.RequestTesting[models.CreateTableResp]{
+			ReqMethod: http.MethodPost,
+			ReqUrl:    "/table/test1",
+			ReqBody:   failingInternalServerBody,
+		}
+
+		app := fiber.New()
+		storage := NewFaultyTableExecutor()
+
+		handler := NewTableHandler(storage)
+		handler.RegisterRoutes(app)
+
+		_, rawResp := failingInternalServer.RunRequest(app)
+		assert.Equal(http.StatusInternalServerError, rawResp.StatusCode)
+	})
+
 }
 
 func (suite *TableHandlerTestSuite) TestHandleAddColumn() {
@@ -226,6 +253,24 @@ func (suite *TableHandlerTestSuite) TestHandleAddColumn() {
 		assert.Len(decodedResp.Message, 1)
 	})
 
+	t.Run("should fail internal server", func(t *testing.T) {
+		failingInternalServerBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{ColName: "test3", Type: "varchar(255)"})
+		passing := utils.RequestTesting[models.SuccessResp]{
+			ReqMethod: http.MethodPost,
+			ReqUrl:    "/table/test/column/add",
+			ReqBody:   failingInternalServerBody,
+		}
+
+		app := fiber.New()
+		storage := NewFaultyTableExecutor()
+
+		handler := NewTableHandler(storage)
+		handler.RegisterRoutes(app)
+
+		_, rawRes := passing.RunRequest(app)
+		assert.Equal(http.StatusInternalServerError, rawRes.StatusCode)
+
+	})
 }
 
 func (suite *TableHandlerTestSuite) TestHandleUpdateColumn() {
@@ -276,6 +321,23 @@ func (suite *TableHandlerTestSuite) TestHandleUpdateColumn() {
 		decodedRes, rawRes := failingBadRequest.RunRequest(suite.app)
 		assert.Equal(http.StatusBadRequest, rawRes.StatusCode)
 		assert.Len(decodedRes.Message, 1)
+	})
+
+	t.Run("should fail internal server", func(t *testing.T) {
+		failingInternalServerBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{ColName: "name", Type: "varchar(255)"})
+		failingInternalServer := utils.RequestTesting[models.SuccessResp]{
+			ReqMethod: http.MethodPut,
+			ReqUrl:    "/table/test/column/modify",
+			ReqBody:   failingInternalServerBody,
+		}
+
+		app := fiber.New()
+		storage := NewFaultyTableExecutor()
+		handler := NewTableHandler(storage)
+		handler.RegisterRoutes(app)
+
+		_, rawRes := failingInternalServer.RunRequest(app)
+		assert.Equal(http.StatusInternalServerError, rawRes.StatusCode)
 	})
 }
 
@@ -329,6 +391,22 @@ func (suite *TableHandlerTestSuite) TestHandleDeleteColumn() {
 		assert.Contains(decodedRes.Message, "Unprocessable Entity")
 	})
 
+	t.Run("should fail internal server", func(t *testing.T) {
+		failingInternalServerBody, _ := utils.EncodeBody(models.DeleteColumnPayload{ColName: "name"})
+		failingInternalServer := utils.RequestTesting[models.SuccessResp]{
+			ReqMethod: http.MethodDelete,
+			ReqUrl:    "/table/test/column/delete",
+			ReqBody:   failingInternalServerBody,
+		}
+
+		app := fiber.New()
+		storage := NewFaultyTableExecutor()
+		handler := NewTableHandler(storage)
+		handler.RegisterRoutes(app)
+
+		_, rawRes := failingInternalServer.RunRequest(app)
+		assert.Equal(http.StatusInternalServerError, rawRes.StatusCode)
+	})
 }
 
 func (suite *TableHandlerTestSuite) TestHandleDeleteTable() {
@@ -353,8 +431,87 @@ func (suite *TableHandlerTestSuite) TestHandleDeleteTable() {
 		assert.Equal(http.StatusBadRequest, rawRes.StatusCode)
 		assert.Len(decodedRes.Message, 1)
 	})
+
+	t.Run("should fail internal server", func(t *testing.T) {
+		failingInternalServer := utils.RequestTesting[models.SuccessResp]{
+			ReqMethod: http.MethodDelete,
+			ReqUrl:    "/table/test",
+		}
+
+		app := fiber.New()
+		storage := NewFaultyTableExecutor()
+		handler := NewTableHandler(storage)
+		handler.RegisterRoutes(app)
+
+		_, rawRes := failingInternalServer.RunRequest(app)
+		assert.Equal(http.StatusInternalServerError, rawRes.StatusCode)
+	})
 }
 
 func TestTableHandlerTestSuite(t *testing.T) {
 	suite.Run(t, new(TableHandlerTestSuite))
+}
+
+type MockTableExecutor struct{}
+
+func NewMockTableExecutor() *MockTableExecutor {
+	return &MockTableExecutor{}
+}
+
+func (ms *MockTableExecutor) GetTable(tableName string) ([]*models.TableInfoResp, error) {
+	tableInfo := models.TableInfoResp{
+		Name:     "name",
+		Type:     "varchar(255)",
+		Nullable: "Yes",
+	}
+	return []*models.TableInfoResp{&tableInfo}, nil
+}
+func (ms *MockTableExecutor) ListTables() ([]*string, error) {
+	table := "test"
+	return []*string{&table}, nil
+}
+func (ms *MockTableExecutor) CreateTable(tableName string, data []models.CreateTablePayload) error {
+	return nil
+}
+func (ms *MockTableExecutor) DeleteTable(tableName string) error {
+	return nil
+}
+func (ms *MockTableExecutor) AddColumn(tableName string, data models.AddModifyColumnPayload) error {
+	return nil
+}
+func (ms *MockTableExecutor) UpdateColumn(tableName string, data models.AddModifyColumnPayload) error {
+	return nil
+}
+func (ms *MockTableExecutor) DeleteColumn(tableName string, data models.DeleteColumnPayload) error {
+	return nil
+}
+
+type FaultyTableExecutor struct{}
+
+func NewFaultyTableExecutor() *FaultyTableExecutor {
+	return &FaultyTableExecutor{}
+}
+
+var err = errors.New("error")
+
+func (ms *FaultyTableExecutor) GetTable(tableName string) ([]*models.TableInfoResp, error) {
+	return nil, err
+}
+func (ms *FaultyTableExecutor) ListTables() ([]*string, error) {
+	return nil, err
+}
+func (ms *FaultyTableExecutor) CreateTable(tableName string, data []models.CreateTablePayload) error {
+	return err
+}
+func (ms *FaultyTableExecutor) DeleteTable(tableName string) error {
+	return err
+}
+func (ms *FaultyTableExecutor) AddColumn(tableName string, data models.AddModifyColumnPayload) error {
+	return err
+}
+func (ms *FaultyTableExecutor) UpdateColumn(tableName string, data models.AddModifyColumnPayload) error {
+	return err
+}
+func (ms *FaultyTableExecutor) DeleteColumn(tableName string, data models.DeleteColumnPayload) error {
+	return err
 }
