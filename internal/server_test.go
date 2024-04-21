@@ -48,7 +48,6 @@ func (ms *MockStorage) DeleteColumn(tableName string, data models.DeleteColumnPa
 func TestServe(t *testing.T) {
 	listenCh := make(chan bool, 1)
 	server := NewServer(NewMockStorage(), 5522, listenCh)
-	defer server.Shutdown()
 
 	go func() {
 		if err := server.Serve(); err != nil {
@@ -73,22 +72,4 @@ func TestServe(t *testing.T) {
 		assert.NotEqual(t, http.StatusNotFound, res.StatusCode)
 
 	}
-}
-
-func TestShutDown(t *testing.T) {
-	listenCh := make(chan bool, 1)
-	server := NewServer(NewMockStorage(), 5522, listenCh)
-
-	go func() {
-		if err := server.Serve(); err != nil {
-			log.Fatal(err)
-		}
-	}()
-
-	assert.True(t, <-server.listenCh)
-
-	err := server.Shutdown()
-
-	assert.Nil(t, err)
-	assert.False(t, <-server.listenCh)
 }

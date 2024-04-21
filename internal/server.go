@@ -72,11 +72,3 @@ func (s *Server) Serve() error {
 	return nil
 
 }
-
-func (s *Server) Shutdown() error {
-	if err := s.app.Shutdown(); err != nil {
-		return err
-	}
-	s.listenCh <- false
-	return nil
-}

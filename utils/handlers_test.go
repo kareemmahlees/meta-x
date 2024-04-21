@@ -29,9 +29,6 @@ func TestRouteHandler(t *testing.T) {
 func TestGraphQLHandler(t *testing.T) {
 	app := fiber.New()
 	c := app.AcquireCtx(&fasthttp.RequestCtx{})
-	defer func() {
-		_ = app.Shutdown()
-	}()
 
 	mockGraphQLHandlerFunc := func(http.ResponseWriter, *http.Request) {}
 
