@@ -1,7 +1,9 @@
 package handlers
 
 import (
-	"github.com/gofiber/fiber/v2"
+	"net/http"
+
+	"github.com/go-chi/chi/v5"
 	"github.com/kareemmahlees/meta-x/internal/db"
 	"github.com/kareemmahlees/meta-x/lib"
 	"github.com/kareemmahlees/meta-x/models"
@@ -11,15 +13,15 @@ type DBHandler struct {
 	storage db.DatabaseExecuter
 }
 
-// TODO: change the interface
 func NewDBHandler(storage db.DatabaseExecuter) *DBHandler {
 	return &DBHandler{storage}
 }
 
-func (dh *DBHandler) RegisterRoutes(app *fiber.App) {
-	dbGroup := app.Group("database")
-	dbGroup.Get("", dh.handleListDatabases)
-	dbGroup.Post("", dh.handleCreateDatabase)
+func (dh *DBHandler) RegisterRoutes(r *chi.Mux) {
+	r.Route("/database", func(r chi.Router) {
+		r.Get("/", dh.handleListDatabases)
+		r.Post("/", dh.handleCreateDatabase)
+	})
 }
 
 // Lists databases
@@ -29,30 +31,34 @@ func (dh *DBHandler) RegisterRoutes(app *fiber.App) {
 //	@router			/database [get]
 //	@produce		json
 //	@success		200	{object}	models.ListDatabasesResp
-func (dh *DBHandler) handleListDatabases(c *fiber.Ctx) error {
+func (dh *DBHandler) handleListDatabases(w http.ResponseWriter, r *http.Request) {
 	dbs, err := dh.storage.ListDBs()
 
 	if err != nil {
-		return lib.InternalServerErr(c, err.Error())
+		httpError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
-	return c.JSON(models.ListDatabasesResp{Databases: dbs})
+	writeJson(w, models.ListDatabasesResp{Databases: dbs})
 }
 
-func (dh *DBHandler) handleCreateDatabase(c *fiber.Ctx) error {
+func (dh *DBHandler) handleCreateDatabase(w http.ResponseWriter, r *http.Request) {
 	var payload models.CreatePgMySqlDBPayload
 
-	if err := c.BodyParser(&payload); err != nil {
-		return lib.UnprocessableEntityErr(c, err.Error())
+	if err := parseBody(r.Body, &payload); err != nil {
+		httpError(w, http.StatusUnprocessableEntity, err.Error())
+		return
 	}
 
 	if errs := lib.ValidateStruct(payload); len(errs) > 0 {
-		return lib.BadRequestErr(c, errs)
+		httpError(w, http.StatusBadRequest, errs)
+		return
 	}
 
-	err := dh.storage.CreateDB(payload.Name)
-
-	if err != nil {
-		return lib.InternalServerErr(c, err.Error())
+	if err := dh.storage.CreateDB(payload.Name); err != nil {
+		httpError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
-	return c.Status(201).JSON(models.SuccessResp{Success: true})
+
+	w.WriteHeader(http.StatusCreated)
+	writeJson(w, models.SuccessResp{Success: true})
 }

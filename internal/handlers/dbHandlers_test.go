@@ -5,7 +5,7 @@ import (
 	"net/http/httptest"
 	"testing"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/go-chi/chi/v5"
 	"github.com/kareemmahlees/meta-x/models"
 	"github.com/kareemmahlees/meta-x/utils"
 	"github.com/stretchr/testify/suite"
@@ -27,49 +27,37 @@ func (md *MockDBExecutor) CreateDB(dbName string) error {
 
 type DBHandlerTestSuite struct {
 	suite.Suite
-	app *fiber.App
+	r       *chi.Mux
+	handler *DBHandler
 }
 
 func (suite *DBHandlerTestSuite) SetupSuite() {
-	app := fiber.New()
+	r := chi.NewRouter()
 	storage := NewMockDBExecutor()
 
 	handler := NewDBHandler(storage)
-	handler.RegisterRoutes(app)
+	handler.RegisterRoutes(r)
 
-	suite.app = app
+	suite.r = r
+	suite.handler = handler
 }
 
 func (suite *DBHandlerTestSuite) TestRegisterRoutes() {
 	assert := suite.Assert()
 
-	var routes []utils.FiberRoute
-	for _, route := range suite.app.GetRoutes() {
-		routes = append(routes, utils.FiberRoute{
-			Method: route.Method,
-			Path:   route.Path,
-		})
+	var routes []string
+	for _, route := range suite.r.Routes() {
+		routes = append(routes, route.Pattern)
 	}
 
-	assert.Contains(routes, utils.FiberRoute{
-		Method: "GET",
-		Path:   "/database",
-	})
-
+	assert.Contains(routes, "/database/*")
 }
 
 func (suite *DBHandlerTestSuite) TestHandleListDatabases() {
 	assert := suite.Assert()
 
-	req := httptest.NewRequest("GET", "http://localhost:5522/database", nil)
-
-	resp, _ := suite.app.Test(req)
-	defer resp.Body.Close()
-	payload := utils.DecodeBody[models.ListDatabasesResp](resp.Body)
-
-	assert.Equal(resp.StatusCode, fiber.StatusOK)
-	assert.NotEmpty(payload.Databases)
-
+	assert.HTTPSuccess(suite.handler.handleListDatabases, http.MethodGet, "/database", nil)
+	assert.HTTPBodyContains(suite.handler.handleListDatabases, http.MethodGet, "/database", nil, "test")
 }
 
 func (suite *DBHandlerTestSuite) TestHandleCreateDatabase() {
@@ -80,40 +68,36 @@ func (suite *DBHandlerTestSuite) TestHandleCreateDatabase() {
 		passingBody, _ := utils.EncodeBody(models.CreatePgMySqlDBPayload{
 			Name: "testing",
 		})
-		passing := utils.RequestTesting[models.SuccessResp]{
-			ReqMethod: http.MethodPost,
-			ReqUrl:    "/database",
-			ReqBody:   passingBody,
-		}
+		req, _ := http.NewRequest(http.MethodPost, "/database", passingBody)
+		rr := httptest.NewRecorder()
 
-		decodedRes, rawRes := passing.RunRequest(suite.app)
-		assert.Equal(rawRes.StatusCode, fiber.StatusCreated)
+		handler := http.HandlerFunc(suite.handler.handleCreateDatabase)
+		handler.ServeHTTP(rr, req)
+		assert.Equal(rr.Code, http.StatusCreated)
+
+		decodedRes := utils.DecodeBody[models.SuccessResp](rr.Result().Body)
 		assert.True(decodedRes.Success)
+
 	})
 
 	t.Run("should fail unproccessable entity", func(t *testing.T) {
-		failingUnprocessableEntity := utils.RequestTesting[models.ErrResp]{
-			ReqMethod: http.MethodPost,
-			ReqUrl:    "/database",
-		}
-		decodedRes, rawRes := failingUnprocessableEntity.RunRequest(suite.app)
-		assert.Equal(http.StatusUnprocessableEntity, rawRes.StatusCode)
-		assert.Contains(decodedRes.Message, "Unprocessable Entity")
+		assert.HTTPError(suite.handler.handleCreateDatabase, http.MethodPost, "/database", nil)
+	})
 
+	t.Run("should fail bad request", func(t *testing.T) {
 		failingBadRequestBody, _ := utils.EncodeBody(models.CreatePgMySqlDBPayload{
 			Name: "",
 		})
-		failingBadRequest := utils.RequestTesting[models.ErrResp]{
-			ReqMethod: http.MethodPost,
-			ReqUrl:    "/database",
-			ReqBody:   failingBadRequestBody,
-		}
-		decodedRes, rawRes = failingBadRequest.RunRequest(suite.app)
-		assert.Equal(http.StatusBadRequest, rawRes.StatusCode)
+		req, _ := http.NewRequest(http.MethodPost, "/database", failingBadRequestBody)
+		rr := httptest.NewRecorder()
+
+		handler := http.HandlerFunc(suite.handler.handleCreateDatabase)
+		handler.ServeHTTP(rr, req)
+		assert.Equal(rr.Code, http.StatusBadRequest)
+
+		decodedRes := utils.DecodeBody[models.ErrResp](rr.Result().Body)
 		assert.Len(decodedRes.Message, 1)
-
 	})
-
 }
 
 func TestDBHandlerTestSuite(t *testing.T) {

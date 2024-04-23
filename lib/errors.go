@@ -1,9 +1,8 @@
 package lib
 
 import (
-	"github.com/kareemmahlees/meta-x/models"
-
 	"github.com/gofiber/fiber/v2"
+	"github.com/kareemmahlees/meta-x/models"
 )
 
 func BadRequestErr(c *fiber.Ctx, errMsg any) error {

@@ -49,7 +49,7 @@ func (s *Server) Serve() error {
 	tableHandler := handlers.NewTableHandler(s.storage)
 
 	defaultHandler.RegisterRoutes(r)
-	dbHandler.RegisterRoutes(app)
+	dbHandler.RegisterRoutes(r)
 	tableHandler.RegisterRoutes(app)
 
 	slog.Info("Server started listening", "port", s.port)
