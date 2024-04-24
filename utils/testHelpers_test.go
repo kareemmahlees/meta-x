@@ -4,14 +4,12 @@ import (
 	"context"
 	"errors"
 	"io"
-	"net/http"
 	"reflect"
 	"strings"
 	"testing"
 
 	"github.com/kareemmahlees/meta-x/lib"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 
@@ -126,47 +124,4 @@ func TestSliceOfPointersToSliceOfValues(t *testing.T) {
 	soptsov := SliceOfPointersToSliceOfValues(testSlice)
 
 	assert.IsType(t, reflect.SliceOf(reflect.TypeOf("")), reflect.TypeOf(soptsov))
-}
-
-func TestRunRequest(t *testing.T) {
-	app := fiber.New()
-	app.Get("/health", func(c *fiber.Ctx) error {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"date": "fake_date"})
-	})
-	mockReq1 := RequestTesting[struct {
-		Date string `json:"date"`
-	}]{
-		ReqMethod: http.MethodGet,
-		ReqUrl:    "/health",
-	}
-	decodedRes, rawRes := mockReq1.RunRequest(app)
-	assert.Equal(t, http.StatusOK, rawRes.StatusCode)
-	assert.NotEmpty(t, decodedRes.Date)
-
-	type mockPayload struct {
-		Name string `json:"name"`
-	}
-
-	app.Post("/test", func(c *fiber.Ctx) error {
-		var payload mockPayload
-		if err := c.BodyParser(&payload); err != nil {
-			return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{})
-		}
-		return nil
-	})
-	mockBody, _ := EncodeBody(mockPayload{Name: "any"})
-	mockReq2 := RequestTesting[any]{
-		ReqMethod: http.MethodPost,
-		ReqUrl:    "/test",
-		ReqBody:   mockBody,
-	}
-	_, rawResponse := mockReq2.RunRequest(app)
-	assert.NotEqual(t, http.StatusUnprocessableEntity, rawResponse.StatusCode)
-
-	mockReq3 := RequestTesting[any]{
-		ReqMethod: http.MethodPost,
-		ReqUrl:    "/test",
-	}
-	_, rawResponse = mockReq3.RunRequest(app)
-	assert.Equal(t, http.StatusUnprocessableEntity, rawResponse.StatusCode)
 }

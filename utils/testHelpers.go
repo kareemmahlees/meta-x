@@ -4,13 +4,12 @@ import (
 	"bytes"
 	"context"
 	"encoding/json"
-	"fmt"
 	"io"
 	"net/http"
 	"net/http/httptest"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
+	"github.com/go-chi/chi/v5"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/mysql"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -96,30 +95,9 @@ func SliceOfPointersToSliceOfValues[T any](s []*T) []T {
 	return v
 }
 
-type FiberRoute struct {
-	Method string
-	Path   string
-}
-
-// Struct for aiding the process of testing routes.
-// Header is set by default to "Content-Type": "application/json"
-type RequestTesting[T any] struct {
-	ReqMethod string
-	ReqUrl    string // relative to the base url which is "http://localhost:5522"
-	ReqBody   io.Reader
-	Res       *http.Response
-	ResBody   T
-}
-
-// Runs a request and returns the decoded form [T] and the raw form [*http.Response]
-func (rt *RequestTesting[T]) RunRequest(app *fiber.App) (T, *http.Response) {
-	req := httptest.NewRequest(rt.ReqMethod, fmt.Sprintf("http://localhost:5522%s", rt.ReqUrl), rt.ReqBody)
-	if rt.ReqBody != nil {
-		req.Header.Set("Content-Type", "application/json")
-	}
-	resp, _ := app.Test(req)
-
-	resBody := DecodeBody[T](resp.Body)
-	rt.ResBody = resBody
-	return resBody, resp
+func TestRequest(r *chi.Mux, method, url string, body io.Reader) *httptest.ResponseRecorder {
+	req, _ := http.NewRequest(method, url, body)
+	rr := httptest.NewRecorder()
+	r.ServeHTTP(rr, req)
+	return rr
 }

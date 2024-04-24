@@ -50,7 +50,7 @@ func (s *Server) Serve() error {
 
 	defaultHandler.RegisterRoutes(r)
 	dbHandler.RegisterRoutes(r)
-	tableHandler.RegisterRoutes(app)
+	tableHandler.RegisterRoutes(r)
 
 	slog.Info("Server started listening", "port", s.port)
 	if err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), r); err != nil {
