@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"io"
+	"net/http"
 	"reflect"
 	"strings"
 	"testing"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/kareemmahlees/meta-x/lib"
 
 	"github.com/jmoiron/sqlx"
@@ -124,4 +126,17 @@ func TestSliceOfPointersToSliceOfValues(t *testing.T) {
 	soptsov := SliceOfPointersToSliceOfValues(testSlice)
 
 	assert.IsType(t, reflect.SliceOf(reflect.TypeOf("")), reflect.TypeOf(soptsov))
+}
+
+func TestRequestTest(t *testing.T) {
+	r := chi.NewRouter()
+
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Hello"))
+	})
+
+	rr := TestRequest(r, http.MethodGet, "/", http.NoBody)
+
+	assert.Equal(t, rr.Code, http.StatusOK)
+	assert.Equal(t, rr.Body.String(), "Hello")
 }
