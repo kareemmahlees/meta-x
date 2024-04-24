@@ -29,7 +29,7 @@ var sqlite3Command = &cobra.Command{
 		}
 		provider := db.NewSQLiteProvider(conn)
 
-		server := internal.NewServer(provider, port, make(chan bool, 1))
+		server := internal.NewServer(provider, port)
 		if err = server.Serve(); err != nil {
 			return err
 		}

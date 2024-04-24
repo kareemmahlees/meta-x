@@ -40,7 +40,7 @@ var mysqlCommand = &cobra.Command{
 			return err
 		}
 		provider := db.NewMySQLProvider(conn)
-		server := internal.NewServer(provider, port, make(chan bool, 1))
+		server := internal.NewServer(provider, port)
 
 		if err := server.Serve(); err != nil {
 			return err

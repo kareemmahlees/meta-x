@@ -13,26 +13,22 @@ import (
 	"github.com/kareemmahlees/meta-x/internal/graph"
 	"github.com/kareemmahlees/meta-x/internal/handlers"
 	httpSwagger "github.com/swaggo/http-swagger"
-
-	"github.com/gofiber/fiber/v2"
 )
 
 type Server struct {
-	storage  db.Storage
-	port     int
-	listenCh chan bool
-	app      *fiber.App
+	storage db.Storage
+	port    int
+	router  *chi.Mux
 }
 
-func NewServer(storage db.Storage, port int, listenCh chan bool) *Server {
-	return &Server{storage, port, listenCh, nil}
+func NewServer(storage db.Storage, port int) *Server {
+	return &Server{storage, port, nil}
 }
 
 func (s *Server) Serve() error {
-	// see https://github.com/99designs/gqlgen/issues/1664#issuecomment-1616620967
-	// Create a gqlgen handler
 	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{Storage: s.storage}}))
 	r := chi.NewRouter()
+	s.router = r
 
 	r.Use(middleware.Logger)
 	r.Post("/graphql", h.ServeHTTP)
@@ -40,9 +36,6 @@ func (s *Server) Serve() error {
 	r.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL(fmt.Sprintf("http://localhost:%d/swagger/doc.json", s.port)),
 	))
-
-	app := fiber.New(fiber.Config{DisableStartupMessage: true})
-	s.app = app
 
 	defaultHandler := handlers.NewDefaultHandler()
 	dbHandler := handlers.NewDBHandler(s.storage)
