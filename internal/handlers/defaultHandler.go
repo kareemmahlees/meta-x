@@ -1,23 +1,21 @@
 package handlers
 
 import (
+	"net/http"
 	"time"
 
-	"github.com/gofiber/fiber/v2"
-	"github.com/kareemmahlees/meta-x/internal/db"
+	"github.com/go-chi/chi/v5"
 )
 
-type DefaultHandler struct {
-	storage *db.Storage
+type DefaultHandler struct{}
+
+func NewDefaultHandler() *DefaultHandler {
+	return &DefaultHandler{}
 }
 
-func NewDefaultHandler(storage *db.Storage) *DefaultHandler {
-	return &DefaultHandler{storage}
-}
-
-func (h *DefaultHandler) RegisterRoutes(app *fiber.App) {
-	app.Get("/health", h.healthCheck)
-	app.Get("/", h.apiInfo)
+func (h *DefaultHandler) RegisterRoutes(r *chi.Mux) {
+	r.Get("/health", h.healthCheck)
+	r.Get("/", h.apiInfo)
 }
 
 type HealthCheckResult struct {
@@ -31,15 +29,17 @@ type HealthCheckResult struct {
 //	@tags			default
 //	@router			/health [get]
 //	@success		200	{object}	HealthCheckResult
-func (h *DefaultHandler) healthCheck(c *fiber.Ctx) error {
-	return c.JSON(fiber.Map{"date": time.Now()})
+func (h *DefaultHandler) healthCheck(w http.ResponseWriter, r *http.Request) {
+	writeJson(w, map[string]time.Time{
+		"date": time.Now(),
+	})
 }
 
 type APIInfoResult struct {
-	Author  string
-	Year    int
-	Contact string
-	Repo    string
+	Author  string `json:"author"`
+	Year    int    `json:"yeaer"`
+	Contact string `json:"contact"`
+	Repo    string `json:"repo"`
 }
 
 // Get info about the api
@@ -49,11 +49,11 @@ type APIInfoResult struct {
 //	@tags			default
 //	@router			/ [get]
 //	@success		200	{object}	APIInfoResult
-func (h *DefaultHandler) apiInfo(c *fiber.Ctx) error {
-	return c.JSON(fiber.Map{
-		"author":  "Kareem Ebrahim",
-		"year":    2023,
-		"contact": "kareemmahlees@gmail.com",
-		"repo":    "https://github.com/kareemmahlees/meta-x",
+func (h *DefaultHandler) apiInfo(w http.ResponseWriter, r *http.Request) {
+	writeJson(w, APIInfoResult{
+		Author:  "Kareem Ebrahim",
+		Year:    2024,
+		Contact: "kareemmahlees@gmail.com",
+		Repo:    "https://github.com/kareemmahlees/meta-x",
 	})
 }

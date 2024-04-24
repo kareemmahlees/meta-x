@@ -8,10 +8,11 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
+	"github.com/go-chi/chi/v5"
 	"github.com/kareemmahlees/meta-x/lib"
 
-	"github.com/gofiber/fiber/v2"
 	"github.com/jmoiron/sqlx"
 	"github.com/stretchr/testify/assert"
 
@@ -20,36 +21,63 @@ import (
 )
 
 func TestCreatePostgresContainer(t *testing.T) {
-	ctx := context.Background()
-	pgContainer, err := CreatePostgresContainer(ctx)
-	defer func() {
-		_ = pgContainer.Terminate(ctx)
-	}()
+	t.Run("should pass", func(t *testing.T) {
+		ctx := context.Background()
+		pgContainer, err := CreatePostgresContainer(ctx)
+		defer func() {
+			_ = pgContainer.Terminate(ctx)
+		}()
 
-	assert.Nil(t, err)
+		assert.Nil(t, err)
 
-	con, err := sqlx.Open(lib.PSQL, pgContainer.ConnectionString)
-	assert.Nil(t, err)
+		con, err := sqlx.Open(lib.PSQL, pgContainer.ConnectionString)
+		assert.Nil(t, err)
 
-	defer con.Close()
+		defer con.Close()
 
-	err = con.Ping()
-	assert.Nil(t, err)
+		err = con.Ping()
+		assert.Nil(t, err)
+	})
+
+	t.Run("should fail timeout exceeded", func(t *testing.T) {
+		ctx := context.Background()
+		ctx, cancel := context.WithTimeout(ctx, time.Millisecond)
+		defer cancel()
+
+		_, err := CreatePostgresContainer(ctx)
+
+		assert.Error(t, err)
+
+	})
 }
 
 func TestCreateMySQLContainer(t *testing.T) {
-	ctx := context.Background()
-	mysqlContainer, err := CreateMySQLContainer(ctx)
-	defer func() {
-		_ = mysqlContainer.Terminate(ctx)
-	}()
+	t.Run("should pass", func(t *testing.T) {
+		ctx := context.Background()
+		mysqlContainer, err := CreateMySQLContainer(ctx)
+		defer func() {
+			_ = mysqlContainer.Terminate(ctx)
+		}()
 
-	assert.Nil(t, err)
+		assert.Nil(t, err)
 
-	con, err := sqlx.Open(lib.MYSQL, mysqlContainer.ConnectionString)
-	assert.Nil(t, err)
+		con, err := sqlx.Open(lib.MYSQL, mysqlContainer.ConnectionString)
+		assert.Nil(t, err)
 
-	defer con.Close()
+		defer con.Close()
+
+	})
+
+	t.Run("should fail timetout exceeded", func(t *testing.T) {
+		ctx := context.Background()
+		ctx, cancel := context.WithTimeout(ctx, time.Millisecond)
+		defer cancel()
+
+		_, err := CreateMySQLContainer(ctx)
+
+		assert.Error(t, err)
+
+	})
 }
 
 func TestEncodeBody(t *testing.T) {
@@ -128,45 +156,15 @@ func TestSliceOfPointersToSliceOfValues(t *testing.T) {
 	assert.IsType(t, reflect.SliceOf(reflect.TypeOf("")), reflect.TypeOf(soptsov))
 }
 
-func TestRunRequest(t *testing.T) {
-	app := fiber.New()
-	app.Get("/health", func(c *fiber.Ctx) error {
-		return c.Status(fiber.StatusOK).JSON(fiber.Map{"date": "fake_date"})
+func TestRequestTest(t *testing.T) {
+	r := chi.NewRouter()
+
+	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
+		w.Write([]byte("Hello"))
 	})
-	mockReq1 := RequestTesting[struct {
-		Date string `json:"date"`
-	}]{
-		ReqMethod: http.MethodGet,
-		ReqUrl:    "/health",
-	}
-	decodedRes, rawRes := mockReq1.RunRequest(app)
-	assert.Equal(t, http.StatusOK, rawRes.StatusCode)
-	assert.NotEmpty(t, decodedRes.Date)
 
-	type mockPayload struct {
-		Name string `json:"name"`
-	}
+	rr := TestRequest(r, http.MethodGet, "/", http.NoBody)
 
-	app.Post("/test", func(c *fiber.Ctx) error {
-		var payload mockPayload
-		if err := c.BodyParser(&payload); err != nil {
-			return c.Status(fiber.StatusUnprocessableEntity).JSON(fiber.Map{})
-		}
-		return nil
-	})
-	mockBody, _ := EncodeBody(mockPayload{Name: "any"})
-	mockReq2 := RequestTesting[any]{
-		ReqMethod: http.MethodPost,
-		ReqUrl:    "/test",
-		ReqBody:   mockBody,
-	}
-	_, rawResponse := mockReq2.RunRequest(app)
-	assert.NotEqual(t, http.StatusUnprocessableEntity, rawResponse.StatusCode)
-
-	mockReq3 := RequestTesting[any]{
-		ReqMethod: http.MethodPost,
-		ReqUrl:    "/test",
-	}
-	_, rawResponse = mockReq3.RunRequest(app)
-	assert.Equal(t, http.StatusUnprocessableEntity, rawResponse.StatusCode)
+	assert.Equal(t, rr.Code, http.StatusOK)
+	assert.Equal(t, rr.Body.String(), "Hello")
 }

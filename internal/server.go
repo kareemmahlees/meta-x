@@ -2,73 +2,56 @@ package internal
 
 import (
 	"fmt"
+	"log/slog"
+	"net/http"
 
 	"github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
 	"github.com/kareemmahlees/meta-x/internal/db"
 	"github.com/kareemmahlees/meta-x/internal/graph"
 	"github.com/kareemmahlees/meta-x/internal/handlers"
-	"github.com/kareemmahlees/meta-x/utils"
-
-	"github.com/gofiber/fiber/v2"
-	"github.com/gofiber/fiber/v2/middleware/logger"
-	"github.com/gofiber/swagger"
+	httpSwagger "github.com/swaggo/http-swagger"
 )
 
 type Server struct {
 	storage  db.Storage
 	port     int
+	router   *chi.Mux
 	listenCh chan bool
-	app      *fiber.App
 }
 
 func NewServer(storage db.Storage, port int, listenCh chan bool) *Server {
-	return &Server{storage, port, listenCh, nil}
+	r := chi.NewRouter()
+	return &Server{storage, port, r, listenCh}
 }
 
 func (s *Server) Serve() error {
-	// see https://github.com/99designs/gqlgen/issues/1664#issuecomment-1616620967
-	// Create a gqlgen handler
 	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{Storage: s.storage}}))
 
-	app := fiber.New(fiber.Config{DisableStartupMessage: true})
-	s.app = app
+	s.router.Use(middleware.Logger)
+	s.router.Post("/graphql", h.ServeHTTP)
+	s.router.Get("/playground", playground.ApolloSandboxHandler("GraphQL", "/graphql"))
+	s.router.Get("/swagger/*", httpSwagger.Handler(
+		httpSwagger.URL(fmt.Sprintf("http://localhost:%d/swagger/doc.json", s.port)),
+	))
 
-	app.All("/graphql", func(c *fiber.Ctx) error {
-		utils.GraphQLHandler(h.ServeHTTP)(c)
-		return nil
-	}).Name("graphql")
-
-	app.All("/playground", func(c *fiber.Ctx) error {
-		utils.GraphQLHandler(playground.Handler("GraphQL", "/graphql"))(c)
-		return nil
-	}).Name("playground")
-
-	app.Get("/swagger/*", swagger.HandlerDefault).Name("swagger")
-	app.Use(logger.New())
-
-	defaultHandler := handlers.NewDefaultHandler(nil)
+	defaultHandler := handlers.NewDefaultHandler()
 	dbHandler := handlers.NewDBHandler(s.storage)
 	tableHandler := handlers.NewTableHandler(s.storage)
 
-	defaultHandler.RegisterRoutes(app)
-	dbHandler.RegisterRoutes(app)
-	tableHandler.RegisterRoutes(app)
+	defaultHandler.RegisterRoutes(s.router)
+	dbHandler.RegisterRoutes(s.router)
+	tableHandler.RegisterRoutes(s.router)
 
-	app.Hooks().OnListen(func(ld fiber.ListenData) error {
-		s.listenCh <- true
-		fmt.Println(utils.NewStyle("REST", "#4B87FF"), fmt.Sprintf("http://localhost:%d", s.port))
-		fmt.Println(utils.NewStyle("Swagger", "#0EEBA1"), fmt.Sprintf("http://localhost:%d/swagger", s.port))
-		fmt.Println(utils.NewStyle("GraphQl", "#FF70FD"), fmt.Sprintf("http://localhost:%d/graphql", s.port))
-		fmt.Println(utils.NewStyle("Playground", "#B6B5B5"), fmt.Sprintf("http://localhost:%d/playground\n", s.port))
+	slog.Info("Server started listening", "port", s.port)
 
-		return nil
-	})
+	s.listenCh <- true
 
-	if err := app.Listen(fmt.Sprintf(":%d", s.port)); err != nil {
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), s.router); err != nil {
 		s.listenCh <- false
 		return err
 	}
 	return nil
-
 }

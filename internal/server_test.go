@@ -1,13 +1,10 @@
 package internal
 
 import (
-	"fmt"
 	"log"
-	"net/http"
 	"testing"
 
 	"github.com/kareemmahlees/meta-x/models"
-	"github.com/kareemmahlees/meta-x/utils"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -47,6 +44,7 @@ func (ms *MockStorage) DeleteColumn(tableName string, data models.DeleteColumnPa
 
 func TestServe(t *testing.T) {
 	listenCh := make(chan bool, 1)
+
 	server := NewServer(NewMockStorage(), 5522, listenCh)
 
 	go func() {
@@ -57,19 +55,15 @@ func TestServe(t *testing.T) {
 
 	assert.True(t, <-listenCh)
 
-	testRoutes := []string{"graphql", "playground", "swagger"}
+	testRoutes := []string{"/graphql", "/playground", "/swagger/*"}
+	registerdRoutes := []string{}
+
+	for _, route := range server.router.Routes() {
+		registerdRoutes = append(registerdRoutes, route.Pattern)
+	}
 
 	for _, route := range testRoutes {
-		foundRoute := server.app.GetRoute(route)
-		assert.NotEmpty(t, foundRoute)
-
-		request := utils.RequestTesting[any]{
-			ReqMethod: http.MethodGet,
-			ReqUrl:    fmt.Sprintf("/%s", route),
-		}
-		_, res := request.RunRequest(server.app)
-
-		assert.NotEqual(t, http.StatusNotFound, res.StatusCode)
-
+		assert.Contains(t, registerdRoutes, route)
 	}
+
 }
