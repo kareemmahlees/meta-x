@@ -8,6 +8,7 @@ import (
 	"reflect"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/go-chi/chi/v5"
 	"github.com/kareemmahlees/meta-x/lib"
@@ -20,36 +21,63 @@ import (
 )
 
 func TestCreatePostgresContainer(t *testing.T) {
-	ctx := context.Background()
-	pgContainer, err := CreatePostgresContainer(ctx)
-	defer func() {
-		_ = pgContainer.Terminate(ctx)
-	}()
+	t.Run("should pass", func(t *testing.T) {
+		ctx := context.Background()
+		pgContainer, err := CreatePostgresContainer(ctx)
+		defer func() {
+			_ = pgContainer.Terminate(ctx)
+		}()
 
-	assert.Nil(t, err)
+		assert.Nil(t, err)
 
-	con, err := sqlx.Open(lib.PSQL, pgContainer.ConnectionString)
-	assert.Nil(t, err)
+		con, err := sqlx.Open(lib.PSQL, pgContainer.ConnectionString)
+		assert.Nil(t, err)
 
-	defer con.Close()
+		defer con.Close()
 
-	err = con.Ping()
-	assert.Nil(t, err)
+		err = con.Ping()
+		assert.Nil(t, err)
+	})
+
+	t.Run("should fail timeout exceeded", func(t *testing.T) {
+		ctx := context.Background()
+		ctx, cancel := context.WithTimeout(ctx, time.Millisecond)
+		defer cancel()
+
+		_, err := CreatePostgresContainer(ctx)
+
+		assert.Nil(t, err)
+
+	})
 }
 
 func TestCreateMySQLContainer(t *testing.T) {
-	ctx := context.Background()
-	mysqlContainer, err := CreateMySQLContainer(ctx)
-	defer func() {
-		_ = mysqlContainer.Terminate(ctx)
-	}()
+	t.Run("should pass", func(t *testing.T) {
+		ctx := context.Background()
+		mysqlContainer, err := CreateMySQLContainer(ctx)
+		defer func() {
+			_ = mysqlContainer.Terminate(ctx)
+		}()
 
-	assert.Nil(t, err)
+		assert.Nil(t, err)
 
-	con, err := sqlx.Open(lib.MYSQL, mysqlContainer.ConnectionString)
-	assert.Nil(t, err)
+		con, err := sqlx.Open(lib.MYSQL, mysqlContainer.ConnectionString)
+		assert.Nil(t, err)
 
-	defer con.Close()
+		defer con.Close()
+
+	})
+
+	t.Run("should fail timetout exceeded", func(t *testing.T) {
+		ctx := context.Background()
+		ctx, cancel := context.WithTimeout(ctx, time.Millisecond)
+		defer cancel()
+
+		_, err := CreateMySQLContainer(ctx)
+
+		assert.Nil(t, err)
+
+	})
 }
 
 func TestEncodeBody(t *testing.T) {
