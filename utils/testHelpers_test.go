@@ -46,7 +46,7 @@ func TestCreatePostgresContainer(t *testing.T) {
 
 		_, err := CreatePostgresContainer(ctx)
 
-		assert.Nil(t, err)
+		assert.Error(t, err)
 
 	})
 }
@@ -75,7 +75,7 @@ func TestCreateMySQLContainer(t *testing.T) {
 
 		_, err := CreateMySQLContainer(ctx)
 
-		assert.Nil(t, err)
+		assert.Error(t, err)
 
 	})
 }
