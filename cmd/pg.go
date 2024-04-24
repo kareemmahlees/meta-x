@@ -41,7 +41,7 @@ var pgCommand = &cobra.Command{
 			return err
 		}
 		provider := db.NewPgProvider(conn)
-		server := internal.NewServer(provider, port)
+		server := internal.NewServer(provider, port, make(chan bool, 1))
 
 		if err := server.Serve(); err != nil {
 			return err

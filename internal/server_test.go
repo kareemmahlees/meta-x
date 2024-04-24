@@ -43,7 +43,9 @@ func (ms *MockStorage) DeleteColumn(tableName string, data models.DeleteColumnPa
 }
 
 func TestServe(t *testing.T) {
-	server := NewServer(NewMockStorage(), 5522)
+	listenCh := make(chan bool, 1)
+
+	server := NewServer(NewMockStorage(), 5522, listenCh)
 
 	go func() {
 		if err := server.Serve(); err != nil {
@@ -51,7 +53,9 @@ func TestServe(t *testing.T) {
 		}
 	}()
 
-	testRoutes := []string{"/graphql/*", "/playground/*", "/swagger/*"}
+	assert.True(t, <-listenCh)
+
+	testRoutes := []string{"/graphql", "/playground", "/swagger/*"}
 	registerdRoutes := []string{}
 
 	for _, route := range server.router.Routes() {

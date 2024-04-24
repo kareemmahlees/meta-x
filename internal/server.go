@@ -16,24 +16,24 @@ import (
 )
 
 type Server struct {
-	storage db.Storage
-	port    int
-	router  *chi.Mux
+	storage  db.Storage
+	port     int
+	router   *chi.Mux
+	listenCh chan bool
 }
 
-func NewServer(storage db.Storage, port int) *Server {
-	return &Server{storage, port, nil}
+func NewServer(storage db.Storage, port int, listenCh chan bool) *Server {
+	r := chi.NewRouter()
+	return &Server{storage, port, r, listenCh}
 }
 
 func (s *Server) Serve() error {
 	h := handler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{Storage: s.storage}}))
-	r := chi.NewRouter()
-	s.router = r
 
-	r.Use(middleware.Logger)
-	r.Post("/graphql", h.ServeHTTP)
-	r.Get("/playground", playground.ApolloSandboxHandler("GraphQL", "/graphql"))
-	r.Get("/swagger/*", httpSwagger.Handler(
+	s.router.Use(middleware.Logger)
+	s.router.Post("/graphql", h.ServeHTTP)
+	s.router.Get("/playground", playground.ApolloSandboxHandler("GraphQL", "/graphql"))
+	s.router.Get("/swagger/*", httpSwagger.Handler(
 		httpSwagger.URL(fmt.Sprintf("http://localhost:%d/swagger/doc.json", s.port)),
 	))
 
@@ -41,12 +41,16 @@ func (s *Server) Serve() error {
 	dbHandler := handlers.NewDBHandler(s.storage)
 	tableHandler := handlers.NewTableHandler(s.storage)
 
-	defaultHandler.RegisterRoutes(r)
-	dbHandler.RegisterRoutes(r)
-	tableHandler.RegisterRoutes(r)
+	defaultHandler.RegisterRoutes(s.router)
+	dbHandler.RegisterRoutes(s.router)
+	tableHandler.RegisterRoutes(s.router)
 
 	slog.Info("Server started listening", "port", s.port)
-	if err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), r); err != nil {
+
+	s.listenCh <- true
+
+	if err := http.ListenAndServe(fmt.Sprintf(":%d", s.port), s.router); err != nil {
+		s.listenCh <- false
 		return err
 	}
 	return nil
