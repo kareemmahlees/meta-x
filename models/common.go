@@ -5,6 +5,6 @@ type SuccessResp struct {
 }
 
 type ErrResp struct {
-	Code    int `json:"code"`
 	Message any `json:"message"`
+	Code    int `json:"code"`
 }

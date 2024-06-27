@@ -37,9 +37,9 @@ func (h *DefaultHandler) healthCheck(w http.ResponseWriter, r *http.Request) {
 
 type APIInfoResult struct {
 	Author  string `json:"author"`
-	Year    int    `json:"yeaer"`
 	Contact string `json:"contact"`
 	Repo    string `json:"repo"`
+	Year    int    `json:"yeaer"`
 }
 
 // Get info about the api

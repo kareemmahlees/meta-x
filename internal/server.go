@@ -17,14 +17,14 @@ import (
 
 type Server struct {
 	storage  db.Storage
-	port     int
 	router   *chi.Mux
 	listenCh chan bool
+	port     int
 }
 
 func NewServer(storage db.Storage, port int, listenCh chan bool) *Server {
 	r := chi.NewRouter()
-	return &Server{storage, port, r, listenCh}
+	return &Server{storage, r, listenCh, port}
 }
 
 func (s *Server) Serve() error {

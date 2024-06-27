@@ -20,6 +20,6 @@ func TestInitDBConn(t *testing.T) {
 	malformedConnUrl := "postgres://malformed"
 	cfg = utils.NewPGConfig(&malformedConnUrl, nil)
 
-	conn, err = InitDBConn(lib.PSQL, cfg)
+	_, err = InitDBConn(lib.PSQL, cfg)
 	assert.Error(t, err)
 }

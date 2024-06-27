@@ -5,10 +5,10 @@ import (
 )
 
 type ErrorResponse struct {
-	Error       bool        `json:"error"`
+	Value       interface{} `json:"value"`
 	FailedField string      `json:"failed_field"`
 	Tag         string      `json:"tag"`
-	Value       interface{} `json:"value"`
+	Error       bool        `json:"error"`
 }
 
 var validate *validator.Validate
