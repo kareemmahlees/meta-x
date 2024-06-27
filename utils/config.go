@@ -30,10 +30,10 @@ type PgConfig struct {
 type PgConnectionParams struct {
 	DBUsername string
 	DBHost     string
-	DBPort     int
 	DBName     string
 	DBSslMode  string
 	DBPassword string
+	DBPort     int
 }
 
 func NewPGConfig(connUrl *string, pgConnParams *PgConnectionParams) *PgConfig {
@@ -64,9 +64,9 @@ type MySQLConfig struct {
 type MySQLConnectionParams struct {
 	DBUsername string
 	DBHost     string
-	DBPort     int
 	DBName     string
 	DBPassword string
+	DBPort     int
 }
 
 func NewMySQLConfig(connUrl *string, pgConnParams *MySQLConnectionParams) *MySQLConfig {
