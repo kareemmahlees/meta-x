@@ -100,8 +100,13 @@ components:
           uniqueItems: false
       type: object
     models.ListTablesResp:
+      description: List of tables.
       properties:
         tables:
+          example:
+          - table1
+          - table2
+          - table3
           items:
             type: string
           type: array
@@ -204,7 +209,7 @@ paths:
       - Database
   /table:
     get:
-      description: list tables
+      description: Get a list of the available tables in the database.
       responses:
         "200":
           content:
@@ -212,6 +217,13 @@ paths:
               schema:
                 $ref: '#/components/schemas/models.ListTablesResp'
           description: OK
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.InternalServerError'
+          description: Internal Server Error
+      summary: List tables.
       tags:
       - Table
   /table/{tableName}:
@@ -342,7 +354,7 @@ paths:
       - Table
   /table/{tableName}/describe:
     get:
-      description: Get detailed info about a specific table
+      description: Get detailed info/schema of a specific table.
       responses:
         "200":
           content:

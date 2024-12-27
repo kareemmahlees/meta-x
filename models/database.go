@@ -1,6 +1,6 @@
 package models
 
-// @description A list of all available databases.
+//	@description	A list of all available databases.
 type ListDatabasesResp struct {
 	Databases []*string `json:"databases" example:"test,prod,main"`
 }

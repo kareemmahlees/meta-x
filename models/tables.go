@@ -1,7 +1,8 @@
 package models
 
+//	@description	List of tables.
 type ListTablesResp struct {
-	Tables []*string `json:"tables"`
+	Tables []*string `json:"tables" example:"table1,table2,table3"`
 }
 
 type TableInfoResp struct {

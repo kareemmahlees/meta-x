@@ -29,10 +29,28 @@ func (h *TableHandler) RegisterRoutes(r *chi.Mux) {
 	})
 }
 
+// Lists all tables in the database
+//
+//	@summary		List tables.
+//	@description	Get a list of the available tables in the database.
+//	@tags			Table
+//	@router			/table [get]
+//	@produce		json
+//	@success		200	{object}	models.ListTablesResp
+//	@failure		500	{object}	models.InternalServerError
+func (h *TableHandler) handleListTables(w http.ResponseWriter, r *http.Request) {
+	tables, err := h.storage.ListTables()
+	if err != nil {
+		httpError(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+	writeJson(w, models.ListTablesResp{Tables: tables})
+}
+
 // Get detailed info about the specified table
 //
 //	@tags			Table
-//	@description	Get detailed info about a specific table
+//	@description	Get detailed info/schema of a specific table.
 //	@router			/table/{tableName}/describe [get]
 //	@produce		json
 //	@success		200	{object}	[]models.TableInfoResp
@@ -53,22 +71,6 @@ func (h *TableHandler) handleGetTableInfo(w http.ResponseWriter, r *http.Request
 		return
 	}
 	writeJson(w, tableInfo)
-}
-
-// Lists all tables in the database
-//
-//	@tags			Table
-//	@description	list tables
-//	@router			/table [get]
-//	@produce		json
-//	@success		200	{object}	models.ListTablesResp
-func (h *TableHandler) handleListTables(w http.ResponseWriter, r *http.Request) {
-	tables, err := h.storage.ListTables()
-	if err != nil {
-		httpError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	writeJson(w, models.ListTablesResp{Tables: tables})
 }
 
 // Creates a Table
