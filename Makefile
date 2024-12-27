@@ -1,15 +1,14 @@
 build_dev:
-	@go build -o bin/ -tags dev ./cmd/dev 
+	@go build -o bin/ 
 build_prod:
-	@go build ./cmd/prod -o bin/ -ldflags "-w -s" -tags prod
-run: build_dev
-	@./bin/meta-x.exe --help
+	@go build -o bin/ -ldflags "-w -s"
+run: generate build_dev
+	@./bin/meta-x --help
 
 # WARNING: make sure to run docker first
 test:
 	@go test ./... -race
-swag:
-	@swag fmt
-	@swag init 
-graphql:
-	@go run github.com/99designs/gqlgen generate
+generate:
+	@go generate
+# graphql:
+#	 @go run github.com/99designs/gqlgen generate
