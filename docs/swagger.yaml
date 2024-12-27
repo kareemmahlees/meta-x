@@ -40,19 +40,26 @@ components:
       - name
       type: object
     models.CreateTablePayload:
+      description: Data about the column to create.
       properties:
         column_name:
+          description: Name of the column.
           type: string
-        default: {}
-        nullable: {}
+        default:
+          description: Default value of the column.
+        nullable:
+          description: If the column accepts null values or not.
         type:
+          description: Data type of the column.
           type: string
-        unique: {}
+        unique:
+          description: Wether to add a unique constraint on the column.
       required:
       - column_name
       - type
       type: object
     models.CreateTableResp:
+      description: Table Created Successfully.
       properties:
         created:
           type: string
@@ -118,15 +125,26 @@ components:
         success:
           type: boolean
       type: object
-    models.TableInfoResp:
+    models.TableColumnInfo:
+      description: Info about a table column.
       properties:
-        default: {}
-        key: {}
+        default:
+          description: Default value of the column.
+          example: "123"
+        key:
+          description: Constraint name on the column.
+          example: PRI
         name:
+          description: Name of the column.
+          example: email
           type: string
         nullable:
+          description: If the column accepts null values or not.
+          example: "true"
           type: string
         type:
+          description: Data type of the column.
+          example: varchar
           type: string
       type: object
 externalDocs:
@@ -226,6 +244,63 @@ paths:
       summary: List tables.
       tags:
       - Table
+  /table/{table_name}:
+    post:
+      description: Creates a new table with the specified columns.
+      parameters:
+      - description: Table Name
+        in: path
+        name: table_name
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              items:
+                $ref: '#/components/schemas/models.CreateTablePayload'
+              type: array
+        description: Table Data
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.CreateTableResp'
+          description: Created
+      summary: Create a Table.
+      tags:
+      - Table
+  /table/{table_name}/describe:
+    get:
+      description: Get detailed info about a table's fields.
+      parameters:
+      - description: Table Name
+        in: path
+        name: table_name
+        required: true
+        schema:
+          type: string
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/models.TableColumnInfo'
+                type: array
+          description: OK
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.InternalServerError'
+          description: Internal Server Error
+      summary: Get table info
+      tags:
+      - Table
   /table/{tableName}:
     delete:
       parameters:
@@ -247,31 +322,6 @@ paths:
               schema:
                 $ref: '#/components/schemas/models.SuccessResp'
           description: OK
-      tags:
-      - Table
-    post:
-      description: create table
-      parameters:
-      - description: table name
-        in: path
-        name: tableName
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/models.CreateTablePayload'
-        description: create table data
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/models.CreateTableResp'
-          description: Created
       tags:
       - Table
   /table/{tableName}/column/add:
@@ -349,20 +399,6 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/models.SuccessResp'
-          description: OK
-      tags:
-      - Table
-  /table/{tableName}/describe:
-    get:
-      description: Get detailed info/schema of a specific table.
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                items:
-                  $ref: '#/components/schemas/models.TableInfoResp'
-                type: array
           description: OK
       tags:
       - Table

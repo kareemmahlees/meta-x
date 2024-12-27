@@ -18,14 +18,20 @@ type TableColumnInfo struct {
 	Nullable string `db:"nullable" json:"nullable" example:"true"` // If the column accepts null values or not.
 }
 
+// Create Table Payload.
+//
+//	@description	Data about the column to create.
 type CreateTablePayload struct {
-	Nullable interface{} `json:"nullable" validate:"omitempty,boolean"`
-	Default  interface{} `json:"default" validate:"omitempty,alphanum" `
-	Unique   interface{} `json:"unique" validate:"omitempty,boolean"`
-	ColName  string      `json:"column_name" validate:"required,alphanum"`
-	Type     string      `json:"type" validate:"required,ascii"`
+	Nullable interface{} `json:"nullable" validate:"omitempty,boolean"`    // If the column accepts null values or not.
+	Default  interface{} `json:"default" validate:"omitempty,alphanum"`    // Default value of the column.
+	Unique   interface{} `json:"unique" validate:"omitempty,boolean"`      // Wether to add a unique constraint on the column.
+	ColName  string      `json:"column_name" validate:"required,alphanum"` // Name of the column.
+	Type     string      `json:"type" validate:"required,ascii"`           // Data type of the column.
 }
 
+// Table Created Successfully.
+//
+// @description Table Created Successfully.
 type CreateTableResp struct {
 	Created string `json:"created"`
 }

@@ -79,10 +79,11 @@ func (h *TableHandler) handleGetTableInfo(w http.ResponseWriter, r *http.Request
 // Creates a Table
 //
 //	@tags			Table
-//	@description	create table
-//	@router			/table/{tableName} [post]
-//	@param			tableName	path	string						true	"table name"
-//	@param			tableData	body	models.CreateTablePayload	true	"create table data"
+//	@summary		Create a Table.
+//	@description	Creates a new table with the specified columns.
+//	@router			/table/{table_name} [post]
+//	@param			table_name	path	string						true	"Table Name"
+//	@param			table_data	body	[]models.CreateTablePayload	true	"Table Data"
 //	@accept			json
 //	@produce		json
 //	@success		201	{object}	models.CreateTableResp
@@ -110,6 +111,7 @@ func (h *TableHandler) handleCreateTable(w http.ResponseWriter, r *http.Request)
 	err := h.storage.CreateTable(params.TableName, payload)
 	if err != nil {
 		httpError(w, http.StatusInternalServerError, err.Error())
+		return
 	}
 
 	w.WriteHeader(http.StatusCreated)
