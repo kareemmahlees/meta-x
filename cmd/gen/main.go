@@ -4,8 +4,12 @@
 package main
 
 import (
+	"errors"
+	"io/fs"
 	"log"
 
+	graphqlAPI "github.com/99designs/gqlgen/api"
+	graphqlConfig "github.com/99designs/gqlgen/codegen/config"
 	"github.com/swaggo/swag/v2/format"
 	"github.com/swaggo/swag/v2/gen"
 )
@@ -34,4 +38,23 @@ func main() {
 	}
 
 	log.Println("Swagger documentation generated successfully!")
+
+	cfg, err := graphqlConfig.LoadConfigFromDefaultLocations()
+	if errors.Is(err, fs.ErrNotExist) {
+		cfg, err = graphqlConfig.LoadDefaultConfig()
+	}
+	if err != nil {
+		log.Fatalf("Error while loading GraphQL config: %v", err)
+		return
+	}
+
+	log.Println("Generating GraphQL code...")
+
+	err = graphqlAPI.Generate(cfg)
+	if err != nil {
+		log.Fatalf("Error while generating GraphQL code: %v", err)
+		return
+	}
+
+	log.Println("Successfully generated GraphQL code!")
 }

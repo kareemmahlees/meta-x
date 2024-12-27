@@ -8,13 +8,13 @@ import (
 	"embed"
 	"errors"
 	"fmt"
-	"github.com/kareemmahlees/meta-x/internal/graph/model"
 	"strconv"
 	"sync"
 	"sync/atomic"
 
 	"github.com/99designs/gqlgen/graphql"
 	"github.com/99designs/gqlgen/graphql/introspection"
+	"github.com/kareemmahlees/meta-x/internal/graph/model"
 	gqlparser "github.com/vektah/gqlparser/v2"
 	"github.com/vektah/gqlparser/v2/ast"
 )
@@ -395,7 +395,7 @@ func (ec *executionContext) field_Mutation_addColumn_args(ctx context.Context, r
 	var arg1 model.AddUpdateColumnData
 	if tmp, ok := rawArgs["data"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
-		arg1, err = ec.unmarshalNAddUpdateColumnData2metaᚑxᚋinternalᚋgraphᚋmodelᚐAddUpdateColumnData(ctx, tmp)
+		arg1, err = ec.unmarshalNAddUpdateColumnData2githubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐAddUpdateColumnData(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -434,7 +434,7 @@ func (ec *executionContext) field_Mutation_createTable_args(ctx context.Context,
 	var arg1 []*model.CreateTableData
 	if tmp, ok := rawArgs["data"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
-		arg1, err = ec.unmarshalNCreateTableData2ᚕᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableDataᚄ(ctx, tmp)
+		arg1, err = ec.unmarshalNCreateTableData2ᚕᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableDataᚄ(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -458,7 +458,7 @@ func (ec *executionContext) field_Mutation_deleteColumn_args(ctx context.Context
 	var arg1 *model.DeleteColumnData
 	if tmp, ok := rawArgs["data"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
-		arg1, err = ec.unmarshalODeleteColumnData2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐDeleteColumnData(ctx, tmp)
+		arg1, err = ec.unmarshalODeleteColumnData2ᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐDeleteColumnData(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -497,7 +497,7 @@ func (ec *executionContext) field_Mutation_modifyColumn_args(ctx context.Context
 	var arg1 model.AddUpdateColumnData
 	if tmp, ok := rawArgs["data"]; ok {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithField("data"))
-		arg1, err = ec.unmarshalNAddUpdateColumnData2metaᚑxᚋinternalᚋgraphᚋmodelᚐAddUpdateColumnData(ctx, tmp)
+		arg1, err = ec.unmarshalNAddUpdateColumnData2githubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐAddUpdateColumnData(ctx, tmp)
 		if err != nil {
 			return nil, err
 		}
@@ -643,7 +643,7 @@ func (ec *executionContext) _Mutation_createDatabase(ctx context.Context, field 
 	}
 	res := resTmp.(*model.SuccessResponse)
 	fc.Result = res
-	return ec.marshalOSuccessResponse2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx, field.Selections, res)
+	return ec.marshalOSuccessResponse2ᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createDatabase(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -699,7 +699,7 @@ func (ec *executionContext) _Mutation_createTable(ctx context.Context, field gra
 	}
 	res := resTmp.(*model.CreateTableResponse)
 	fc.Result = res
-	return ec.marshalOCreateTableResponse2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableResponse(ctx, field.Selections, res)
+	return ec.marshalOCreateTableResponse2ᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_createTable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -755,7 +755,7 @@ func (ec *executionContext) _Mutation_deleteTable(ctx context.Context, field gra
 	}
 	res := resTmp.(*model.SuccessResponse)
 	fc.Result = res
-	return ec.marshalOSuccessResponse2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx, field.Selections, res)
+	return ec.marshalOSuccessResponse2ᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteTable(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -811,7 +811,7 @@ func (ec *executionContext) _Mutation_addColumn(ctx context.Context, field graph
 	}
 	res := resTmp.(*model.SuccessResponse)
 	fc.Result = res
-	return ec.marshalOSuccessResponse2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx, field.Selections, res)
+	return ec.marshalOSuccessResponse2ᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_addColumn(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -867,7 +867,7 @@ func (ec *executionContext) _Mutation_modifyColumn(ctx context.Context, field gr
 	}
 	res := resTmp.(*model.SuccessResponse)
 	fc.Result = res
-	return ec.marshalOSuccessResponse2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx, field.Selections, res)
+	return ec.marshalOSuccessResponse2ᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_modifyColumn(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -923,7 +923,7 @@ func (ec *executionContext) _Mutation_deleteColumn(ctx context.Context, field gr
 	}
 	res := resTmp.(*model.SuccessResponse)
 	fc.Result = res
-	return ec.marshalOSuccessResponse2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx, field.Selections, res)
+	return ec.marshalOSuccessResponse2ᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Mutation_deleteColumn(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -1061,7 +1061,7 @@ func (ec *executionContext) _Query_table(ctx context.Context, field graphql.Coll
 	}
 	res := resTmp.([]*model.TableInfo)
 	fc.Result = res
-	return ec.marshalOTableInfo2ᚕᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐTableInfo(ctx, field.Selections, res)
+	return ec.marshalOTableInfo2ᚕᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐTableInfo(ctx, field.Selections, res)
 }
 
 func (ec *executionContext) fieldContext_Query_table(ctx context.Context, field graphql.CollectedField) (fc *graphql.FieldContext, err error) {
@@ -4012,7 +4012,7 @@ func (ec *executionContext) ___Type(ctx context.Context, sel ast.SelectionSet, o
 
 // region    ***************************** type.gotpl *****************************
 
-func (ec *executionContext) unmarshalNAddUpdateColumnData2metaᚑxᚋinternalᚋgraphᚋmodelᚐAddUpdateColumnData(ctx context.Context, v interface{}) (model.AddUpdateColumnData, error) {
+func (ec *executionContext) unmarshalNAddUpdateColumnData2githubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐAddUpdateColumnData(ctx context.Context, v interface{}) (model.AddUpdateColumnData, error) {
 	res, err := ec.unmarshalInputAddUpdateColumnData(ctx, v)
 	return res, graphql.ErrorOnPath(ctx, err)
 }
@@ -4032,7 +4032,7 @@ func (ec *executionContext) marshalNBoolean2bool(ctx context.Context, sel ast.Se
 	return res
 }
 
-func (ec *executionContext) unmarshalNCreateTableData2ᚕᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableDataᚄ(ctx context.Context, v interface{}) ([]*model.CreateTableData, error) {
+func (ec *executionContext) unmarshalNCreateTableData2ᚕᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableDataᚄ(ctx context.Context, v interface{}) ([]*model.CreateTableData, error) {
 	var vSlice []interface{}
 	if v != nil {
 		vSlice = graphql.CoerceList(v)
@@ -4041,7 +4041,7 @@ func (ec *executionContext) unmarshalNCreateTableData2ᚕᚖmetaᚑxᚋinternal�
 	res := make([]*model.CreateTableData, len(vSlice))
 	for i := range vSlice {
 		ctx := graphql.WithPathContext(ctx, graphql.NewPathWithIndex(i))
-		res[i], err = ec.unmarshalNCreateTableData2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableData(ctx, vSlice[i])
+		res[i], err = ec.unmarshalNCreateTableData2ᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableData(ctx, vSlice[i])
 		if err != nil {
 			return nil, err
 		}
@@ -4049,7 +4049,7 @@ func (ec *executionContext) unmarshalNCreateTableData2ᚕᚖmetaᚑxᚋinternal�
 	return res, nil
 }
 
-func (ec *executionContext) unmarshalNCreateTableData2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableData(ctx context.Context, v interface{}) (*model.CreateTableData, error) {
+func (ec *executionContext) unmarshalNCreateTableData2ᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableData(ctx context.Context, v interface{}) (*model.CreateTableData, error) {
 	res, err := ec.unmarshalInputCreateTableData(ctx, v)
 	return &res, graphql.ErrorOnPath(ctx, err)
 }
@@ -4364,14 +4364,14 @@ func (ec *executionContext) marshalOBoolean2ᚖbool(ctx context.Context, sel ast
 	return res
 }
 
-func (ec *executionContext) marshalOCreateTableResponse2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableResponse(ctx context.Context, sel ast.SelectionSet, v *model.CreateTableResponse) graphql.Marshaler {
+func (ec *executionContext) marshalOCreateTableResponse2ᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐCreateTableResponse(ctx context.Context, sel ast.SelectionSet, v *model.CreateTableResponse) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._CreateTableResponse(ctx, sel, v)
 }
 
-func (ec *executionContext) unmarshalODeleteColumnData2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐDeleteColumnData(ctx context.Context, v interface{}) (*model.DeleteColumnData, error) {
+func (ec *executionContext) unmarshalODeleteColumnData2ᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐDeleteColumnData(ctx context.Context, v interface{}) (*model.DeleteColumnData, error) {
 	if v == nil {
 		return nil, nil
 	}
@@ -4427,14 +4427,14 @@ func (ec *executionContext) marshalOString2ᚖstring(ctx context.Context, sel as
 	return res
 }
 
-func (ec *executionContext) marshalOSuccessResponse2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx context.Context, sel ast.SelectionSet, v *model.SuccessResponse) graphql.Marshaler {
+func (ec *executionContext) marshalOSuccessResponse2ᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐSuccessResponse(ctx context.Context, sel ast.SelectionSet, v *model.SuccessResponse) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
 	return ec._SuccessResponse(ctx, sel, v)
 }
 
-func (ec *executionContext) marshalOTableInfo2ᚕᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐTableInfo(ctx context.Context, sel ast.SelectionSet, v []*model.TableInfo) graphql.Marshaler {
+func (ec *executionContext) marshalOTableInfo2ᚕᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐTableInfo(ctx context.Context, sel ast.SelectionSet, v []*model.TableInfo) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
@@ -4461,7 +4461,7 @@ func (ec *executionContext) marshalOTableInfo2ᚕᚖmetaᚑxᚋinternalᚋgraph�
 			if !isLen1 {
 				defer wg.Done()
 			}
-			ret[i] = ec.marshalOTableInfo2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐTableInfo(ctx, sel, v[i])
+			ret[i] = ec.marshalOTableInfo2ᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐTableInfo(ctx, sel, v[i])
 		}
 		if isLen1 {
 			f(i)
@@ -4475,7 +4475,7 @@ func (ec *executionContext) marshalOTableInfo2ᚕᚖmetaᚑxᚋinternalᚋgraph�
 	return ret
 }
 
-func (ec *executionContext) marshalOTableInfo2ᚖmetaᚑxᚋinternalᚋgraphᚋmodelᚐTableInfo(ctx context.Context, sel ast.SelectionSet, v *model.TableInfo) graphql.Marshaler {
+func (ec *executionContext) marshalOTableInfo2ᚖgithubᚗcomᚋkareemmahleesᚋmetaᚑxᚋinternalᚋgraphᚋmodelᚐTableInfo(ctx context.Context, sel ast.SelectionSet, v *model.TableInfo) graphql.Marshaler {
 	if v == nil {
 		return graphql.Null
 	}
