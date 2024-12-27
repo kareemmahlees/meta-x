@@ -3,7 +3,7 @@ build:
 run: build
 	@./bin/meta-x.exe --help
 
-# make sure to run docker first
+# WARNING: make sure to run docker first
 test:
 	@go test ./... -race
 swag:

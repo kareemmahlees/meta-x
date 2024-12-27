@@ -10,10 +10,11 @@ import (
 
 var pgCommand = &cobra.Command{
 	Use:   "pg",
-	Short: "use postgres as the database provider",
+	Short: "Use Postgres as the database provider",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var pgConfig *utils.PgConfig
 
+		// Not handling the error because port always has a default value, `5522`.
 		port, _ := cmd.Flags().GetInt("port")
 
 		connUrl, _ := cmd.Flags().GetString("url")
