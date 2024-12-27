@@ -284,4 +284,4 @@ paths:
       - Tables
 servers:
 - description: Home town of Meta-X
-  url: localhost:5522
+  url: http://localhost:5522
