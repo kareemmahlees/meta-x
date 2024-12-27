@@ -87,6 +87,9 @@ func (h *TableHandler) handleGetTableInfo(w http.ResponseWriter, r *http.Request
 //	@accept			json
 //	@produce		json
 //	@success		201	{object}	models.CreateTableResp
+//	@failure		400	{object}	models.BadRequestError
+//	@failure		422	{object}	models.UnprocessableEntityError
+//	@failure		500	{object}	models.InternalServerError
 func (h *TableHandler) handleCreateTable(w http.ResponseWriter, r *http.Request) {
 	params := struct {
 		TableName string `validate:"required,alphanum"`
@@ -121,13 +124,17 @@ func (h *TableHandler) handleCreateTable(w http.ResponseWriter, r *http.Request)
 // Updates a table by adding a column
 //
 //	@tags			Table
-//	@description	Add column to table
-//	@router			/table/{tableName}/column/add [post]
-//	@param			tableName	path	string							true	"table name"
-//	@param			columnData	body	models.AddModifyColumnPayload	true	"column data"
+//	@summary		Add a column
+//	@description	Adds a column with the provided data to the given table.
+//	@router			/table/{table_name}/column/add [post]
+//	@param			table_name	path	string							true	"Table Name"
+//	@param			column_data	body	models.AddModifyColumnPayload	true	"Column Data"
 //	@accept			json
 //	@produce		json
 //	@success		201	{object}	models.SuccessResp
+//	@failure		400	{object}	models.BadRequestError
+//	@failure		422	{object}	models.UnprocessableEntityError
+//	@failure		500	{object}	models.InternalServerError
 func (h *TableHandler) handleAddColumn(w http.ResponseWriter, r *http.Request) {
 	params := struct {
 		TableName string `validate:"required,alphanum"`
@@ -160,13 +167,17 @@ func (h *TableHandler) handleAddColumn(w http.ResponseWriter, r *http.Request) {
 // Updates a table by modifying a column
 //
 //	@tags			Table
-//	@description	Update table column
-//	@router			/table/{tableName}/column/modify [put]
-//	@param			tableName	path	string							true	"table name"
-//	@param			columnData	body	models.AddModifyColumnPayload	true	"column data"
+//	@summary		Update Column
+//	@description	Update table column properties, **Only supports updating the column type for now**.
+//	@router			/table/{table_name}/column/modify [put]
+//	@param			table_name	path	string							true	"Table Name"
+//	@param			column_data	body	models.AddModifyColumnPayload	true	"Column Data"
 //	@accept			json
 //	@produce		json
 //	@success		200	{object}	models.SuccessResp
+//	@failure		400	{object}	models.BadRequestError
+//	@failure		422	{object}	models.UnprocessableEntityError
+//	@failure		500	{object}	models.InternalServerError
 func (h *TableHandler) handleModifyColumn(w http.ResponseWriter, r *http.Request) {
 	params := struct {
 		TableName string `validate:"required,alphanum"`
@@ -198,13 +209,16 @@ func (h *TableHandler) handleModifyColumn(w http.ResponseWriter, r *http.Request
 // Updates a table by deleting/dropping a column
 //
 //	@tags			Table
-//	@description	Delete/Drop table column
-//	@router			/table/{tableName}/column/delete [delete]
-//	@param			tableName	path	string						true	"table name"
-//	@param			columnData	body	models.DeleteColumnPayload	true	"column name"
+//	@description	Delete table column
+//	@router			/table/{table_name}/column/delete [delete]
+//	@param			table_name	path	string						true	"Table Name"
+//	@param			column_data	body	models.DeleteColumnPayload	true	"Column Name"
 //	@accept			json
 //	@produce		json
 //	@success		200	{object}	models.SuccessResp
+//	@failure		400	{object}	models.BadRequestError
+//	@failure		422	{object}	models.UnprocessableEntityError
+//	@failure		500	{object}	models.InternalServerError
 func (h *TableHandler) handleDeleteColumn(w http.ResponseWriter, r *http.Request) {
 	params := struct {
 		TableName string `params:"tableName" validate:"required,alphanum"`
@@ -235,13 +249,15 @@ func (h *TableHandler) handleDeleteColumn(w http.ResponseWriter, r *http.Request
 
 // Deletes a table
 //
-//	@tags		Table
-//	@decription	delete table
-//	@router		/table/{tableName} [delete]
-//	@param		tableName	path	string	true	"table name"
-//	@accept		json
-//	@produce	json
-//	@success	200	{object}	models.SuccessResp
+//	@tags			Table
+//	@summary		Delete Table
+//	@description	Delete the given table.
+//	@router			/table/{table_name} [delete]
+//	@param			table_name	path	string	true	"Table Name"
+//	@accept			json
+//	@produce		json
+//	@success		200	{object}	models.SuccessResp
+//	@failure		500	{object}	models.InternalServerError
 func (h *TableHandler) handleDeleteTable(w http.ResponseWriter, r *http.Request) {
 	params := struct {
 		TableName string `params:"tableName" validate:"required,alpha"`

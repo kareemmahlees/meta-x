@@ -21,14 +21,29 @@ components:
           type: integer
       type: object
     models.AddModifyColumnPayload:
+      description: Adding or Modifying a column payload.
       properties:
         column_name:
+          description: Column Name
           type: string
         type:
+          description: New type
+          example: Int
           type: string
       required:
       - column_name
       - type
+      type: object
+    models.BadRequestError:
+      description: Request payload failed validation.
+      properties:
+        code:
+          description: HTTP code.
+          example: 422
+          type: integer
+        message:
+          description: Error cause.
+          example: Payload Failed Validation
       type: object
     models.CreatePgMySqlDBPayload:
       properties:
@@ -65,8 +80,10 @@ components:
           type: string
       type: object
     models.DeleteColumnPayload:
+      description: Column to delete data.
       properties:
         column_name:
+          description: Column Name
           type: string
       required:
       - column_name
@@ -146,6 +163,17 @@ components:
           description: Data type of the column.
           example: varchar
           type: string
+      type: object
+    models.UnprocessableEntityError:
+      description: Failed to parse payload.
+      properties:
+        code:
+          description: HTTP code.
+          example: 422
+          type: integer
+        message:
+          description: Error cause.
+          example: Payload Parsing Failed
       type: object
 externalDocs:
   description: ""
@@ -245,6 +273,36 @@ paths:
       tags:
       - Table
   /table/{table_name}:
+    delete:
+      description: Delete the given table.
+      parameters:
+      - description: Table Name
+        in: path
+        name: table_name
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.SuccessResp'
+          description: OK
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.InternalServerError'
+          description: Internal Server Error
+      summary: Delete Table
+      tags:
+      - Table
     post:
       description: Creates a new table with the specified columns.
       parameters:
@@ -270,7 +328,160 @@ paths:
               schema:
                 $ref: '#/components/schemas/models.CreateTableResp'
           description: Created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.BadRequestError'
+          description: Bad Request
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.UnprocessableEntityError'
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.InternalServerError'
+          description: Internal Server Error
       summary: Create a Table.
+      tags:
+      - Table
+  /table/{table_name}/column/add:
+    post:
+      description: Adds a column with the provided data to the given table.
+      parameters:
+      - description: Table Name
+        in: path
+        name: table_name
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/models.AddModifyColumnPayload'
+        description: Column Data
+        required: true
+      responses:
+        "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.SuccessResp'
+          description: Created
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.BadRequestError'
+          description: Bad Request
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.UnprocessableEntityError'
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.InternalServerError'
+          description: Internal Server Error
+      summary: Add a column
+      tags:
+      - Table
+  /table/{table_name}/column/delete:
+    delete:
+      description: Delete table column
+      parameters:
+      - description: Table Name
+        in: path
+        name: table_name
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/models.DeleteColumnPayload'
+        description: Column Name
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.SuccessResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.BadRequestError'
+          description: Bad Request
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.UnprocessableEntityError'
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.InternalServerError'
+          description: Internal Server Error
+      tags:
+      - Table
+  /table/{table_name}/column/modify:
+    put:
+      description: Update table column properties, **Only supports updating the column
+        type for now**.
+      parameters:
+      - description: Table Name
+        in: path
+        name: table_name
+        required: true
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/models.AddModifyColumnPayload'
+        description: Column Data
+        required: true
+      responses:
+        "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.SuccessResp'
+          description: OK
+        "400":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.BadRequestError'
+          description: Bad Request
+        "422":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.UnprocessableEntityError'
+          description: Unprocessable Entity
+        "500":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.InternalServerError'
+          description: Internal Server Error
+      summary: Update Column
       tags:
       - Table
   /table/{table_name}/describe:
@@ -299,107 +510,6 @@ paths:
                 $ref: '#/components/schemas/models.InternalServerError'
           description: Internal Server Error
       summary: Get table info
-      tags:
-      - Table
-  /table/{tableName}:
-    delete:
-      parameters:
-      - description: table name
-        in: path
-        name: tableName
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              type: object
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/models.SuccessResp'
-          description: OK
-      tags:
-      - Table
-  /table/{tableName}/column/add:
-    post:
-      description: Add column to table
-      parameters:
-      - description: table name
-        in: path
-        name: tableName
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/models.AddModifyColumnPayload'
-        description: column data
-        required: true
-      responses:
-        "201":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/models.SuccessResp'
-          description: Created
-      tags:
-      - Table
-  /table/{tableName}/column/delete:
-    delete:
-      description: Delete/Drop table column
-      parameters:
-      - description: table name
-        in: path
-        name: tableName
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/models.DeleteColumnPayload'
-        description: column name
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/models.SuccessResp'
-          description: OK
-      tags:
-      - Table
-  /table/{tableName}/column/modify:
-    put:
-      description: Update table column
-      parameters:
-      - description: table name
-        in: path
-        name: tableName
-        required: true
-        schema:
-          type: string
-      requestBody:
-        content:
-          application/json:
-            schema:
-              $ref: '#/components/schemas/models.AddModifyColumnPayload'
-        description: column data
-        required: true
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/models.SuccessResp'
-          description: OK
       tags:
       - Table
 servers:

@@ -36,11 +36,17 @@ type CreateTableResp struct {
 	Created string `json:"created"`
 }
 
+// Add/Modify a column payload.
+//
+// @description Adding or Modifying a column payload.
 type AddModifyColumnPayload struct {
-	ColName string `json:"column_name" validate:"required,alphanum"`
-	Type    string `json:"type" validate:"required,ascii"`
+	ColName string `json:"column_name" validate:"required,alphanum"`     // Column Name
+	Type    string `json:"type" validate:"required,ascii" example:"Int"` // New type
 }
 
+// Column deletion payload.
+//
+// @description Column to delete data.
 type DeleteColumnPayload struct {
-	ColName string `json:"column_name" validate:"required,alphanum"`
+	ColName string `json:"column_name" validate:"required,alphanum"` // Column Name
 }
