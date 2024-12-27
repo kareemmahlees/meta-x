@@ -1,20 +1,24 @@
 components:
   schemas:
-    handlers.APIInfoResult:
+    handlers.APIInfo:
+      description: General Info about the API, author name, how to contact, etc.
       properties:
         author:
+          description: Author name.
+          example: Kareem Ebrahim
           type: string
         contact:
+          description: How to contact the author.
+          example: kareemmahlees@gmail.com
           type: string
         repo:
+          description: Git repository name for contributions.
+          example: https://github.com/kareemmahlees/meta-x
           type: string
-        yeaer:
+        year:
+          description: Year of launch
+          example: 2024
           type: integer
-      type: object
-    handlers.HealthCheckResult:
-      properties:
-        date:
-          type: string
       type: object
     models.AddModifyColumnPayload:
       properties:
@@ -96,16 +100,17 @@ openapi: 3.1.0
 paths:
   /:
     get:
-      description: get info about the api
+      description: Get general info about the API
       responses:
         "200":
           content:
             application/json:
               schema:
-                $ref: '#/components/schemas/handlers.APIInfoResult'
+                $ref: '#/components/schemas/handlers.APIInfo'
           description: OK
+      summary: Get API Info
       tags:
-      - default
+      - General
   /database:
     get:
       description: list databases
@@ -118,18 +123,6 @@ paths:
           description: OK
       tags:
       - Databases
-  /health:
-    get:
-      description: check application health by getting current date
-      responses:
-        "200":
-          content:
-            application/json:
-              schema:
-                $ref: '#/components/schemas/handlers.HealthCheckResult'
-          description: OK
-      tags:
-      - default
   /table:
     get:
       description: list tables
@@ -285,3 +278,6 @@ paths:
 servers:
 - description: Home town of Meta-X
   url: http://localhost:5522
+tags:
+- description: general info about the API.
+  name: General

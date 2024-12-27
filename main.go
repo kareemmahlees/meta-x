@@ -14,6 +14,10 @@ import (
 //	@description			A RESTFull and GraphQL API to supercharge your database
 //	@contact.name			Kareem Ebrahim
 //	@contact.email			kareemmahlees@gmail.com
+//
+//	@tag.name				General
+//	@tag.description		general info about the API.
+//
 //	@servers.url			http://localhost:5522
 //	@servers.description	Home town of Meta-X
 func main() {

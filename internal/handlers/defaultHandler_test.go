@@ -31,15 +31,7 @@ func (suite *DefaultHandlerTestSuite) TestRegisterDefaultRoutes() {
 		routes = append(routes, route.Pattern)
 	}
 
-	assert.Contains(routes, "/health")
 	assert.Contains(routes, "/")
-}
-
-func (suite *DefaultHandlerTestSuite) TestHealthCheck() {
-	assert := suite.Assert()
-
-	assert.HTTPSuccess(suite.handler.healthCheck, http.MethodGet, "/health", nil)
-	assert.HTTPBodyContains(suite.handler.healthCheck, http.MethodGet, "/health", nil, "date")
 }
 
 func (suite *DefaultHandlerTestSuite) TestAPIInfo() {

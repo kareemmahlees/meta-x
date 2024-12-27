@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"net/http"
-	"time"
 
 	"github.com/go-chi/chi/v5"
 )
@@ -14,43 +13,29 @@ func NewDefaultHandler() *DefaultHandler {
 }
 
 func (h *DefaultHandler) RegisterRoutes(r *chi.Mux) {
-	r.Get("/health", h.healthCheck)
 	r.Get("/", h.apiInfo)
 }
 
-type HealthCheckResult struct {
-	Date string
-}
-
-// Checks the health
+// General API Info
 //
-//	@description	check application health by getting current date
-//	@produce		json
-//	@tags			default
-//	@router			/health [get]
-//	@success		200	{object}	HealthCheckResult
-func (h *DefaultHandler) healthCheck(w http.ResponseWriter, r *http.Request) {
-	writeJson(w, map[string]time.Time{
-		"date": time.Now(),
-	})
+//	@description	General Info about the API, author name, how to contact, etc.
+type APIInfo struct {
+	Author  string `json:"author" example:"Kareem Ebrahim"`                        // Author name.
+	Contact string `json:"contact" example:"kareemmahlees@gmail.com"`              // How to contact the author.
+	Repo    string `json:"repo" example:"https://github.com/kareemmahlees/meta-x"` // Git repository name for contributions.
+	Year    int    `json:"year" example:"2024"`                                    // Year of launch
 }
 
-type APIInfoResult struct {
-	Author  string `json:"author"`
-	Contact string `json:"contact"`
-	Repo    string `json:"repo"`
-	Year    int    `json:"yeaer"`
-}
-
-// Get info about the api
+// Gets general info about the API
 //
-//	@description	get info about the api
+//	@summary		Get API Info
+//	@description	Get general info about the API
 //	@produce		json
-//	@tags			default
+//	@tags			General
 //	@router			/ [get]
-//	@success		200	{object}	APIInfoResult
+//	@success		200	{object}	APIInfo
 func (h *DefaultHandler) apiInfo(w http.ResponseWriter, r *http.Request) {
-	writeJson(w, APIInfoResult{
+	writeJson(w, APIInfo{
 		Author:  "Kareem Ebrahim",
 		Year:    2024,
 		Contact: "kareemmahlees@gmail.com",
