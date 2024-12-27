@@ -1,13 +1,12 @@
 build:
+	@go build -o bin/ 
+build_prod:
 	@go build -o bin/ -ldflags "-w -s"
-run: build
-	@./bin/meta-x.exe --help
+run:
+	@air
 
-# make sure to run docker first
+# WARNING: make sure to run docker first
 test:
 	@go test ./... -race
-swag:
-	@swag fmt
-	@swag init 
-graphql:
-	@go run github.com/99designs/gqlgen generate
+generate:
+	@go generate

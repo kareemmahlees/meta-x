@@ -11,16 +11,15 @@ import (
 
 var sqlite3Command = &cobra.Command{
 	Use:   "sqlite3",
-	Short: "use sqlite as the database provider",
+	Short: "Use SQLite as the database provider",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		filePath, err := cmd.Flags().GetString("file")
 		if err != nil {
 			return err
 		}
-		port, err := cmd.Flags().GetInt("port")
-		if err != nil {
-			return err
-		}
+		// Not handling the error because port always has a default value, `5522`.
+		port, _ := cmd.Flags().GetInt("port")
+
 		sqliteConfig := utils.NewSQLiteConfig(filePath)
 
 		conn, err := db.InitDBConn(lib.SQLITE3, sqliteConfig)

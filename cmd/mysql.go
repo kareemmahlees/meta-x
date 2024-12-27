@@ -10,7 +10,7 @@ import (
 
 var mysqlCommand = &cobra.Command{
 	Use:   "mysql",
-	Short: "use mysql as the database provider",
+	Short: "Use MySQL as the database provider",
 	RunE: func(cmd *cobra.Command, args []string) error {
 		var mysqlConfig *utils.MySQLConfig
 
