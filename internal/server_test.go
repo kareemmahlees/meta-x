@@ -55,15 +55,15 @@ func TestServe(t *testing.T) {
 
 	assert.True(t, <-listenCh)
 
-	testRoutes := []string{"/graphql", "/playground", "/swagger/*"}
-	registerdRoutes := []string{}
+	testRoutes := []string{"/graphql", "/playground", "/spec"}
+	registeredRoutes := []string{}
 
 	for _, route := range server.router.Routes() {
-		registerdRoutes = append(registerdRoutes, route.Pattern)
+		registeredRoutes = append(registeredRoutes, route.Pattern)
 	}
 
 	for _, route := range testRoutes {
-		assert.Contains(t, registerdRoutes, route)
+		assert.Contains(t, registeredRoutes, route)
 	}
 
 }
