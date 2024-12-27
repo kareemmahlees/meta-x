@@ -2,7 +2,7 @@ build:
 	@go build -o bin/ 
 build_prod:
 	@go build -o bin/ -ldflags "-w -s"
-run: generate
+run:
 	@air
 
 # WARNING: make sure to run docker first

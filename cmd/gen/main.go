@@ -23,6 +23,7 @@ func main() {
 
 	config := &gen.Config{
 		OutputDir:           "./docs",
+		OutputTypes:         []string{"json", "yaml"},
 		MainAPIFile:         "./main.go",
 		SearchDir:           "./",
 		PropNamingStrategy:  "camelcase",

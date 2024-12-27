@@ -1,110 +1,90 @@
-basePath: /
-definitions:
-  handlers.APIInfoResult:
-    properties:
-      author:
-        type: string
-      contact:
-        type: string
-      repo:
-        type: string
-      year:
-        type: integer
-    type: object
-  handlers.HealthCheckResult:
-    properties:
-      date:
-        type: string
-    type: object
-  models.AddModifyColumnPayload:
-    properties:
-      column_name:
-        type: string
-      type:
-        type: string
-    required:
-    - column_name
-    - type
-    type: object
-  models.CreatePgMySqlDBPayload:
-    properties:
-      name:
-        type: string
-    required:
-    - name
-    type: object
-  models.CreateTablePayload:
-    properties:
-      column_name:
-        type: string
-      default: {}
-      nullable: {}
-      type:
-        type: string
-      unique: {}
-    required:
-    - column_name
-    - type
-    type: object
-  models.CreateTableResp:
-    properties:
-      created:
-        type: string
-    type: object
-  models.DeleteColumnPayload:
-    properties:
-      column_name:
-        type: string
-    required:
-    - column_name
-    type: object
-  models.ListDatabasesResp:
-    properties:
-      databases:
-        items:
+components:
+  schemas:
+    handlers.APIInfoResult:
+      properties:
+        author:
           type: string
-        type: array
-    type: object
-  models.ListTablesResp:
-    properties:
-      tables:
-        items:
+        contact:
           type: string
-        type: array
-    type: object
-  models.SuccessResp:
-    properties:
-      success:
-        type: boolean
-    type: object
-  models.TableInfoResp:
-    properties:
-      default: {}
-      key: {}
-      name:
-        type: string
-      nullable:
-        type: string
-      type:
-        type: string
-    type: object
-  routes.APIInfoResult:
-    properties:
-      author:
-        type: string
-      contact:
-        type: string
-      repo:
-        type: string
-      year:
-        type: integer
-    type: object
-  routes.HealthCheckResult:
-    properties:
-      date:
-        type: string
-    type: object
-host: localhost:5522
+        repo:
+          type: string
+        yeaer:
+          type: integer
+      type: object
+    handlers.HealthCheckResult:
+      properties:
+        date:
+          type: string
+      type: object
+    models.AddModifyColumnPayload:
+      properties:
+        column_name:
+          type: string
+        type:
+          type: string
+      required:
+      - column_name
+      - type
+      type: object
+    models.CreateTablePayload:
+      properties:
+        column_name:
+          type: string
+        default: {}
+        nullable: {}
+        type:
+          type: string
+        unique: {}
+      required:
+      - column_name
+      - type
+      type: object
+    models.CreateTableResp:
+      properties:
+        created:
+          type: string
+      type: object
+    models.DeleteColumnPayload:
+      properties:
+        column_name:
+          type: string
+      required:
+      - column_name
+      type: object
+    models.ListDatabasesResp:
+      properties:
+        databases:
+          items:
+            type: string
+          type: array
+      type: object
+    models.ListTablesResp:
+      properties:
+        tables:
+          items:
+            type: string
+          type: array
+          uniqueItems: false
+      type: object
+    models.SuccessResp:
+      properties:
+        success:
+          type: boolean
+      type: object
+    models.TableInfoResp:
+      properties:
+        default: {}
+        key: {}
+        name:
+          type: string
+        nullable:
+          type: string
+        type:
+          type: string
+      type: object
+externalDocs:
+  description: ""
+  url: ""
 info:
   contact:
     email: kareemmahlees@gmail.com
@@ -112,210 +92,196 @@ info:
   description: A RESTFull and GraphQL API to supercharge your database
   title: MetaX
   version: 0.1.1
+openapi: 3.1.0
 paths:
   /:
     get:
       description: get info about the api
-      produces:
-      - application/json
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/handlers.APIInfoResult'
           description: OK
-          schema:
-            $ref: '#/definitions/routes.APIInfoResult'
       tags:
       - default
   /database:
     get:
       description: list databases
-      produces:
-      - application/json
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.ListDatabasesResp'
           description: OK
-          schema:
-            $ref: '#/definitions/models.ListDatabasesResp'
-      tags:
-      - Databases
-    post:
-      consumes:
-      - application/json
-      description: create pg/mysql database
-      parameters:
-      - description: only supported for pg and mysql, because attached sqlite dbs
-          are temporary
-        in: body
-        name: pg_mysql_db_data
-        required: true
-        schema:
-          $ref: '#/definitions/models.CreatePgMySqlDBPayload'
-      produces:
-      - application/json
-      responses:
-        "201":
-          description: Created
-          schema:
-            $ref: '#/definitions/models.SuccessResp'
       tags:
       - Databases
   /health:
     get:
       description: check application health by getting current date
-      produces:
-      - application/json
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/handlers.HealthCheckResult'
           description: OK
-          schema:
-            $ref: '#/definitions/routes.HealthCheckResult'
       tags:
       - default
   /table:
     get:
       description: list tables
-      produces:
-      - application/json
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.ListTablesResp'
           description: OK
-          schema:
-            $ref: '#/definitions/models.ListTablesResp'
       tags:
       - Tables
   /table/{tableName}:
     delete:
-      consumes:
-      - application/json
       parameters:
       - description: table name
         in: path
         name: tableName
         required: true
-        type: string
-      produces:
-      - application/json
+        schema:
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              type: object
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.SuccessResp'
           description: OK
-          schema:
-            $ref: '#/definitions/models.SuccessResp'
       tags:
       - Tables
     post:
-      consumes:
-      - application/json
       description: create table
       parameters:
       - description: table name
         in: path
         name: tableName
         required: true
-        type: string
-      - description: create table data
-        in: body
-        name: tableData
-        required: true
         schema:
-          $ref: '#/definitions/models.CreateTablePayload'
-      produces:
-      - application/json
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/models.CreateTablePayload'
+        description: create table data
+        required: true
       responses:
         "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.CreateTableResp'
           description: Created
-          schema:
-            $ref: '#/definitions/models.CreateTableResp'
       tags:
       - Tables
   /table/{tableName}/column/add:
     post:
-      consumes:
-      - application/json
       description: Add column to table
       parameters:
       - description: table name
         in: path
         name: tableName
         required: true
-        type: string
-      - description: column data
-        in: body
-        name: columnData
-        required: true
         schema:
-          $ref: '#/definitions/models.AddModifyColumnPayload'
-      produces:
-      - application/json
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/models.AddModifyColumnPayload'
+        description: column data
+        required: true
       responses:
         "201":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.SuccessResp'
           description: Created
-          schema:
-            $ref: '#/definitions/models.SuccessResp'
       tags:
       - Tables
   /table/{tableName}/column/delete:
     delete:
-      consumes:
-      - application/json
       description: Delete/Drop table column
       parameters:
       - description: table name
         in: path
         name: tableName
         required: true
-        type: string
-      - description: column name
-        in: body
-        name: columnData
-        required: true
         schema:
-          $ref: '#/definitions/models.DeleteColumnPayload'
-      produces:
-      - application/json
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/models.DeleteColumnPayload'
+        description: column name
+        required: true
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.SuccessResp'
           description: OK
-          schema:
-            $ref: '#/definitions/models.SuccessResp'
       tags:
       - Tables
   /table/{tableName}/column/modify:
     put:
-      consumes:
-      - application/json
       description: Update table column
       parameters:
       - description: table name
         in: path
         name: tableName
         required: true
-        type: string
-      - description: column data
-        in: body
-        name: columnData
-        required: true
         schema:
-          $ref: '#/definitions/models.AddModifyColumnPayload'
-      produces:
-      - application/json
+          type: string
+      requestBody:
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/models.AddModifyColumnPayload'
+        description: column data
+        required: true
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/models.SuccessResp'
           description: OK
-          schema:
-            $ref: '#/definitions/models.SuccessResp'
       tags:
       - Tables
   /table/{tableName}/describe:
     get:
       description: Get detailed info about a specific table
-      produces:
-      - application/json
       responses:
         "200":
+          content:
+            application/json:
+              schema:
+                items:
+                  $ref: '#/components/schemas/models.TableInfoResp'
+                type: array
           description: OK
-          schema:
-            items:
-              $ref: '#/definitions/models.TableInfoResp'
-            type: array
       tags:
       - Tables
-swagger: "2.0"
+servers:
+- description: Home town of Meta-X
+  url: localhost:5522
