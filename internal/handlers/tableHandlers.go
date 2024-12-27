@@ -31,7 +31,7 @@ func (h *TableHandler) RegisterRoutes(r *chi.Mux) {
 
 // Get detailed info about the specified table
 //
-//	@tags			Tables
+//	@tags			Table
 //	@description	Get detailed info about a specific table
 //	@router			/table/{tableName}/describe [get]
 //	@produce		json
@@ -57,7 +57,7 @@ func (h *TableHandler) handleGetTableInfo(w http.ResponseWriter, r *http.Request
 
 // Lists all tables in the database
 //
-//	@tags			Tables
+//	@tags			Table
 //	@description	list tables
 //	@router			/table [get]
 //	@produce		json
@@ -73,7 +73,7 @@ func (h *TableHandler) handleListTables(w http.ResponseWriter, r *http.Request) 
 
 // Creates a Table
 //
-//	@tags			Tables
+//	@tags			Table
 //	@description	create table
 //	@router			/table/{tableName} [post]
 //	@param			tableName	path	string						true	"table name"
@@ -113,7 +113,7 @@ func (h *TableHandler) handleCreateTable(w http.ResponseWriter, r *http.Request)
 
 // Updates a table by adding a column
 //
-//	@tags			Tables
+//	@tags			Table
 //	@description	Add column to table
 //	@router			/table/{tableName}/column/add [post]
 //	@param			tableName	path	string							true	"table name"
@@ -152,7 +152,7 @@ func (h *TableHandler) handleAddColumn(w http.ResponseWriter, r *http.Request) {
 
 // Updates a table by modifying a column
 //
-//	@tags			Tables
+//	@tags			Table
 //	@description	Update table column
 //	@router			/table/{tableName}/column/modify [put]
 //	@param			tableName	path	string							true	"table name"
@@ -190,7 +190,7 @@ func (h *TableHandler) handleModifyColumn(w http.ResponseWriter, r *http.Request
 
 // Updates a table by deleting/dropping a column
 //
-//	@tags			Tables
+//	@tags			Table
 //	@description	Delete/Drop table column
 //	@router			/table/{tableName}/column/delete [delete]
 //	@param			tableName	path	string						true	"table name"
@@ -228,7 +228,7 @@ func (h *TableHandler) handleDeleteColumn(w http.ResponseWriter, r *http.Request
 
 // Deletes a table
 //
-//	@tags		Tables
+//	@tags		Table
 //	@decription	delete table
 //	@router		/table/{tableName} [delete]
 //	@param		tableName	path	string	true	"table name"

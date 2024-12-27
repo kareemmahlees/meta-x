@@ -18,7 +18,9 @@ import (
 //	@tag.name				General
 //	@tag.description		general info about the API.
 //	@tag.name				Database
-//	@tag.description		general info about the API.
+//	@tag.description		Database level related operations.
+//	@tag.name				Table
+//	@tag.description		Table Level related operations.
 //
 //	@servers.url			http://localhost:5522
 //	@servers.description	Home town of Meta-X

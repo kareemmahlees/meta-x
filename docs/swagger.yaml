@@ -213,7 +213,7 @@ paths:
                 $ref: '#/components/schemas/models.ListTablesResp'
           description: OK
       tags:
-      - Tables
+      - Table
   /table/{tableName}:
     delete:
       parameters:
@@ -236,7 +236,7 @@ paths:
                 $ref: '#/components/schemas/models.SuccessResp'
           description: OK
       tags:
-      - Tables
+      - Table
     post:
       description: create table
       parameters:
@@ -261,7 +261,7 @@ paths:
                 $ref: '#/components/schemas/models.CreateTableResp'
           description: Created
       tags:
-      - Tables
+      - Table
   /table/{tableName}/column/add:
     post:
       description: Add column to table
@@ -287,7 +287,7 @@ paths:
                 $ref: '#/components/schemas/models.SuccessResp'
           description: Created
       tags:
-      - Tables
+      - Table
   /table/{tableName}/column/delete:
     delete:
       description: Delete/Drop table column
@@ -313,7 +313,7 @@ paths:
                 $ref: '#/components/schemas/models.SuccessResp'
           description: OK
       tags:
-      - Tables
+      - Table
   /table/{tableName}/column/modify:
     put:
       description: Update table column
@@ -339,7 +339,7 @@ paths:
                 $ref: '#/components/schemas/models.SuccessResp'
           description: OK
       tags:
-      - Tables
+      - Table
   /table/{tableName}/describe:
     get:
       description: Get detailed info about a specific table
@@ -353,12 +353,14 @@ paths:
                 type: array
           description: OK
       tags:
-      - Tables
+      - Table
 servers:
 - description: Home town of Meta-X
   url: http://localhost:5522
 tags:
 - description: general info about the API.
   name: General
-- description: general info about the API.
+- description: Database level related operations.
   name: Database
+- description: Table Level related operations.
+  name: Table
