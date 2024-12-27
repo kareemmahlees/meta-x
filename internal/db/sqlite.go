@@ -45,7 +45,7 @@ func (p *SqliteProvider) CreateDB(dbName string) error {
 	return errors.New("Unsupported")
 }
 
-func (p *SqliteProvider) GetTable(tableName string) ([]*models.TableInfoResp, error) {
+func (p *SqliteProvider) GetTable(tableName string) ([]*models.TableColumnInfo, error) {
 	queryString := `
 		SELECT name,type,
 			CASE when 'notnull' = 1
@@ -63,9 +63,9 @@ func (p *SqliteProvider) GetTable(tableName string) ([]*models.TableInfoResp, er
 		return nil, err
 	}
 	defer rows.Close()
-	tablesDescriptions := []*models.TableInfoResp{}
+	tablesDescriptions := []*models.TableColumnInfo{}
 	for rows.Next() {
-		tableDesc := new(models.TableInfoResp)
+		tableDesc := new(models.TableColumnInfo)
 		err := rows.StructScan(tableDesc)
 		if err != nil {
 			return nil, err

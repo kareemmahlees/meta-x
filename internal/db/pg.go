@@ -46,7 +46,7 @@ func (p *pgProvider) CreateDB(dbName string) error {
 	return nil
 }
 
-func (p *pgProvider) GetTable(tableName string) ([]*models.TableInfoResp, error) {
+func (p *pgProvider) GetTable(tableName string) ([]*models.TableColumnInfo, error) {
 	queryString := `
 		SELECT col.column_name AS name,
 			col.data_type AS type,
@@ -61,9 +61,9 @@ func (p *pgProvider) GetTable(tableName string) ([]*models.TableInfoResp, error)
 		return nil, err
 	}
 	defer rows.Close()
-	tablesDescriptions := []*models.TableInfoResp{}
+	tablesDescriptions := []*models.TableColumnInfo{}
 	for rows.Next() {
-		tableDesc := new(models.TableInfoResp)
+		tableDesc := new(models.TableColumnInfo)
 		err := rows.StructScan(tableDesc)
 		if err != nil {
 			return nil, err

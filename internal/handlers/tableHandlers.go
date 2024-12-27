@@ -49,11 +49,14 @@ func (h *TableHandler) handleListTables(w http.ResponseWriter, r *http.Request) 
 
 // Get detailed info about the specified table
 //
+//	@summary		Get table info
+//	@description	Get detailed info about a table's fields.
 //	@tags			Table
-//	@description	Get detailed info/schema of a specific table.
-//	@router			/table/{tableName}/describe [get]
+//	@router			/table/{table_name}/describe [get]
+//	@param			table_name	path	string	true	"Table Name"
 //	@produce		json
-//	@success		200	{object}	[]models.TableInfoResp
+//	@success		200	{array}		models.TableColumnInfo
+//	@failure		500	{object}	models.InternalServerError
 func (h *TableHandler) handleGetTableInfo(w http.ResponseWriter, r *http.Request) {
 	params := struct {
 		TableName string `validate:"required,alpha"`

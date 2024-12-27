@@ -14,7 +14,7 @@ type DatabaseExecuter interface {
 // Interface that must be implemented by any
 // storage driver dealing with table logic
 type TableExecuter interface {
-	GetTable(tableName string) ([]*models.TableInfoResp, error)
+	GetTable(tableName string) ([]*models.TableColumnInfo, error)
 	ListTables() ([]*string, error)
 	CreateTable(tableName string, data []models.CreateTablePayload) error
 	DeleteTable(tableName string) error
