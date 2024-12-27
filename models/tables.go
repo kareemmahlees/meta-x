@@ -33,7 +33,7 @@ type CreateTablePayload struct {
 //
 // @description Table Created Successfully.
 type CreateTableResp struct {
-	Created string `json:"created"`
+	Created string `json:"created"` // Created table name.
 }
 
 // Add/Modify a column payload.

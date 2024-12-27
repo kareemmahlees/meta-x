@@ -209,6 +209,7 @@ func (h *TableHandler) handleModifyColumn(w http.ResponseWriter, r *http.Request
 // Updates a table by deleting/dropping a column
 //
 //	@tags			Table
+//	@summary		Delete Column
 //	@description	Delete table column
 //	@router			/table/{table_name}/column/delete [delete]
 //	@param			table_name	path	string						true	"Table Name"
