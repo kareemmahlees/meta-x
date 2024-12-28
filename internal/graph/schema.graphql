@@ -3,20 +3,25 @@
 # https://gqlgen.com/getting-started/
 
 type Query {
-  "returns a list of all databases"
+  "Returns a list of all available databases"
   databases: [String]
-  "return a list of all tables"
+  "Return a list of all available tables"
   tables: [String]
-  "returns the info of a single table"
-  table(name: String): [TableInfo]
+  "Returns info about the columns of a table"
+  table(name: String): [ColumnInfo]
 }
 
-"Table info like field name returned from table query"
-type TableInfo {
+"Several info about a table column"
+type ColumnInfo {
+  "Column name"
   name: String
+  "Column data type"
   type: String
+  "If the table accepts null values or not"
   nullable: String
+  "Constraint name of the column, e.g PRI"
   key: Any
+  "Column default value"
   default: Any
 }
 
