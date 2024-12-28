@@ -31,6 +31,7 @@ func (s *Server) Serve() error {
 	h := graphQlHandler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{Storage: s.storage}}))
 
 	s.router.Use(middleware.Logger)
+	s.router.Use(middleware.Heartbeat("/health"))
 	s.router.Post("/graphql", h.ServeHTTP)
 	s.router.Get("/playground", playground.ApolloSandboxHandler("GraphQL", "/graphql"))
 	s.router.HandleFunc("/spec", func(w http.ResponseWriter, r *http.Request) {

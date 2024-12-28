@@ -23,7 +23,7 @@ func (r *mutationResolver) CreateDatabase(ctx context.Context, name string) (*mo
 }
 
 // CreateTable is the resolver for the createTable field.
-func (r *mutationResolver) CreateTable(ctx context.Context, name string, data []*model.CreateTableData) (*model.CreateTableResponse, error) {
+func (r *mutationResolver) CreateTable(ctx context.Context, name string, data []*model.CreateColumnData) (*model.CreateTableResponse, error) {
 	convertedData := []models.CreateTablePayload{}
 	for _, props := range data {
 		convertedData = append(convertedData, models.CreateTablePayload{
@@ -113,18 +113,18 @@ func (r *queryResolver) Tables(ctx context.Context) ([]*string, error) {
 }
 
 // Table is the resolver for the table field.
-func (r *queryResolver) Table(ctx context.Context, name *string) ([]*model.TableInfo, error) {
+func (r *queryResolver) Table(ctx context.Context, name *string) ([]*model.ColumnInfo, error) {
 	result, err := r.Storage.GetTable(*name)
 	if err != nil {
 		return nil, err
 	}
-	var tableInfo []*model.TableInfo
+	var tableInfo []*model.ColumnInfo
 	for _, info := range result {
 		name := info.Name
 		dataType := info.Type
 		nullable := info.Nullable
 		key := info.Key
-		mod := &model.TableInfo{
+		mod := &model.ColumnInfo{
 			Name:     &name,
 			Type:     &dataType,
 			Nullable: &nullable,

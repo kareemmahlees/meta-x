@@ -1,7 +1,8 @@
 package models
 
+//	@description	A list of all available databases.
 type ListDatabasesResp struct {
-	Databases []*string
+	Databases []*string `json:"databases" example:"test,prod,main"`
 }
 
 type AttachSqliteDBPayload struct {
@@ -10,5 +11,5 @@ type AttachSqliteDBPayload struct {
 }
 
 type CreatePgMySqlDBPayload struct {
-	Name string `json:"name" validate:"required,alphanum"`
+	Name string `json:"name" validate:"required,alphanum" example:"Users"` // Database name.
 }

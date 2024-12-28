@@ -20,7 +20,7 @@ func (ms *MockStorage) ListDBs() ([]*string, error) {
 func (ms *MockStorage) CreateDB(dbName string) error {
 	return nil
 }
-func (ms *MockStorage) GetTable(tableName string) ([]*models.TableInfoResp, error) {
+func (ms *MockStorage) GetTable(tableName string) ([]*models.TableColumnInfo, error) {
 	return nil, nil
 }
 func (ms *MockStorage) ListTables() ([]*string, error) {

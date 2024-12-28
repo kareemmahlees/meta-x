@@ -343,13 +343,13 @@ func NewMockTableExecutor() *MockTableExecutor {
 	return &MockTableExecutor{}
 }
 
-func (ms *MockTableExecutor) GetTable(tableName string) ([]*models.TableInfoResp, error) {
-	tableInfo := models.TableInfoResp{
+func (ms *MockTableExecutor) GetTable(tableName string) ([]*models.TableColumnInfo, error) {
+	tableInfo := models.TableColumnInfo{
 		Name:     "name",
 		Type:     "varchar(255)",
 		Nullable: "Yes",
 	}
-	return []*models.TableInfoResp{&tableInfo}, nil
+	return []*models.TableColumnInfo{&tableInfo}, nil
 }
 func (ms *MockTableExecutor) ListTables() ([]*string, error) {
 	table := "test"
@@ -379,7 +379,7 @@ func NewFaultyTableExecutor() *FaultyTableExecutor {
 
 var err = errors.New("error")
 
-func (ms *FaultyTableExecutor) GetTable(tableName string) ([]*models.TableInfoResp, error) {
+func (ms *FaultyTableExecutor) GetTable(tableName string) ([]*models.TableColumnInfo, error) {
 	return nil, err
 }
 func (ms *FaultyTableExecutor) ListTables() ([]*string, error) {

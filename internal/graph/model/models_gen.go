@@ -2,37 +2,54 @@
 
 package model
 
+// Data used when adding or updating a column
 type AddUpdateColumnData struct {
+	// Column name
 	ColName *string `json:"colName,omitempty"`
-	Type    *string `json:"type,omitempty"`
+	// Column data type
+	Type *string `json:"type,omitempty"`
 }
 
-type CreateTableData struct {
-	ColName  *string     `json:"colName,omitempty"`
-	Type     *string     `json:"type,omitempty"`
-	Nullable *bool       `json:"nullable,omitempty"`
-	Default  interface{} `json:"default,omitempty"`
-	Unique   *bool       `json:"unique,omitempty"`
+// Several info about a table column
+type ColumnInfo struct {
+	// Column name
+	Name *string `json:"name,omitempty"`
+	// Column data type
+	Type *string `json:"type,omitempty"`
+	// If the table accepts null values or not
+	Nullable *string `json:"nullable,omitempty"`
+	// Constraint name of the column, e.g PRI
+	Key interface{} `json:"key,omitempty"`
+	// Column default value
+	Default interface{} `json:"default,omitempty"`
 }
 
+// General data about the column to create
+type CreateColumnData struct {
+	// Column name
+	ColName *string `json:"colName,omitempty"`
+	// Data type of the column
+	Type *string `json:"type,omitempty"`
+	// Wether the column accepts null values
+	Nullable *bool `json:"nullable,omitempty"`
+	// Default value of the column
+	Default interface{} `json:"default,omitempty"`
+	// Wether to add unique constraint on the column
+	Unique *bool `json:"unique,omitempty"`
+}
+
+// Table created successfully
 type CreateTableResponse struct {
-	// name of created table
+	// Name of created table
 	Created string `json:"created"`
 }
 
 type DeleteColumnData struct {
+	// Deleted column name
 	ColName *string `json:"colName,omitempty"`
 }
 
+// Generic operation success response
 type SuccessResponse struct {
 	Success bool `json:"success"`
-}
-
-// Table info like field name returned from table query
-type TableInfo struct {
-	Name     *string     `json:"name,omitempty"`
-	Type     *string     `json:"type,omitempty"`
-	Nullable *string     `json:"nullable,omitempty"`
-	Key      interface{} `json:"key,omitempty"`
-	Default  interface{} `json:"default,omitempty"`
 }

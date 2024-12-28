@@ -43,7 +43,7 @@ func (p *mysqlProvider) CreateDB(dbName string) error {
 	}
 	return nil
 }
-func (p *mysqlProvider) GetTable(tableName string) ([]*models.TableInfoResp, error) {
+func (p *mysqlProvider) GetTable(tableName string) ([]*models.TableColumnInfo, error) {
 	queryString := `
 		SELECT column_name AS name,
 			column_type AS type,
@@ -58,9 +58,9 @@ func (p *mysqlProvider) GetTable(tableName string) ([]*models.TableInfoResp, err
 		return nil, err
 	}
 	defer rows.Close()
-	tablesDescriptions := []*models.TableInfoResp{}
+	tablesDescriptions := []*models.TableColumnInfo{}
 	for rows.Next() {
-		tableDesc := new(models.TableInfoResp)
+		tableDesc := new(models.TableColumnInfo)
 		err := rows.StructScan(tableDesc)
 		if err != nil {
 			return nil, err

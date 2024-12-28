@@ -14,7 +14,15 @@ import (
 //	@description			A RESTFull and GraphQL API to supercharge your database
 //	@contact.name			Kareem Ebrahim
 //	@contact.email			kareemmahlees@gmail.com
-//	@servers.url			localhost:5522
+//
+//	@tag.name				General
+//	@tag.description		general info about the API.
+//	@tag.name				Database
+//	@tag.description		Database level related operations.
+//	@tag.name				Table
+//	@tag.description		Table Level related operations.
+//
+//	@servers.url			http://localhost:5522
 //	@servers.description	Home town of Meta-X
 func main() {
 	cmd.Execute()

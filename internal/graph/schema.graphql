@@ -3,61 +3,81 @@
 # https://gqlgen.com/getting-started/
 
 type Query {
-  "returns a list of all databases"
+  "Returns a list of all available databases"
   databases: [String]
-  "return a list of all tables"
+  "Return a list of all available tables"
   tables: [String]
-  "returns the info of a single table"
-  table(name: String): [TableInfo]
+  "Returns info about the columns of a table"
+  table(name: String): [ColumnInfo]
 }
 
-"Table info like field name returned from table query"
-type TableInfo {
+"Several info about a table column"
+type ColumnInfo {
+  "Column name"
   name: String
+  "Column data type"
   type: String
+  "If the table accepts null values or not"
   nullable: String
+  "Constraint name of the column, e.g PRI"
   key: Any
+  "Column default value"
   default: Any
 }
 
 type Mutation {
-  "creates a database with the specified name"
+  "Creates a database with the specified name"
   createDatabase(name: String!): SuccessResponse
-  "creates a table with the specified name"
-  createTable(name: String!, data: [CreateTableData!]!): CreateTableResponse
-  "deletes the table by name"
+  "Creates a table with the specified name and columns info"
+  createTable(name: String!, data: [CreateColumnData!]!): CreateTableResponse
+  "Deletes specified table"
   deleteTable(name: String!): SuccessResponse
-  "updated the table by name"
   # updateTable(name: String!, prop: UpdateTableData): SuccessResponse
+  "Add a new column to the table"
   addColumn(tableName: String!, data: AddUpdateColumnData!): SuccessResponse
+  "Modifies a column datatype"
   modifyColumn(tableName: String!, data: AddUpdateColumnData!): SuccessResponse
+  "Deletes a column"
   deleteColumn(tableName: String!, data: DeleteColumnData): SuccessResponse
 }
 
-input CreateTableData {
+"General data about the column to create"
+input CreateColumnData {
+  "Column name"
   colName: String
+  "Data type of the column"
   type: String
+  "Wether the column accepts null values"
   nullable: Boolean
+  "Default value of the column"
   default: Any
+  "Wether to add unique constraint on the column"
   unique: Boolean
 }
 
+"Table created successfully"
 type CreateTableResponse {
-  "name of created table"
+  "Name of created table"
   created: String!
 }
 
+"Data used when adding or updating a column"
 input AddUpdateColumnData {
+  "Column name"
   colName: String
+  "Column data type"
   type: String
 }
 
 input DeleteColumnData {
+  "Deleted column name"
   colName: String
 }
 
+"Generic operation success response"
 type SuccessResponse {
   success: Boolean!
 }
 
+"The `Any` scalar type represent any value/data-type"
 scalar Any
