@@ -1,42 +1,35 @@
 package handlers
 
 import (
-	"github.com/danielgtaylor/huma/v2"
+	"net/http"
+	"testing"
+
+	"github.com/danielgtaylor/huma/v2/humatest"
 	"github.com/stretchr/testify/suite"
 )
 
 type DefaultHandlerTestSuite struct {
 	suite.Suite
-	api     huma.API
+	api     humatest.TestAPI
 	handler *DefaultHandler
 }
 
-// func (suite *DefaultHandlerTestSuite) SetupSuite() {
-// 	r := chi.NewRouter()
-// 	handler := NewDefaultHandler()
-// 	handler.RegisterRoutes(api)
+func (suite *DefaultHandlerTestSuite) SetupSuite() {
+	_, api := humatest.New(suite.T())
+	handler := NewDefaultHandler()
+	handler.RegisterRoutes(api)
 
-// 	suite.r = r
-// 	suite.handler = handler
-// }
+	suite.api = api
+	suite.handler = handler
+}
 
-// func (suite *DefaultHandlerTestSuite) TestRegisterDefaultRoutes() {
-// 	assert := suite.Assert()
+func (suite *DefaultHandlerTestSuite) TestAPIInfo() {
+	assert := suite.Assert()
+	resp := suite.api.Get("/")
 
-// 	var routes []string
-// 	for _, route := range suite.r.Routes() {
-// 		routes = append(routes, route.Pattern)
-// 	}
+	assert.Equal(http.StatusOK, resp.Code)
+}
 
-// 	assert.Contains(routes, "/")
-// }
-
-// func (suite *DefaultHandlerTestSuite) TestAPIInfo() {
-// 	assert := suite.Assert()
-
-// 	assert.HTTPSuccess(suite.handler.apiInfo, http.MethodGet, "/", nil)
-// }
-
-// func TestDefaultHandlerTestSuite(t *testing.T) {
-// 	suite.Run(t, new(DefaultHandlerTestSuite))
-// }
+func TestDefaultHandlerTestSuite(t *testing.T) {
+	suite.Run(t, new(DefaultHandlerTestSuite))
+}
