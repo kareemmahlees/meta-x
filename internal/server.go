@@ -63,9 +63,10 @@ func (s *Server) Serve() error {
 	})
 
 	defaultHandler := handlers.NewDefaultHandler()
-	// dbHandler := handlers.NewDBHandler(s.storage)
+	dbHandler := handlers.NewDBHandler(s.storage)
 	// tableHandler := handlers.NewTableHandler(s.storage)
 	defaultHandler.RegisterRoutes(api)
+	dbHandler.RegisterRoutes(api)
 
 	// s.registerRoutes(defaultHandler, dbHandler, tableHandler)
 

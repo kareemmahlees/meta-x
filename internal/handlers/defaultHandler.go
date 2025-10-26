@@ -19,6 +19,7 @@ func (h *DefaultHandler) RegisterRoutes(api huma.API) {
 		Method:      http.MethodGet,
 		Path:        "/",
 		Summary:     "API Info",
+		Tags:        []string{"Utils"},
 		Description: "General Info about the API, author name, how to contact, etc.",
 	}, h.apiInfo)
 }
