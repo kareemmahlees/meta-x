@@ -64,11 +64,11 @@ func (s *Server) Serve() error {
 
 	defaultHandler := handlers.NewDefaultHandler()
 	dbHandler := handlers.NewDBHandler(s.storage)
-	// tableHandler := handlers.NewTableHandler(s.storage)
+	tableHandler := handlers.NewTableHandler(s.storage)
+
 	defaultHandler.RegisterRoutes(api)
 	dbHandler.RegisterRoutes(api)
-
-	// s.registerRoutes(defaultHandler, dbHandler, tableHandler)
+	tableHandler.RegisterRoutes(api)
 
 	slog.Info("Server started listening", "port", s.port)
 
@@ -80,9 +80,3 @@ func (s *Server) Serve() error {
 	}
 	return nil
 }
-
-// func (s *Server) registerRoutes(handlers ...handlers.Handler) {
-// 	for _, h := range handlers {
-// 		h.RegisterRoutes(s.router)
-// 	}
-// }

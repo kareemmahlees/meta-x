@@ -1,11 +1,11 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/kareemmahlees/meta-x/internal/db"
-	"github.com/kareemmahlees/meta-x/lib"
 	"github.com/kareemmahlees/meta-x/models"
 )
 
@@ -17,263 +17,171 @@ func NewTableHandler(storage db.TableExecuter) *TableHandler {
 	return &TableHandler{storage}
 }
 
-func (h *TableHandler) RegisterRoutes(r *chi.Mux) {
-	r.Route("/table", func(r chi.Router) {
-		r.Get("/", h.handleListTables)
-		r.Get("/{tableName}/describe", h.handleGetTableInfo)
-		r.Post("/{tableName}", h.handleCreateTable)
-		r.Delete("/{tableName}", h.handleDeleteTable)
-		r.Post("/{tableName}/column/add", h.handleAddColumn)
-		r.Put("/{tableName}/column/modify", h.handleModifyColumn)
-		r.Delete("/{tableName}/column/delete", h.handleDeleteColumn)
-	})
+func (h *TableHandler) RegisterRoutes(api huma.API) {
+	group := huma.NewGroup(api, "/tables")
+	huma.Register(group, huma.Operation{
+		OperationID: "list-tables",
+		Method:      http.MethodGet,
+		Path:        "/",
+		Summary:     "List tables",
+		Description: "Get a list of the available tables in the database",
+		Tags:        []string{"Table"},
+	}, h.handleListTables)
+	huma.Register(group, huma.Operation{
+		OperationID: "get-table-info",
+		Method:      http.MethodGet,
+		Path:        "/{tableName}",
+		Summary:     "Get table info",
+		Description: "Get detailed info about a table's fields",
+		Tags:        []string{"Table"},
+	}, h.handleGetTableInfo)
+	huma.Register(group, huma.Operation{
+		OperationID:   "create-table",
+		Method:        http.MethodPost,
+		Path:          "/{tableName}",
+		Summary:       "Create a table",
+		Description:   "Creates a new table with the specified columns",
+		Tags:          []string{"Table"},
+		DefaultStatus: http.StatusCreated,
+	}, h.handleCreateTable)
+	huma.Register(group, huma.Operation{
+		OperationID: "delete-table",
+		Method:      http.MethodDelete,
+		Path:        "/{tableName}",
+		Summary:     "Delete table",
+		Description: "Delete the given table",
+		Tags:        []string{"Table"},
+	}, h.handleDeleteTable)
+	huma.Register(group, huma.Operation{
+		OperationID:   "add-column",
+		Method:        http.MethodPost,
+		Path:          "/{tableName}/column/add",
+		Summary:       "Add a column",
+		Description:   "Adds a column with the provided data to the given table",
+		Tags:          []string{"Table", "Column"},
+		DefaultStatus: http.StatusCreated,
+	}, h.handleAddColumn)
+	huma.Register(group, huma.Operation{
+		OperationID: "alter-column",
+		Method:      http.MethodPut,
+		Path:        "/{tableName}/column/alter",
+		Summary:     "Update column",
+		Description: "Update table column properties, **Only supports updating the column type for now**",
+		Tags:        []string{"Table", "Column"},
+	}, h.handleAlterColumn)
+	huma.Register(group, huma.Operation{
+		OperationID: "drop-column",
+		Method:      http.MethodDelete,
+		Path:        "/{tableName}/column/drop",
+		Summary:     "Delete Column",
+		Tags:        []string{"Table", "Column"},
+	}, h.handleDropColumn)
 }
 
-// Lists all tables in the database
-//
-//	@summary		List tables.
-//	@description	Get a list of the available tables in the database.
-//	@tags			Table
-//	@router			/table [get]
-//	@produce		json
-//	@success		200	{object}	models.ListTablesResp
-//	@failure		500	{object}	models.InternalServerError
-func (h *TableHandler) handleListTables(w http.ResponseWriter, r *http.Request) {
+type SuccessOutput struct {
+	Body models.SuccessResp
+}
+
+type ListTablesOutput struct {
+	Body models.ListTablesResp
+}
+
+func (h *TableHandler) handleListTables(ctx context.Context, input *struct{}) (*ListTablesOutput, error) {
 	tables, err := h.storage.ListTables()
 	if err != nil {
-		httpError(w, http.StatusInternalServerError, err.Error())
-		return
+		return nil, huma.Error500InternalServerError("Something went wrong")
 	}
-	writeJson(w, models.ListTablesResp{Tables: tables})
+	return &ListTablesOutput{
+		Body: models.ListTablesResp{Tables: tables},
+	}, nil
 }
 
-// Get detailed info about the specified table
-//
-//	@summary		Get table info
-//	@description	Get detailed info about a table's fields.
-//	@tags			Table
-//	@router			/table/{table_name}/describe [get]
-//	@param			table_name	path	string	true	"Table Name"
-//	@produce		json
-//	@success		200	{array}		models.TableColumnInfo
-//	@failure		500	{object}	models.InternalServerError
-func (h *TableHandler) handleGetTableInfo(w http.ResponseWriter, r *http.Request) {
-	params := struct {
-		TableName string `validate:"required,alpha"`
-	}{
-		TableName: chi.URLParam(r, "tableName"),
-	}
-
-	if errs := lib.ValidateStruct(&params); len(errs) > 0 {
-		httpError(w, http.StatusBadRequest, errs)
-		return
-	}
-	tableInfo, err := h.storage.GetTable(params.TableName)
-	if err != nil {
-		httpError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	writeJson(w, tableInfo)
+type GetTableInfoInput struct {
+	TableName string `path:"tableName"`
+}
+type GetTableInfoOutput struct {
+	Body []*models.TableColumnInfo
 }
 
-// Creates a Table
-//
-//	@tags			Table
-//	@summary		Create a Table.
-//	@description	Creates a new table with the specified columns.
-//	@router			/table/{table_name} [post]
-//	@param			table_name	path	string						true	"Table Name"
-//	@param			table_data	body	[]models.CreateTablePayload	true	"Table Data"
-//	@accept			json
-//	@produce		json
-//	@success		201	{object}	models.CreateTableResp
-//	@failure		400	{object}	models.BadRequestError
-//	@failure		422	{object}	models.UnprocessableEntityError
-//	@failure		500	{object}	models.InternalServerError
-func (h *TableHandler) handleCreateTable(w http.ResponseWriter, r *http.Request) {
-	params := struct {
-		TableName string `validate:"required,alphanum"`
-	}{
-		TableName: chi.URLParam(r, "tableName"),
-	}
-	if errs := lib.ValidateStruct(&params); len(errs) > 0 {
-		httpError(w, http.StatusBadRequest, errs)
-		return
-	}
-	var payload []models.CreateTablePayload
-	if err := parseBody(r.Body, &payload); err != nil {
-		httpError(w, http.StatusUnprocessableEntity, err.Error())
-		return
-	}
-	for _, v := range payload {
-		if errs := lib.ValidateStruct(v); len(errs) > 0 {
-			httpError(w, http.StatusBadRequest, errs)
-			return
-		}
-	}
-	err := h.storage.CreateTable(params.TableName, payload)
+func (h *TableHandler) handleGetTableInfo(ctx context.Context, input *GetTableInfoInput) (*GetTableInfoOutput, error) {
+	tableInfo, err := h.storage.GetTable(input.TableName)
 	if err != nil {
-		httpError(w, http.StatusInternalServerError, err.Error())
-		return
+		return nil, huma.Error500InternalServerError("Something went wrong")
 	}
-
-	w.WriteHeader(http.StatusCreated)
-	writeJson(w, models.CreateTableResp{Created: params.TableName})
+	return &GetTableInfoOutput{
+		Body: tableInfo,
+	}, nil
 }
 
-// Updates a table by adding a column
-//
-//	@tags			Table
-//	@summary		Add a column
-//	@description	Adds a column with the provided data to the given table.
-//	@router			/table/{table_name}/column/add [post]
-//	@param			table_name	path	string							true	"Table Name"
-//	@param			column_data	body	models.AddModifyColumnPayload	true	"Column Data"
-//	@accept			json
-//	@produce		json
-//	@success		201	{object}	models.SuccessResp
-//	@failure		400	{object}	models.BadRequestError
-//	@failure		422	{object}	models.UnprocessableEntityError
-//	@failure		500	{object}	models.InternalServerError
-func (h *TableHandler) handleAddColumn(w http.ResponseWriter, r *http.Request) {
-	params := struct {
-		TableName string `validate:"required,alphanum"`
-	}{
-		TableName: chi.URLParam(r, "tableName"),
-	}
-	if errs := lib.ValidateStruct(&params); len(errs) > 0 {
-		httpError(w, http.StatusBadRequest, errs)
-		return
-	}
-	var payload models.AddModifyColumnPayload
-	if err := parseBody(r.Body, &payload); err != nil {
-		httpError(w, http.StatusUnprocessableEntity, err.Error())
-		return
-	}
-	if errs := lib.ValidateStruct(&payload); len(errs) > 0 {
-		httpError(w, http.StatusBadRequest, errs)
-		return
-	}
-	err := h.storage.AddColumn(params.TableName, payload)
-	if err != nil {
-		httpError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-	writeJson(w, models.SuccessResp{Success: true})
+type CreateTableInput struct {
+	GetTableInfoInput
+	Body []models.CreateTablePayload
+}
+type CreateTableOutput struct {
+	Body models.CreateTableResp
 }
 
-// Updates a table by modifying a column
-//
-//	@tags			Table
-//	@summary		Update Column
-//	@description	Update table column properties, **Only supports updating the column type for now**.
-//	@router			/table/{table_name}/column/modify [put]
-//	@param			table_name	path	string							true	"Table Name"
-//	@param			column_data	body	models.AddModifyColumnPayload	true	"Column Data"
-//	@accept			json
-//	@produce		json
-//	@success		200	{object}	models.SuccessResp
-//	@failure		400	{object}	models.BadRequestError
-//	@failure		422	{object}	models.UnprocessableEntityError
-//	@failure		500	{object}	models.InternalServerError
-func (h *TableHandler) handleModifyColumn(w http.ResponseWriter, r *http.Request) {
-	params := struct {
-		TableName string `validate:"required,alphanum"`
-	}{
-		TableName: chi.URLParam(r, "tableName"),
+func (h *TableHandler) handleCreateTable(ctx context.Context, input *CreateTableInput) (*CreateTableOutput, error) {
+	err := h.storage.CreateTable(input.TableName, input.Body)
+	if err != nil {
+		return nil, huma.Error500InternalServerError("Something went wrong")
 	}
 
-	if errs := lib.ValidateStruct(&params); len(errs) > 0 {
-		httpError(w, http.StatusBadRequest, errs)
-		return
-	}
-	var payload models.AddModifyColumnPayload
-	if err := parseBody(r.Body, &payload); err != nil {
-		httpError(w, http.StatusUnprocessableEntity, err.Error())
-		return
-	}
-	if errs := lib.ValidateStruct(&payload); len(errs) > 0 {
-		httpError(w, http.StatusBadRequest, errs)
-		return
-	}
-	err := h.storage.UpdateColumn(params.TableName, payload)
-	if err != nil {
-		httpError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-	writeJson(w, models.SuccessResp{Success: true})
+	return &CreateTableOutput{
+		Body: models.CreateTableResp{Created: input.TableName},
+	}, nil
 }
 
-// Updates a table by deleting/dropping a column
-//
-//	@tags			Table
-//	@summary		Delete Column
-//	@description	Delete table column
-//	@router			/table/{table_name}/column/delete [delete]
-//	@param			table_name	path	string						true	"Table Name"
-//	@param			column_data	body	models.DeleteColumnPayload	true	"Column Name"
-//	@accept			json
-//	@produce		json
-//	@success		200	{object}	models.SuccessResp
-//	@failure		400	{object}	models.BadRequestError
-//	@failure		422	{object}	models.UnprocessableEntityError
-//	@failure		500	{object}	models.InternalServerError
-func (h *TableHandler) handleDeleteColumn(w http.ResponseWriter, r *http.Request) {
-	params := struct {
-		TableName string `params:"tableName" validate:"required,alphanum"`
-	}{
-		TableName: chi.URLParam(r, "tableName"),
-	}
-	if errs := lib.ValidateStruct(&params); len(errs) > 0 {
-		httpError(w, http.StatusBadRequest, errs)
-		return
-	}
-
-	var payload models.DeleteColumnPayload
-	if err := parseBody(r.Body, &payload); err != nil {
-		httpError(w, http.StatusUnprocessableEntity, err.Error())
-		return
-	}
-	if errs := lib.ValidateStruct(&payload); len(errs) > 0 {
-		httpError(w, http.StatusBadRequest, errs)
-		return
-	}
-	err := h.storage.DeleteColumn(params.TableName, payload)
-	if err != nil {
-		httpError(w, http.StatusInternalServerError, err)
-		return
-	}
-	writeJson(w, models.SuccessResp{Success: true})
+type AddColumnInput struct {
+	GetTableInfoInput
+	Body models.AddModifyColumnPayload
 }
 
-// Deletes a table
-//
-//	@tags			Table
-//	@summary		Delete Table
-//	@description	Delete the given table.
-//	@router			/table/{table_name} [delete]
-//	@param			table_name	path	string	true	"Table Name"
-//	@accept			json
-//	@produce		json
-//	@success		200	{object}	models.SuccessResp
-//	@failure		500	{object}	models.InternalServerError
-func (h *TableHandler) handleDeleteTable(w http.ResponseWriter, r *http.Request) {
-	params := struct {
-		TableName string `params:"tableName" validate:"required,alpha"`
-	}{
-		TableName: chi.URLParam(r, "tableName"),
-	}
-	if errs := lib.ValidateStruct(&params); len(errs) > 0 {
-		httpError(w, http.StatusBadRequest, errs)
-		return
+func (h *TableHandler) handleAddColumn(ctx context.Context, input *AddColumnInput) (*SuccessOutput, error) {
+	err := h.storage.AddColumn(input.TableName, input.Body)
+	if err != nil {
+		return nil, huma.Error500InternalServerError("Something went wrong")
 	}
 
-	err := h.storage.DeleteTable(params.TableName)
+	return &SuccessOutput{Body: models.SuccessResp{Success: true}}, nil
+}
+
+type AlterColumnInput struct {
+	GetTableInfoInput
+	Body models.AddModifyColumnPayload
+}
+
+func (h *TableHandler) handleAlterColumn(ctx context.Context, input *AlterColumnInput) (*SuccessOutput, error) {
+	err := h.storage.UpdateColumn(input.TableName, input.Body)
 	if err != nil {
-		httpError(w, http.StatusInternalServerError, err.Error())
-		return
+		return nil, huma.Error500InternalServerError("Something went wrong")
 	}
-	writeJson(w, models.SuccessResp{Success: true})
+	return &SuccessOutput{Body: models.SuccessResp{Success: true}}, nil
+}
+
+type DropColumnInput struct {
+	GetTableInfoInput
+	Body models.DeleteColumnPayload
+}
+
+func (h *TableHandler) handleDropColumn(ctx context.Context, input *DropColumnInput) (*SuccessOutput, error) {
+	err := h.storage.DeleteColumn(input.TableName, input.Body)
+	if err != nil {
+		return nil, huma.Error500InternalServerError("Something went wrong")
+	}
+	return &SuccessOutput{models.SuccessResp{Success: true}}, nil
+}
+
+type DeleteTableInput struct {
+	GetTableInfoInput
+}
+
+func (h *TableHandler) handleDeleteTable(ctx context.Context, input *DeleteTableInput) (*SuccessOutput, error) {
+	err := h.storage.DeleteTable(input.TableName)
+	if err != nil {
+		return nil, huma.Error500InternalServerError("Something went wrong")
+	}
+	return &SuccessOutput{
+		Body: models.SuccessResp{Success: true},
+	}, nil
 }
