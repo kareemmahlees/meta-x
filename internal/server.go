@@ -7,7 +7,8 @@ import (
 
 	graphQlHandler "github.com/99designs/gqlgen/graphql/handler"
 	"github.com/99designs/gqlgen/graphql/playground"
-	"github.com/MarceloPetrucio/go-scalar-api-reference"
+	"github.com/danielgtaylor/huma/v2"
+	"github.com/danielgtaylor/huma/v2/adapters/humachi"
 	"github.com/go-chi/chi/v5"
 	"github.com/go-chi/chi/v5/middleware"
 	"github.com/kareemmahlees/meta-x/internal/db"
@@ -23,45 +24,44 @@ type Server struct {
 }
 
 func NewServer(storage db.Storage, port int, listenCh chan bool) *Server {
-	r := chi.NewRouter()
-	return &Server{storage, r, listenCh, port}
+	router := chi.NewMux()
+	router.Use(middleware.Logger)
+	router.Use(middleware.Heartbeat("/health"))
+	return &Server{storage, router, listenCh, port}
 }
 
 func (s *Server) Serve() error {
-	h := graphQlHandler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{Storage: s.storage}}))
+	api := humachi.New(s.router, huma.DefaultConfig("MetaX", "1.0.0"))
+	gqlHandler := graphQlHandler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{Storage: s.storage}}))
 
-	s.router.Use(middleware.Logger)
-	s.router.Use(middleware.Heartbeat("/health"))
-	s.router.Post("/graphql", h.ServeHTTP)
+	s.router.Post("/graphql", gqlHandler.ServeHTTP)
 	s.router.Get("/playground", playground.ApolloSandboxHandler("GraphQL", "/graphql"))
-	s.router.HandleFunc("/spec", func(w http.ResponseWriter, r *http.Request) {
-		http.ServeFile(w, r, "docs/swagger.json")
-	})
-	s.router.Get("/reference", func(w http.ResponseWriter, r *http.Request) {
-		htmlContent, err := scalar.ApiReferenceHTML(&scalar.Options{
-			// Because the scalar client has some problems with path resolution on windows
-			// we use the direct spec url.
-			SpecURL: fmt.Sprintf("http://localhost:%d/spec", s.port),
-			CustomOptions: scalar.CustomOptions{
-				PageTitle: "MetaX",
-			},
-			DarkMode: true,
-		})
-
-		if err != nil {
-			fmt.Printf("%v", err)
-		}
-
-		fmt.Fprintln(w, htmlContent)
+	s.router.Get("/docs", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Content-Type", "text/html")
+		w.Write([]byte(`<!doctype html>
+<html>
+  <head>
+    <title>API Reference</title>
+    <meta charset="utf-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1" />
+  </head>
+  <body>
+    <script
+      id="api-reference"
+      data-url="/openapi.json"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@scalar/api-reference"></script>
+  </body>
+</html>`))
 	})
 
 	defaultHandler := handlers.NewDefaultHandler()
-	dbHandler := handlers.NewDBHandler(s.storage)
-	tableHandler := handlers.NewTableHandler(s.storage)
+	// dbHandler := handlers.NewDBHandler(s.storage)
+	// tableHandler := handlers.NewTableHandler(s.storage)
+	defaultHandler.RegisterRoutes(api)
 
-	defaultHandler.RegisterRoutes(s.router)
-	dbHandler.RegisterRoutes(s.router)
-	tableHandler.RegisterRoutes(s.router)
+	// s.registerRoutes(defaultHandler, dbHandler, tableHandler)
 
 	slog.Info("Server started listening", "port", s.port)
 
@@ -73,3 +73,9 @@ func (s *Server) Serve() error {
 	}
 	return nil
 }
+
+// func (s *Server) registerRoutes(handlers ...handlers.Handler) {
+// 	for _, h := range handlers {
+// 		h.RegisterRoutes(s.router)
+// 	}
+// }
