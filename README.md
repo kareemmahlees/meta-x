@@ -30,10 +30,6 @@ Make sure you add the executable to your `PATH` environment variable.
   go install github.com/kareemmahlees/meta-x
   ```
 
-## Announcements 🎉
-
-MetaX binary size is now 25% smaller 🔥
-
 ## Running
 
 Once you [installed](#installation) the binary, _MetaX_ comes with subocommands to each you can supply your database connection parameters as command line flags.
@@ -52,7 +48,7 @@ meta-x --port 4444
 
 ## Documentation
 
-The API is fully documented, the REST version is documented using **Swagger Docs** and is served on `http://localhost:5522/swagger`
+The API is fully documented, the REST version is documented using **Swagger Docs** and is served on `http://localhost:5522/docs`
 
 Regarding the GraphQL version, you can run the application and then use the GraphQL endpoint `http://localhost:5522/graphql` to introspect the schema with your favorite tool, e.g postman, insomnia, hoppscotch.
 
