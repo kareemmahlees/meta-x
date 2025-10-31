@@ -1,15 +1,11 @@
 package utils
 
 import (
-	"bytes"
 	"context"
 	"encoding/json"
 	"io"
-	"net/http"
-	"net/http/httptest"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/testcontainers/testcontainers-go"
 	"github.com/testcontainers/testcontainers-go/modules/mysql"
 	"github.com/testcontainers/testcontainers-go/modules/postgres"
@@ -71,15 +67,6 @@ func CreateMySQLContainer(ctx context.Context) (*MySQLContainer, error) {
 	}, nil
 }
 
-func EncodeBody[T any](body T) (*bytes.Buffer, error) {
-	var buf bytes.Buffer
-	err := json.NewEncoder(&buf).Encode(body)
-	if err != nil {
-		return nil, err
-	}
-	return &buf, nil
-}
-
 func DecodeBody[K any](body io.ReadCloser) K {
 	var parsedPayload K
 	decoder := json.NewDecoder(body)
@@ -93,11 +80,4 @@ func SliceOfPointersToSliceOfValues[T any](s []*T) []T {
 		v[i] = *p
 	}
 	return v
-}
-
-func TestRequest(r *chi.Mux, method, url string, body io.Reader) *httptest.ResponseRecorder {
-	req, _ := http.NewRequest(method, url, body)
-	rr := httptest.NewRecorder()
-	r.ServeHTTP(rr, req)
-	return rr
 }

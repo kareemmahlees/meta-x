@@ -4,13 +4,11 @@ import (
 	"context"
 	"errors"
 	"io"
-	"net/http"
 	"reflect"
 	"strings"
 	"testing"
 	"time"
 
-	"github.com/go-chi/chi/v5"
 	"github.com/kareemmahlees/meta-x/lib"
 
 	"github.com/jmoiron/sqlx"
@@ -80,17 +78,6 @@ func TestCreateMySQLContainer(t *testing.T) {
 	})
 }
 
-func TestEncodeBody(t *testing.T) {
-	mockBody := "test"
-	encodedBody, err := EncodeBody(mockBody)
-
-	assert.Equal(t, 7, encodedBody.Len())
-	assert.Nil(t, err)
-
-	_, err = EncodeBody(make(chan any)) // make encoding fail
-	assert.NotNil(t, err)
-}
-
 type mockBody struct {
 	Name string `json:"name"`
 	Age  int    `json:"age"`
@@ -154,17 +141,4 @@ func TestSliceOfPointersToSliceOfValues(t *testing.T) {
 	soptsov := SliceOfPointersToSliceOfValues(testSlice)
 
 	assert.IsType(t, reflect.SliceOf(reflect.TypeOf("")), reflect.TypeOf(soptsov))
-}
-
-func TestRequestTest(t *testing.T) {
-	r := chi.NewRouter()
-
-	r.Get("/", func(w http.ResponseWriter, r *http.Request) {
-		w.Write([]byte("Hello"))
-	})
-
-	rr := TestRequest(r, http.MethodGet, "/", http.NoBody)
-
-	assert.Equal(t, rr.Code, http.StatusOK)
-	assert.Equal(t, rr.Body.String(), "Hello")
 }
