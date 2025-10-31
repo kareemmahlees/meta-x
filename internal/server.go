@@ -19,6 +19,7 @@ import (
 type Server struct {
 	storage  db.Storage
 	router   *chi.Mux
+	api      huma.API
 	listenCh chan bool
 	port     int
 }
@@ -27,17 +28,19 @@ func NewServer(storage db.Storage, port int, listenCh chan bool) *Server {
 	router := chi.NewMux()
 	router.Use(middleware.Logger)
 	router.Use(middleware.Heartbeat("/health"))
-	return &Server{storage, router, listenCh, port}
-}
 
-func (s *Server) Serve() error {
 	config := huma.DefaultConfig("MetaX", "0.1.1")
 	config.Info.Description = "A RESTFull and GraphQL API to supercharge your database"
 	config.Info.Contact = &huma.Contact{
 		Name:  "Kareem Ebrahim",
 		Email: "kareemmahlees@gmail.com",
 	}
-	api := humachi.New(s.router, config)
+	api := humachi.New(router, config)
+
+	return &Server{storage, router, api, listenCh, port}
+}
+
+func (s *Server) Serve() error {
 	gqlHandler := graphQlHandler.NewDefaultServer(graph.NewExecutableSchema(graph.Config{Resolvers: &graph.Resolver{Storage: s.storage}}))
 
 	s.router.Post("/graphql", gqlHandler.ServeHTTP)
@@ -66,9 +69,7 @@ func (s *Server) Serve() error {
 	dbHandler := handlers.NewDBHandler(s.storage)
 	tableHandler := handlers.NewTableHandler(s.storage)
 
-	defaultHandler.RegisterRoutes(api)
-	dbHandler.RegisterRoutes(api)
-	tableHandler.RegisterRoutes(api)
+	s.registerHandlers(defaultHandler, dbHandler, tableHandler)
 
 	slog.Info("Server started listening", "port", s.port)
 
@@ -79,4 +80,10 @@ func (s *Server) Serve() error {
 		return err
 	}
 	return nil
+}
+
+func (s *Server) registerHandlers(handlers ...handlers.Handler) {
+	for _, h := range handlers {
+		h.RegisterRoutes(s.api)
+	}
 }
