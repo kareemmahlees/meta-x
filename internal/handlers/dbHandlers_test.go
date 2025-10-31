@@ -2,10 +2,10 @@ package handlers
 
 import (
 	"net/http"
-	"net/http/httptest"
 	"testing"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/danielgtaylor/huma/v2"
+	"github.com/danielgtaylor/huma/v2/humatest"
 	"github.com/kareemmahlees/meta-x/models"
 	"github.com/kareemmahlees/meta-x/utils"
 	"github.com/stretchr/testify/suite"
@@ -27,37 +27,27 @@ func (md *MockDBExecutor) CreateDB(dbName string) error {
 
 type DBHandlerTestSuite struct {
 	suite.Suite
-	r       *chi.Mux
+	api     humatest.TestAPI
 	handler *DBHandler
 }
 
 func (suite *DBHandlerTestSuite) SetupSuite() {
-	r := chi.NewRouter()
+	_, api := humatest.New(suite.T())
 	storage := NewMockDBExecutor()
 
 	handler := NewDBHandler(storage)
-	handler.RegisterRoutes(r)
+	handler.RegisterRoutes(api)
 
-	suite.r = r
+	suite.api = api
 	suite.handler = handler
-}
-
-func (suite *DBHandlerTestSuite) TestRegisterRoutes() {
-	assert := suite.Assert()
-
-	var routes []string
-	for _, route := range suite.r.Routes() {
-		routes = append(routes, route.Pattern)
-	}
-
-	assert.Contains(routes, "/database/*")
 }
 
 func (suite *DBHandlerTestSuite) TestHandleListDatabases() {
 	assert := suite.Assert()
+	resp := suite.api.Get("/database")
 
-	assert.HTTPSuccess(suite.handler.handleListDatabases, http.MethodGet, "/database", nil)
-	assert.HTTPBodyContains(suite.handler.handleListDatabases, http.MethodGet, "/database", nil, "test")
+	assert.Equal(http.StatusOK, resp.Code)
+	assert.Contains(resp.Body.String(), "test")
 }
 
 func (suite *DBHandlerTestSuite) TestHandleCreateDatabase() {
@@ -65,38 +55,25 @@ func (suite *DBHandlerTestSuite) TestHandleCreateDatabase() {
 	t := suite.T()
 
 	t.Run("should pass", func(t *testing.T) {
-		passingBody, _ := utils.EncodeBody(models.CreatePgMySqlDBPayload{
-			Name: "testing",
+		resp := suite.api.Post("/database", map[string]any{
+			"name": "testing",
 		})
-		req, _ := http.NewRequest(http.MethodPost, "/database", passingBody)
-		rr := httptest.NewRecorder()
 
-		handler := http.HandlerFunc(suite.handler.handleCreateDatabase)
-		handler.ServeHTTP(rr, req)
-		assert.Equal(rr.Code, http.StatusCreated)
+		assert.Equal(resp.Code, http.StatusCreated)
 
-		decodedRes := utils.DecodeBody[models.SuccessResp](rr.Result().Body)
+		decodedRes := utils.DecodeBody[models.SuccessResp](resp.Result().Body)
 		assert.True(decodedRes.Success)
 
 	})
 
-	t.Run("should fail unproccessable entity", func(t *testing.T) {
-		assert.HTTPError(suite.handler.handleCreateDatabase, http.MethodPost, "/database", nil)
-	})
-
-	t.Run("should fail bad request", func(t *testing.T) {
-		failingBadRequestBody, _ := utils.EncodeBody(models.CreatePgMySqlDBPayload{
-			Name: "",
+	t.Run("should fail name required", func(t *testing.T) {
+		resp := suite.api.Post("/database", map[string]any{
+			"name": "",
 		})
-		req, _ := http.NewRequest(http.MethodPost, "/database", failingBadRequestBody)
-		rr := httptest.NewRecorder()
+		assert.Equal(resp.Code, http.StatusBadRequest)
 
-		handler := http.HandlerFunc(suite.handler.handleCreateDatabase)
-		handler.ServeHTTP(rr, req)
-		assert.Equal(rr.Code, http.StatusBadRequest)
-
-		decodedRes := utils.DecodeBody[models.ErrResp](rr.Result().Body)
-		assert.Len(decodedRes.Message, 1)
+		decodedRes := utils.DecodeBody[huma.ErrorModel](resp.Result().Body)
+		assert.Contains(decodedRes.Detail, "required")
 	})
 }
 

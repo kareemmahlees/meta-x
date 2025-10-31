@@ -1,11 +1,11 @@
 package handlers
 
 import (
+	"context"
 	"net/http"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/danielgtaylor/huma/v2"
 	"github.com/kareemmahlees/meta-x/internal/db"
-	"github.com/kareemmahlees/meta-x/lib"
 	"github.com/kareemmahlees/meta-x/models"
 )
 
@@ -17,64 +17,54 @@ func NewDBHandler(storage db.DatabaseExecuter) *DBHandler {
 	return &DBHandler{storage}
 }
 
-func (dh *DBHandler) RegisterRoutes(r *chi.Mux) {
-	r.Route("/database", func(r chi.Router) {
-		r.Get("/", dh.handleListDatabases)
-		r.Post("/", dh.handleCreateDatabase)
-	})
+func (h *DBHandler) RegisterRoutes(api huma.API) {
+	group := huma.NewGroup(api, "/database")
+	huma.Register(group, huma.Operation{
+		OperationID: "list-databases",
+		Method:      http.MethodGet,
+		Path:        "/",
+		Summary:     "List Databases",
+		Description: "Get all the available databases",
+		Tags:        []string{"Database"},
+	}, h.handleListDatabases)
+	huma.Register(group, huma.Operation{
+		OperationID:   "create-database",
+		Method:        http.MethodPost,
+		DefaultStatus: http.StatusCreated,
+		Path:          "/",
+		Summary:       "Creates a new Database",
+		Description:   "Creates a new database. SQLite is **not** supported",
+		Tags:          []string{"Database"},
+	}, h.handleCreateDatabase)
 }
 
-// Lists databases
-//
-//	@summary		List Databases
-//	@description	Get all the available databases.
-//	@tags			Database
-//	@router			/database [get]
-//	@produce		json
-//	@success		200	{object}	models.ListDatabasesResp
-//	@failure		500	{object}	models.InternalServerError
-func (dh *DBHandler) handleListDatabases(w http.ResponseWriter, r *http.Request) {
+type ListDatabasesOutput struct {
+	Body models.ListDatabasesResp
+}
+
+func (dh *DBHandler) handleListDatabases(ctx context.Context, input *struct{}) (*ListDatabasesOutput, error) {
 	dbs, err := dh.storage.ListDBs()
 
 	if err != nil {
-		httpError(w, http.StatusInternalServerError, err.Error())
-		return
+		return nil, huma.Error500InternalServerError("Something went wrong")
 	}
-	writeJson(w, models.ListDatabasesResp{Databases: dbs})
+	return &ListDatabasesOutput{
+		Body: models.ListDatabasesResp{Databases: dbs},
+	}, nil
 }
 
-// Creates a new Database
-//
-//	@summary		Create a new Database
-//	@description	Creates a new database with the specified table schema.
-//	@description
-//	@description	**NOTE**: SQLite is Unsupported.
-//	@tags			Database
-//	@router			/database [post]
-//	@accept			json
-//	@produce		json
-//	@param			payload	body		models.CreatePgMySqlDBPayload	true	"Database Info"
-//	@success		200		{object}	models.SuccessResp
-//	@failure		400		{object}	models.ErrResp
-//	@failure		500		{object}	models.InternalServerError
-func (dh *DBHandler) handleCreateDatabase(w http.ResponseWriter, r *http.Request) {
-	var payload models.CreatePgMySqlDBPayload
+type CreateDatabaseOutput struct {
+	Body models.SuccessResp
+}
 
-	if err := parseBody(r.Body, &payload); err != nil {
-		httpError(w, http.StatusUnprocessableEntity, err.Error())
-		return
+func (dh *DBHandler) handleCreateDatabase(ctx context.Context, input *struct {
+	Body models.CreatePgMySqlDBPayload
+}) (*CreateDatabaseOutput, error) {
+	if err := dh.storage.CreateDB(input.Body.Name); err != nil {
+		return nil, huma.Error500InternalServerError("Something went wrong")
 	}
 
-	if errs := lib.ValidateStruct(payload); len(errs) > 0 {
-		httpError(w, http.StatusBadRequest, errs)
-		return
-	}
-
-	if err := dh.storage.CreateDB(payload.Name); err != nil {
-		httpError(w, http.StatusInternalServerError, err.Error())
-		return
-	}
-
-	w.WriteHeader(http.StatusCreated)
-	writeJson(w, models.SuccessResp{Success: true})
+	return &CreateDatabaseOutput{
+		Body: models.SuccessResp{Success: true},
+	}, nil
 }

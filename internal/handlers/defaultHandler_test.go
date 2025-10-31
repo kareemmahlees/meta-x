@@ -4,40 +4,30 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/danielgtaylor/huma/v2/humatest"
 	"github.com/stretchr/testify/suite"
 )
 
 type DefaultHandlerTestSuite struct {
 	suite.Suite
-	r       *chi.Mux
+	api     humatest.TestAPI
 	handler *DefaultHandler
 }
 
 func (suite *DefaultHandlerTestSuite) SetupSuite() {
-	r := chi.NewRouter()
+	_, api := humatest.New(suite.T())
 	handler := NewDefaultHandler()
-	handler.RegisterRoutes(r)
+	handler.RegisterRoutes(api)
 
-	suite.r = r
+	suite.api = api
 	suite.handler = handler
-}
-
-func (suite *DefaultHandlerTestSuite) TestRegisterDefaultRoutes() {
-	assert := suite.Assert()
-
-	var routes []string
-	for _, route := range suite.r.Routes() {
-		routes = append(routes, route.Pattern)
-	}
-
-	assert.Contains(routes, "/")
 }
 
 func (suite *DefaultHandlerTestSuite) TestAPIInfo() {
 	assert := suite.Assert()
+	resp := suite.api.Get("/")
 
-	assert.HTTPSuccess(suite.handler.apiInfo, http.MethodGet, "/", nil)
+	assert.Equal(http.StatusOK, resp.Code)
 }
 
 func TestDefaultHandlerTestSuite(t *testing.T) {

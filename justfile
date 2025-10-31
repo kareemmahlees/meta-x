@@ -1,3 +1,5 @@
+set shell := ["powershell.exe", "-c"]
+
 build:
 	@go build -o bin/ 
 build_prod:
@@ -8,5 +10,5 @@ run:
 # WARNING: make sure to run docker first
 test:
 	@go test ./... -race
-generate:
-	@go generate
+generate_graphql:
+	@go tool gqlgen generate

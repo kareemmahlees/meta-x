@@ -19,9 +19,9 @@ type ColumnInfo struct {
 	// If the table accepts null values or not
 	Nullable *string `json:"nullable,omitempty"`
 	// Constraint name of the column, e.g PRI
-	Key interface{} `json:"key,omitempty"`
+	Key any `json:"key,omitempty"`
 	// Column default value
-	Default interface{} `json:"default,omitempty"`
+	Default any `json:"default,omitempty"`
 }
 
 // General data about the column to create
@@ -33,7 +33,7 @@ type CreateColumnData struct {
 	// Wether the column accepts null values
 	Nullable *bool `json:"nullable,omitempty"`
 	// Default value of the column
-	Default interface{} `json:"default,omitempty"`
+	Default any `json:"default,omitempty"`
 	// Wether to add unique constraint on the column
 	Unique *bool `json:"unique,omitempty"`
 }
@@ -47,6 +47,12 @@ type CreateTableResponse struct {
 type DeleteColumnData struct {
 	// Deleted column name
 	ColName *string `json:"colName,omitempty"`
+}
+
+type Mutation struct {
+}
+
+type Query struct {
 }
 
 // Generic operation success response

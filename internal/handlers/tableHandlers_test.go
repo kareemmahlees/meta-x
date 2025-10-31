@@ -5,7 +5,8 @@ import (
 	"net/http"
 	"testing"
 
-	"github.com/go-chi/chi/v5"
+	"github.com/danielgtaylor/huma/v2"
+	"github.com/danielgtaylor/huma/v2/humatest"
 	"github.com/kareemmahlees/meta-x/models"
 	"github.com/kareemmahlees/meta-x/utils"
 	"github.com/stretchr/testify/suite"
@@ -13,30 +14,19 @@ import (
 
 type TableHandlerTestSuite struct {
 	suite.Suite
-	r       *chi.Mux
+	api     humatest.TestAPI
 	handler *TableHandler
 }
 
 func (suite *TableHandlerTestSuite) SetupSuite() {
-	r := chi.NewRouter()
+	_, api := humatest.New(suite.T())
 	storage := NewMockTableExecutor()
 
 	handler := NewTableHandler(storage)
-	handler.RegisterRoutes(r)
+	handler.RegisterRoutes(api)
 
-	suite.r = r
+	suite.api = api
 	suite.handler = handler
-}
-
-func (suite *TableHandlerTestSuite) TestRegisterRoutes() {
-	assert := suite.Assert()
-
-	var routes []string
-	for _, route := range suite.r.Routes() {
-		routes = append(routes, route.Pattern)
-	}
-
-	assert.Contains(routes, "/table/*")
 }
 
 func (suite *TableHandlerTestSuite) TestHandleGetTableInfo() {
@@ -44,27 +34,26 @@ func (suite *TableHandlerTestSuite) TestHandleGetTableInfo() {
 	t := suite.T()
 
 	t.Run("should pass", func(t *testing.T) {
-		rr := utils.TestRequest(suite.r, http.MethodGet, "/table/test/describe", http.NoBody)
+		rr := suite.api.Get("/table/test/describe")
 		assert.Equal(rr.Code, http.StatusOK)
 	})
 
 	t.Run("should fail bad request", func(t *testing.T) {
-		rr := utils.TestRequest(suite.r, http.MethodGet, "/table/12345/describe", http.NoBody)
+		rr := suite.api.Get("/table/12345/describe")
 		assert.Equal(rr.Code, http.StatusBadRequest)
 
-		decodedResp := utils.DecodeBody[models.ErrResp](rr.Result().Body)
-		assert.NotEmpty(decodedResp.Message)
+		decodedResp := utils.DecodeBody[huma.ErrorModel](rr.Result().Body)
+		assert.NotEmpty(decodedResp.Errors)
 	})
 
 	t.Run("should fail internal server", func(t *testing.T) {
-
-		r := chi.NewRouter()
+		_, testAPI := humatest.New(t)
 		storage := NewFaultyTableExecutor()
 
 		handler := NewTableHandler(storage)
-		handler.RegisterRoutes(r)
+		handler.RegisterRoutes(testAPI)
 
-		rr := utils.TestRequest(r, http.MethodGet, "/table/test/describe", http.NoBody)
+		rr := testAPI.Get("/table/test/describe")
 		assert.Equal(rr.Code, http.StatusInternalServerError)
 	})
 }
@@ -74,18 +63,18 @@ func (suite *TableHandlerTestSuite) TestHandleListTables() {
 	t := suite.T()
 
 	t.Run("should pass", func(t *testing.T) {
-		assert.HTTPSuccess(suite.handler.handleListTables, http.MethodGet, "/table", nil)
-		assert.HTTPBodyContains(suite.handler.handleListTables, http.MethodGet, "/table", nil, "test")
+		rr := suite.api.Get("/table")
+		assert.Equal(http.StatusOK, rr.Code)
+		assert.Contains(rr.Body.String(), "test")
 	})
 
 	t.Run("should fail internal server", func(t *testing.T) {
-		r := chi.NewRouter()
+		_, testAPI := humatest.New(t)
 		storage := NewFaultyTableExecutor()
 
 		handler := NewTableHandler(storage)
-		handler.RegisterRoutes(r)
-
-		rr := utils.TestRequest(r, http.MethodGet, "/table", http.NoBody)
+		handler.RegisterRoutes(testAPI)
+		rr := testAPI.Get("/table")
 
 		assert.Equal(http.StatusInternalServerError, rr.Code)
 	})
@@ -96,13 +85,12 @@ func (suite *TableHandlerTestSuite) TestHandleCreateTable() {
 	t := suite.T()
 
 	t.Run("should pass", func(t *testing.T) {
-		passingBody, _ := utils.EncodeBody([]models.CreateTablePayload{{ColName: "test1",
+		rr := suite.api.Post("/table/test1", []models.CreateTablePayload{{ColName: "test1",
 			Type:     "varchar(255)",
 			Nullable: true,
 			Default:  "kareem",
 			Unique:   true,
 		}})
-		rr := utils.TestRequest(suite.r, http.MethodPost, "/table/test1", passingBody)
 		assert.Equal(http.StatusCreated, rr.Code)
 
 		decodedRes := utils.DecodeBody[models.CreateTableResp](rr.Result().Body)
@@ -110,42 +98,40 @@ func (suite *TableHandlerTestSuite) TestHandleCreateTable() {
 	})
 
 	t.Run("should fail unprocessable entitiy", func(t *testing.T) {
-		rr := utils.TestRequest(suite.r, http.MethodPost, "/table/anything", http.NoBody)
+		rr := suite.api.Post("/table/anything")
 		assert.Equal(http.StatusUnprocessableEntity, rr.Code)
 	})
 
 	t.Run("should fail bad request params", func(t *testing.T) {
-		rr := utils.TestRequest(suite.r, http.MethodPost, "/table/1.1", http.NoBody)
+		rr := suite.api.Post("/table/1.1")
 		assert.Equal(http.StatusBadRequest, rr.Code)
 
 	})
 
 	t.Run("should fail bad request body", func(t *testing.T) {
-		failingBadRequestBody, _ := utils.EncodeBody([]models.CreateTablePayload{{
+		rr := suite.api.Post("/table/anything", []models.CreateTablePayload{{
 			ColName:  "test2",
 			Type:     "varchar(255)",
 			Nullable: "should fail",
 			Default:  nil,
 			Unique:   nil,
 		}})
-		rr := utils.TestRequest(suite.r, http.MethodPost, "/table/anything", failingBadRequestBody)
 		assert.Equal(http.StatusBadRequest, rr.Code)
 	})
 
 	t.Run("should fail internal server", func(t *testing.T) {
-		failingInternalServerBody, _ := utils.EncodeBody([]models.CreateTablePayload{{ColName: "test1",
+		_, testAPI := humatest.New(t)
+		storage := NewFaultyTableExecutor()
+
+		handler := NewTableHandler(storage)
+		handler.RegisterRoutes(testAPI)
+
+		rr := testAPI.Post("/table/test1", []models.CreateTablePayload{{ColName: "test1",
 			Type:     "varchar(255)",
 			Nullable: true,
 			Default:  "kareem",
 			Unique:   true,
 		}})
-		r := chi.NewRouter()
-		storage := NewFaultyTableExecutor()
-
-		handler := NewTableHandler(storage)
-		handler.RegisterRoutes(r)
-
-		rr := utils.TestRequest(r, http.MethodPost, "/table/test1", failingInternalServerBody)
 
 		assert.Equal(http.StatusInternalServerError, rr.Code)
 	})
@@ -157,40 +143,36 @@ func (suite *TableHandlerTestSuite) TestHandleAddColumn() {
 	t := suite.T()
 
 	t.Run("should pass", func(t *testing.T) {
-		passingBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{ColName: "test3", Type: "varchar(255)"})
-		rr := utils.TestRequest(suite.r, http.MethodPost, "/table/test/column/add", passingBody)
-		decoedBody := utils.DecodeBody[models.SuccessResp](rr.Result().Body)
-		assert.True(decoedBody.Success)
+		rr := suite.api.Post("/table/test/column/add", models.AddModifyColumnPayload{ColName: "test3", Type: "varchar(255)"})
+		decodedBody := utils.DecodeBody[models.SuccessResp](rr.Result().Body)
+		assert.True(decodedBody.Success)
 	})
 
 	t.Run("should fail unproccessable entity", func(t *testing.T) {
-		rr := utils.TestRequest(suite.r, http.MethodPost, "/table/test/column/add", http.NoBody)
+		rr := suite.api.Post("/table/test/column/add")
 		assert.Equal(http.StatusUnprocessableEntity, rr.Code)
 	})
 
 	t.Run("should fail bad request param", func(t *testing.T) {
-		rr := utils.TestRequest(suite.r, http.MethodPost, "/table/1.1/column/add", http.NoBody)
+		rr := suite.api.Post("/table/1.1/column/add")
 		assert.Equal(http.StatusBadRequest, rr.Code)
 	})
 
 	t.Run("should fail bad request body", func(t *testing.T) {
-		failingBadRequestBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{
+		rr := suite.api.Post("/table/test/column/add", models.AddModifyColumnPayload{
 			ColName: "",
 			Type:    "varchar(255)",
 		})
-		rr := utils.TestRequest(suite.r, http.MethodPost, "/table/test/column/add", failingBadRequestBody)
 		assert.Equal(http.StatusBadRequest, rr.Code)
 	})
 
 	t.Run("should fail internal server", func(t *testing.T) {
-		failingInternalServerBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{ColName: "test3", Type: "varchar(255)"})
-
-		r := chi.NewRouter()
+		_, testAPI := humatest.New(t)
 		storage := NewFaultyTableExecutor()
 		handler := NewTableHandler(storage)
-		handler.RegisterRoutes(r)
+		handler.RegisterRoutes(testAPI)
 
-		rr := utils.TestRequest(r, http.MethodPost, "/table/test/column/add", failingInternalServerBody)
+		rr := testAPI.Post("/table/test/column/add", models.AddModifyColumnPayload{ColName: "test3", Type: "varchar(255)"})
 
 		assert.Equal(http.StatusInternalServerError, rr.Code)
 	})
@@ -201,8 +183,7 @@ func (suite *TableHandlerTestSuite) TestHandleUpdateColumn() {
 	t := suite.T()
 
 	t.Run("should pass", func(t *testing.T) {
-		passingBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{ColName: "name", Type: "varchar(255)"})
-		rr := utils.TestRequest(suite.r, http.MethodPut, "/table/test/column/modify", passingBody)
+		rr := suite.api.Put("/table/test/column/modify", models.AddModifyColumnPayload{ColName: "name", Type: "varchar(255)"})
 		decodedRes := utils.DecodeBody[models.SuccessResp](rr.Result().Body)
 
 		assert.Equal(rr.Code, http.StatusOK)
@@ -210,42 +191,38 @@ func (suite *TableHandlerTestSuite) TestHandleUpdateColumn() {
 	})
 
 	t.Run("should fail unproccessable entity", func(t *testing.T) {
-		rr := utils.TestRequest(suite.r, http.MethodPut, "/table/test/column/modify", http.NoBody)
+		rr := suite.api.Put("/table/test/column/modify")
 		assert.Equal(http.StatusUnprocessableEntity, rr.Code)
 
-		decodedRes := utils.DecodeBody[models.ErrResp](rr.Result().Body)
-		assert.NotEmpty(decodedRes.Message)
+		decodedRes := utils.DecodeBody[huma.ErrorModel](rr.Result().Body)
+		assert.NotEmpty(decodedRes.Errors)
 	})
 	t.Run("should fail bad request param", func(t *testing.T) {
-		rr := utils.TestRequest(suite.r, http.MethodPut, "/table/1.1/column/modify", http.NoBody)
+		rr := suite.api.Put("/table/1.1/column/modify")
 		assert.Equal(http.StatusBadRequest, rr.Code)
 
-		decodedRes := utils.DecodeBody[models.ErrResp](rr.Result().Body)
-		assert.NotEmpty(decodedRes.Message)
+		decodedRes := utils.DecodeBody[huma.ErrorModel](rr.Result().Body)
+		assert.NotEmpty(decodedRes.Errors)
 	})
 
 	t.Run("should fail bad request body", func(t *testing.T) {
-		failingBadRequestBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{
+		rr := suite.api.Put("/table/test/column/modify", models.AddModifyColumnPayload{
 			ColName: "",
 			Type:    "varchar(255)",
 		})
-		rr := utils.TestRequest(suite.r, http.MethodPut, "/table/test/column/modify", failingBadRequestBody)
 		assert.Equal(http.StatusBadRequest, rr.Code)
 
-		decodedRes := utils.DecodeBody[models.ErrResp](rr.Result().Body)
-		assert.NotEmpty(decodedRes.Message)
+		decodedRes := utils.DecodeBody[huma.ErrorModel](rr.Result().Body)
+		assert.NotEmpty(decodedRes.Errors)
 	})
 
 	t.Run("should fail internal server", func(t *testing.T) {
-		failingInternalServerBody, _ := utils.EncodeBody(models.AddModifyColumnPayload{ColName: "name", Type: "varchar(255)"})
-
-		r := chi.NewRouter()
+		_, testAPI := humatest.New(t)
 		storage := NewFaultyTableExecutor()
 		handler := NewTableHandler(storage)
-		handler.RegisterRoutes(r)
+		handler.RegisterRoutes(testAPI)
 
-		rr := utils.TestRequest(r, http.MethodPut, "/table/test/column/modify", failingInternalServerBody)
-
+		rr := testAPI.Put("/table/test/column/modify", models.AddModifyColumnPayload{ColName: "name", Type: "varchar(255)"})
 		assert.Equal(http.StatusInternalServerError, rr.Code)
 	})
 }
@@ -255,48 +232,44 @@ func (suite *TableHandlerTestSuite) TestHandleDeleteColumn() {
 	t := suite.T()
 
 	t.Run("should pass", func(t *testing.T) {
-		passingBody, _ := utils.EncodeBody(models.DeleteColumnPayload{ColName: "name"})
-		rr := utils.TestRequest(suite.r, http.MethodDelete, "/table/test/column/delete", passingBody)
+		rr := suite.api.Delete("/table/test/column/delete", models.DeleteColumnPayload{ColName: "name"})
 
 		decodedRes := utils.DecodeBody[models.SuccessResp](rr.Result().Body)
 		assert.True(decodedRes.Success)
 	})
 	t.Run("should fail bad request param", func(t *testing.T) {
-		rr := utils.TestRequest(suite.r, http.MethodDelete, "/table/1.1/column/delete", http.NoBody)
-		decodedRes := utils.DecodeBody[models.ErrResp](rr.Result().Body)
+		rr := suite.api.Delete("/table/1.1/column/delete")
+		decodedRes := utils.DecodeBody[huma.ErrorModel](rr.Result().Body)
 
 		assert.Equal(http.StatusBadRequest, rr.Code)
-		assert.NotEmpty(decodedRes.Message)
+		assert.NotEmpty(decodedRes.Errors)
 	})
 
 	t.Run("should fail bad request", func(t *testing.T) {
-		failingBadRequestBody, _ := utils.EncodeBody(models.DeleteColumnPayload{
+		rr := suite.api.Delete("/table/test/column/delete", models.DeleteColumnPayload{
 			ColName: "",
 		})
-		rr := utils.TestRequest(suite.r, http.MethodDelete, "/table/test/column/delete", failingBadRequestBody)
-		decodedRes := utils.DecodeBody[models.ErrResp](rr.Result().Body)
+		decodedRes := utils.DecodeBody[huma.ErrorModel](rr.Result().Body)
 
 		assert.Equal(http.StatusBadRequest, rr.Code)
-		assert.NotEmpty(decodedRes.Message)
+		assert.NotEmpty(decodedRes.Errors)
 	})
 
 	t.Run("should fail unproccessable entity", func(t *testing.T) {
-		rr := utils.TestRequest(suite.r, http.MethodDelete, "/table/test/column/delete", http.NoBody)
-		decodedRes := utils.DecodeBody[models.ErrResp](rr.Result().Body)
+		rr := suite.api.Delete("/table/test/column/delete")
+		decodedRes := utils.DecodeBody[huma.ErrorModel](rr.Result().Body)
 
 		assert.Equal(http.StatusUnprocessableEntity, rr.Code)
-		assert.NotEmpty(decodedRes.Message)
+		assert.NotEmpty(decodedRes.Errors)
 	})
 
 	t.Run("should fail internal server", func(t *testing.T) {
-		failingInternalServerBody, _ := utils.EncodeBody(models.DeleteColumnPayload{ColName: "name"})
-
-		r := chi.NewRouter()
+		_, testAPI := humatest.New(t)
 		storage := NewFaultyTableExecutor()
 		handler := NewTableHandler(storage)
-		handler.RegisterRoutes(r)
+		handler.RegisterRoutes(testAPI)
 
-		rr := utils.TestRequest(r, http.MethodDelete, "/table/test/column/delete", failingInternalServerBody)
+		rr := testAPI.Delete("/table/test/column/delete", models.DeleteColumnPayload{ColName: "name"})
 
 		assert.Equal(http.StatusInternalServerError, rr.Code)
 	})
@@ -307,27 +280,27 @@ func (suite *TableHandlerTestSuite) TestHandleDeleteTable() {
 	t := suite.T()
 
 	t.Run("should pass", func(t *testing.T) {
-		rr := utils.TestRequest(suite.r, http.MethodDelete, "/table/test", http.NoBody)
+		rr := suite.api.Delete("/table/test")
 		decodedRes := utils.DecodeBody[models.SuccessResp](rr.Result().Body)
 
 		assert.True(decodedRes.Success)
 	})
 
 	t.Run("should fail bad request param", func(t *testing.T) {
-		rr := utils.TestRequest(suite.r, http.MethodDelete, "/table/1.1", http.NoBody)
-		decodedRes := utils.DecodeBody[models.ErrResp](rr.Result().Body)
+		rr := suite.api.Delete("/table/1.1")
+		decodedRes := utils.DecodeBody[huma.ErrorModel](rr.Result().Body)
 
 		assert.Equal(http.StatusBadRequest, rr.Code)
-		assert.NotEmpty(decodedRes.Message)
+		assert.NotEmpty(decodedRes.Errors)
 	})
 
 	t.Run("should fail internal server", func(t *testing.T) {
-		r := chi.NewRouter()
+		_, testAPI := humatest.New(t)
 		storage := NewFaultyTableExecutor()
 		handler := NewTableHandler(storage)
-		handler.RegisterRoutes(r)
+		handler.RegisterRoutes(testAPI)
 
-		rr := utils.TestRequest(r, http.MethodDelete, "/table/test", http.NoBody)
+		rr := testAPI.Delete("/table/test")
 
 		assert.Equal(http.StatusInternalServerError, rr.Code)
 	})
